@@ -880,8 +880,9 @@ export function calculateKPIData(
   config: MagicEquationConfig
 ) {
   const gpPercent = totalRevenue > 0 ? (totalGrossProfit / totalRevenue) * 100 : 0;
-  const overheads = totalRevenue * (config.overheadPercent / 100);
-  const pureProfit = totalGrossProfit - overheads;
+  // Fixed overheads: 10.5% of the $1.65M magic equation target = $173,250/month
+  const fixedMonthlyOverheads = config.monthlyRevenueTarget * (config.overheadPercent / 100);
+  const pureProfit = totalGrossProfit - fixedMonthlyOverheads;
   
   // Determine status colors
   let revenueStatus: 'success' | 'warning' | 'danger' = 'danger';
@@ -907,7 +908,7 @@ export function calculateKPIData(
     grossProfit: totalGrossProfit,
     gpPercent,
     gpStatus,
-    overheads,
+    overheads: fixedMonthlyOverheads,
     pureProfit,
     pureProfitStatus,
   };
