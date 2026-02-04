@@ -5,12 +5,14 @@ export type TrafficLightStatus = 'success' | 'warning' | 'danger';
 export type ProjectStage = 
   | 'Deposit' 
   | 'Retaining' 
+  | 'Base'
   | 'Slab/Base' 
   | 'Frame' 
   | 'Enclosed' 
   | 'Fixing' 
   | 'PC' 
-  | 'Handover';
+  | 'Handover'
+  | 'Start';
 
 export type ProjectStatus = 'Active' | 'Complete' | 'On Hold';
 
