@@ -76,7 +76,7 @@ export function MagicEquationHeader({
         <KPICard
           title="Overheads"
           value={formatCurrency(monthlyKPI.overheads, true)}
-          subtitle="10.5% of revenue"
+          subtitle="Fixed: 10.5% of $1.65M target"
           size="large"
         />
         <KPICard
