@@ -916,8 +916,8 @@ export function calculateKPIData(
 
 // Get current month KPI data from real February 2025 claims
 export function getCurrentKPIData() {
-  // February 2025 total claims from Claims Schedule: ~$2.57M
-  const totalMonthlyRevenue = 2569293; // From row 122 of Claims Schedule
+  // February 2025 total claims (ex GST) from Claims Schedule line 123/516
+  const totalMonthlyRevenue = 1575459; // Ex GST figure from column totals
   // Using weighted average margin of 18.21% from Metrics file
   const avgGpPercent = 18.21;
   const totalMonthlyGrossProfit = totalMonthlyRevenue * (avgGpPercent / 100);
