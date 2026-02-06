@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Calendar from "./pages/Calendar";
 import Team from "./pages/Team";
+import Projects from "./pages/Projects";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -48,7 +49,15 @@ const App = () => (
               }
             />
             <Route 
-              path="/settings" 
+              path="/projects" 
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/settings"
               element={
                 <ProtectedRoute>
                   <Settings />
