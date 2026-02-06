@@ -27,6 +27,12 @@ import {
   LogIn,
   LogOut,
   ChevronUp,
+  Phone,
+  MapPin,
+  Shield,
+  Instagram,
+  Facebook,
+  Youtube,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -42,6 +48,12 @@ const navItems = [
   { title: 'Team', url: '/team', icon: Users },
   { title: 'Calendar', url: '/calendar', icon: Calendar },
   { title: 'Settings', url: '/settings', icon: Settings },
+];
+
+const socialLinks = [
+  { icon: Instagram, href: 'https://www.instagram.com/lanconqld/', label: 'Instagram' },
+  { icon: Facebook, href: 'https://www.facebook.com/lanconqld', label: 'Facebook' },
+  { icon: Youtube, href: 'https://www.youtube.com/channel/UC-_gfZawuqAMgUvot4yYeIQ', label: 'YouTube' },
 ];
 
 export function AppSidebar() {
@@ -98,6 +110,64 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Contact & Social */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel>Contact</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2 space-y-2 text-xs text-sidebar-foreground/70">
+              {!isCollapsed && (
+                <>
+                  <a href="tel:1300699442" className="flex items-center gap-2 hover:text-sidebar-foreground transition-colors">
+                    <Phone className="h-3 w-3 shrink-0" />
+                    <span>1300 699 442</span>
+                  </a>
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span>21/8 Metroplex Ave, Murarrie QLD 4172</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-3 w-3 shrink-0" />
+                    <span>QBCC #1172942</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2">
+                    {socialLinks.map((social) => (
+                      <a
+                        key={social.label}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
+                        aria-label={social.label}
+                      >
+                        <social.icon className="h-3.5 w-3.5" />
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+              {isCollapsed && (
+                <div className="flex flex-col items-center gap-1">
+                  <a href="tel:1300699442" className="p-1.5 rounded-md hover:bg-sidebar-accent" aria-label="Phone">
+                    <Phone className="h-3.5 w-3.5" />
+                  </a>
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 rounded-md hover:bg-sidebar-accent"
+                      aria-label={social.label}
+                    >
+                      <social.icon className="h-3.5 w-3.5" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
