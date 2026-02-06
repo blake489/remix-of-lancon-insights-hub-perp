@@ -12,6 +12,7 @@ import Team from "./pages/Team";
 import Projects from "./pages/Projects";
 import Settings from "./pages/Settings";
 import Weather from "./pages/Weather";
+import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Weather />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/inbox"
+              element={
+                <ProtectedRoute>
+                  <Inbox />
                 </ProtectedRoute>
               }
             />
