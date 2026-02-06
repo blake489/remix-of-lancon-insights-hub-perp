@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Sunrise, Sunset, Droplets, Wind, Cloud, Sun, CloudRain } from 'lucide-react';
+import { Sunrise, Sunset, Droplets, Wind, Cloud, Sun, CloudRain, Umbrella } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface WeatherData {
@@ -10,6 +10,8 @@ interface WeatherData {
   weatherCode: number;
   sunrise: string;
   sunset: string;
+  rainChance: number;
+  rainAmount: number;
 }
 
 const getWeatherIcon = (code: number) => {
@@ -31,7 +33,7 @@ export function TodayWidget() {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${OFFICE_LOCATION.lat}&longitude=${OFFICE_LOCATION.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${OFFICE_LOCATION.lat}&longitude=${OFFICE_LOCATION.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=sunrise,sunset,precipitation_sum,precipitation_probability_max&timezone=auto`
         );
         if (!response.ok) throw new Error('Weather fetch failed');
         const data = await response.json();
@@ -42,6 +44,8 @@ export function TodayWidget() {
           weatherCode: data.current.weather_code,
           sunrise: data.daily.sunrise[0],
           sunset: data.daily.sunset[0],
+          rainChance: data.daily.precipitation_probability_max?.[0] || 0,
+          rainAmount: data.daily.precipitation_sum?.[0] || 0,
         });
       } catch (err) {
         console.error('Weather error:', err);
@@ -72,6 +76,20 @@ export function TodayWidget() {
             <div className="flex items-center justify-between">
               {getWeatherIcon(weather.weatherCode)}
               <span className="text-2xl font-bold text-foreground">{weather.temperature}°C</span>
+            </div>
+
+            {/* Rain Forecast */}
+            <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-2">
+                <Umbrella className="h-4 w-4 text-primary" />
+                <span className="text-xs font-medium text-foreground">Rain</span>
+              </div>
+              <div className="text-right">
+                <span className="text-sm font-bold text-foreground">{weather.rainChance}%</span>
+                {weather.rainAmount > 0 && (
+                  <span className="text-xs text-muted-foreground ml-1">({weather.rainAmount}mm)</span>
+                )}
+              </div>
             </div>
 
             {/* Details */}
