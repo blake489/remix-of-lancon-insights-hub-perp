@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      kpi_settings: {
+        Row: {
+          created_at: string
+          gp_percent_target: number
+          gp_threshold_green: number
+          gp_threshold_orange: number
+          id: string
+          is_active: boolean
+          monthly_revenue_target: number
+          overhead_percent: number
+          revenue_threshold_green: number
+          revenue_threshold_orange: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          gp_percent_target?: number
+          gp_threshold_green?: number
+          gp_threshold_orange?: number
+          id?: string
+          is_active?: boolean
+          monthly_revenue_target?: number
+          overhead_percent?: number
+          revenue_threshold_green?: number
+          revenue_threshold_orange?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          gp_percent_target?: number
+          gp_threshold_green?: number
+          gp_threshold_orange?: number
+          id?: string
+          is_active?: boolean
+          monthly_revenue_target?: number
+          overhead_percent?: number
+          revenue_threshold_green?: number
+          revenue_threshold_orange?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      kpi_settings_audit: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          changed_by_email: string | null
+          created_at: string
+          gp_percent_target: number
+          gp_threshold_green: number
+          gp_threshold_orange: number
+          id: string
+          monthly_revenue_target: number
+          overhead_percent: number
+          revenue_threshold_green: number
+          revenue_threshold_orange: number
+          settings_id: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          gp_percent_target: number
+          gp_threshold_green: number
+          gp_threshold_orange: number
+          id?: string
+          monthly_revenue_target: number
+          overhead_percent: number
+          revenue_threshold_green: number
+          revenue_threshold_orange: number
+          settings_id?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          gp_percent_target?: number
+          gp_threshold_green?: number
+          gp_threshold_orange?: number
+          id?: string
+          monthly_revenue_target?: number
+          overhead_percent?: number
+          revenue_threshold_green?: number
+          revenue_threshold_orange?: number
+          settings_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_settings_audit_settings_id_fkey"
+            columns: ["settings_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -83,14 +184,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "user"
       team_department:
         | "site_supervisor"
         | "management"
@@ -223,6 +352,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       team_department: [
         "site_supervisor",
         "management",
