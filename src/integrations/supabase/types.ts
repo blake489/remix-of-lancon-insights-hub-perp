@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          all_day: boolean | null
+          category:
+            | Database["public"]["Enums"]["calendar_event_category"]
+            | null
+          color: string | null
+          created_at: string
+          description: string | null
+          end_time: string | null
+          id: string
+          is_recurring: boolean | null
+          location: string | null
+          project_id: string | null
+          recurrence_rule: string | null
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          all_day?: boolean | null
+          category?:
+            | Database["public"]["Enums"]["calendar_event_category"]
+            | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          project_id?: string | null
+          recurrence_rule?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          all_day?: boolean | null
+          category?:
+            | Database["public"]["Enums"]["calendar_event_category"]
+            | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          location?: string | null
+          project_id?: string | null
+          recurrence_rule?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       kpi_settings: {
         Row: {
           created_at: string
@@ -234,6 +294,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      calendar_event_category:
+        | "meeting"
+        | "deadline"
+        | "milestone"
+        | "reminder"
+        | "task"
+        | "other"
       role_level: "director" | "manager" | "staff"
       team_department:
         | "site_supervisor"
@@ -368,6 +435,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      calendar_event_category: [
+        "meeting",
+        "deadline",
+        "milestone",
+        "reminder",
+        "task",
+        "other",
+      ],
       role_level: ["director", "manager", "staff"],
       team_department: [
         "site_supervisor",
