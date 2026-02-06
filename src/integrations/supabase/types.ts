@@ -153,6 +153,8 @@ export type Database = {
           job_title: string | null
           name: string
           phone: string | null
+          reports_to: string | null
+          role_level: Database["public"]["Enums"]["role_level"]
           updated_at: string
           user_id: string | null
         }
@@ -166,6 +168,8 @@ export type Database = {
           job_title?: string | null
           name: string
           phone?: string | null
+          reports_to?: string | null
+          role_level?: Database["public"]["Enums"]["role_level"]
           updated_at?: string
           user_id?: string | null
         }
@@ -179,10 +183,20 @@ export type Database = {
           job_title?: string | null
           name?: string
           phone?: string | null
+          reports_to?: string | null
+          role_level?: Database["public"]["Enums"]["role_level"]
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "team_members_reports_to_fkey"
+            columns: ["reports_to"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -220,6 +234,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      role_level: "director" | "manager" | "staff"
       team_department:
         | "site_supervisor"
         | "management"
@@ -353,6 +368,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      role_level: ["director", "manager", "staff"],
       team_department: [
         "site_supervisor",
         "management",
