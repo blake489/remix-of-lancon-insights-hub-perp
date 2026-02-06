@@ -42,18 +42,18 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen gradient-mesh">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+      <header className="glass-header">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
+          <div className="flex h-20 items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
                 <Building2 className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-foreground">LanCon Qld</h1>
-                <p className="text-xs text-muted-foreground">Metrics Dashboard</p>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">LanCon Qld</h1>
+                <p className="text-xs text-muted-foreground font-medium">Metrics Dashboard</p>
               </div>
             </div>
             <DashboardFilters
@@ -68,35 +68,41 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-10 section-spacing">
         {/* Magic Equation Header */}
-        <MagicEquationHeader
-          monthlyKPI={monthlyKPI}
-          currentFortnightKPI={currentFortnightKPI}
-          previousFortnightKPI={previousFortnightKPI}
-          selectedMonth={selectedMonth}
-          selectedFortnight={selectedFortnight}
-        />
+        <div className="animate-fade-in">
+          <MagicEquationHeader
+            monthlyKPI={monthlyKPI}
+            currentFortnightKPI={currentFortnightKPI}
+            previousFortnightKPI={previousFortnightKPI}
+            selectedMonth={selectedMonth}
+            selectedFortnight={selectedFortnight}
+          />
+        </div>
 
         {/* Projects Table */}
-        <ProjectTable
-          projects={projectsWithMetrics}
-          siteManagers={siteManagers}
-        />
+        <div className="animate-slide-in-up stagger-2">
+          <ProjectTable
+            projects={projectsWithMetrics}
+            siteManagers={siteManagers}
+          />
+        </div>
 
         {/* Site Manager Panel */}
-        <SiteManagerPanel
-          activities={activities}
-          projects={mockProjects}
-          siteManagers={siteManagers}
-          onActivityUpdate={handleActivityUpdate}
-        />
+        <div className="animate-slide-in-up stagger-3">
+          <SiteManagerPanel
+            activities={activities}
+            projects={mockProjects}
+            siteManagers={siteManagers}
+            onActivityUpdate={handleActivityUpdate}
+          />
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-6">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border/30 bg-card/50 backdrop-blur-sm py-8">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
+          <p className="text-center text-sm text-muted-foreground font-medium">
             LanCon Qld Internal Metrics Dashboard • Magic Equation: $1.65M/month @ 18% GP
           </p>
         </div>

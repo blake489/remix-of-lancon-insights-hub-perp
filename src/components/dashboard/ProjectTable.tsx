@@ -111,12 +111,15 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Active Projects</h2>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Active Projects</h2>
+          <p className="text-sm text-muted-foreground font-medium">{filteredAndSortedProjects.length} projects</p>
+        </div>
         <div className="flex gap-3">
           <Select value={filterSiteManager} onValueChange={setFilterSiteManager}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] h-11 bg-card/80 backdrop-blur-sm border-border/50">
               <SelectValue placeholder="Site Manager" />
             </SelectTrigger>
             <SelectContent>
@@ -127,7 +130,7 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
             </SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as ProjectStatus | 'all')}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-11 bg-card/80 backdrop-blur-sm border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -140,46 +143,46 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+      <div className="glass-card overflow-hidden">
         <Table className="data-table">
           <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[200px]">Project</TableHead>
+            <TableRow className="border-b border-border/50">
+              <TableHead className="min-w-[220px]">Project</TableHead>
               <TableHead>Site Manager</TableHead>
               <TableHead 
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none hover:text-foreground transition-colors"
                 onClick={() => handleSort('contractValue')}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-2">
                   Contract Value
                   <SortIcon field="contractValue" />
                 </span>
               </TableHead>
               <TableHead 
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none hover:text-foreground transition-colors"
                 onClick={() => handleSort('monthlyClaims')}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-2">
                   This Month
                   <SortIcon field="monthlyClaims" />
                 </span>
               </TableHead>
               <TableHead>Cumulative</TableHead>
               <TableHead 
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none hover:text-foreground transition-colors"
                 onClick={() => handleSort('gpPercent')}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-2">
                   Forecast GP%
                   <SortIcon field="gpPercent" />
                 </span>
               </TableHead>
               <TableHead>Variance</TableHead>
               <TableHead 
-                className="cursor-pointer select-none"
+                className="cursor-pointer select-none hover:text-foreground transition-colors"
                 onClick={() => handleSort('daysLost')}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-2">
                   Schedule
                   <SortIcon field="daysLost" />
                 </span>
@@ -188,24 +191,24 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
           </TableHeader>
           <TableBody>
             {filteredAndSortedProjects.map((project) => (
-              <TableRow key={project.id}>
+              <TableRow key={project.id} className="group">
                 <TableCell>
-                  <div>
-                    <p className="font-medium text-foreground">{project.jobName}</p>
+                  <div className="space-y-0.5">
+                    <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{project.jobName}</p>
                     <p className="text-sm text-muted-foreground">{project.clientName}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{project.siteManager}</TableCell>
-                <TableCell className="font-medium">{formatCurrency(project.contractValueExGst, true)}</TableCell>
-                <TableCell className="font-medium">{formatCurrency(project.monthlyClaimsExGst, true)}</TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="text-muted-foreground font-medium">{project.siteManager}</TableCell>
+                <TableCell className="font-semibold tabular-nums">{formatCurrency(project.contractValueExGst, true)}</TableCell>
+                <TableCell className="font-semibold tabular-nums">{formatCurrency(project.monthlyClaimsExGst, true)}</TableCell>
+                <TableCell className="text-muted-foreground tabular-nums">
                   {formatCurrency(project.cumulativeClaimsExGst, true)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <TrafficLight status={getGpStatus(project.forecastGpPercent)} size="sm" />
                     <span className={cn(
-                      'font-semibold',
+                      'font-bold tabular-nums',
                       getGpStatus(project.forecastGpPercent) === 'success' && 'text-success',
                       getGpStatus(project.forecastGpPercent) === 'warning' && 'text-warning',
                       getGpStatus(project.forecastGpPercent) === 'danger' && 'text-danger',
@@ -215,27 +218,27 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <p className={cn(
-                      'text-sm font-medium',
+                      'text-sm font-bold tabular-nums',
                       project.gpVariancePercent >= 0 ? 'text-success' : 'text-danger'
                     )}>
                       {formatVariance(project.gpVariancePercent, true)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground tabular-nums">
                       {formatVariance(project.gpVarianceDollars)}
                     </p>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <ScheduleIcon status={project.scheduleStatus} />
                     <div className="text-sm">
-                      <p className="text-muted-foreground">
+                      <p className="text-muted-foreground font-medium tabular-nums">
                         {project.timing.daysUsed}/{project.timing.workingDays}d
                       </p>
                       {project.timing.daysLost > 0 && (
-                        <p className="text-xs text-danger">-{project.timing.daysLost} lost</p>
+                        <p className="text-xs text-danger font-semibold">-{project.timing.daysLost} lost</p>
                       )}
                     </div>
                   </div>
