@@ -3,6 +3,7 @@ import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader'
 import { ProjectTable } from '@/components/dashboard/ProjectTable';
 import { SiteManagerPanel } from '@/components/dashboard/SiteManagerPanel';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
+import { TodayWidget } from '@/components/dashboard/TodayWidget';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import {
   getProjectsWithMetrics,
@@ -65,15 +66,20 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="mx-auto max-w-7xl px-6 py-8 space-y-8">
-          {/* Magic Equation Header */}
-          <div className="animate-fade-in">
-            <MagicEquationHeader
-              monthlyKPI={monthlyKPI}
-              currentFortnightKPI={currentFortnightKPI}
-              previousFortnightKPI={previousFortnightKPI}
-              selectedMonth={selectedMonth}
-              selectedFortnight={selectedFortnight}
-            />
+          {/* Today Widget + Magic Equation Header */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-fade-in">
+            <div className="lg:col-span-1">
+              <TodayWidget />
+            </div>
+            <div className="lg:col-span-3">
+              <MagicEquationHeader
+                monthlyKPI={monthlyKPI}
+                currentFortnightKPI={currentFortnightKPI}
+                previousFortnightKPI={previousFortnightKPI}
+                selectedMonth={selectedMonth}
+                selectedFortnight={selectedFortnight}
+              />
+            </div>
           </div>
 
           {/* Projects Table */}
