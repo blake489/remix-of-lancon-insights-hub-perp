@@ -22,28 +22,16 @@ const getWeatherIcon = (code: number) => {
 export function TodayWidget() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [location, setLocation] = useState({ lat: -27.4705, lon: 153.0260 });
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-        },
-        () => console.log('Using default location')
-      );
-    }
-  }, []);
+  
+  // Office location: 21/8 Metroplex Avenue, Murarrie Qld 4172
+  const OFFICE_LOCATION = { lat: -27.4527, lon: 153.0964 };
 
   useEffect(() => {
     const fetchWeather = async () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${OFFICE_LOCATION.lat}&longitude=${OFFICE_LOCATION.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto`
         );
         if (!response.ok) throw new Error('Weather fetch failed');
         const data = await response.json();
@@ -62,7 +50,7 @@ export function TodayWidget() {
       }
     };
     fetchWeather();
-  }, [location]);
+  }, []);
 
   const today = new Date();
 

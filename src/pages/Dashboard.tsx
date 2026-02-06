@@ -4,7 +4,6 @@ import { ProjectTable } from '@/components/dashboard/ProjectTable';
 import { SiteManagerPanel } from '@/components/dashboard/SiteManagerPanel';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
-import { DashboardFooter } from '@/components/dashboard/DashboardFooter';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import {
   getProjectsWithMetrics,
@@ -100,9 +99,6 @@ const Dashboard = () => {
             </section>
           </div>
         </main>
-
-        {/* Footer */}
-        <DashboardFooter />
       </div>
     </DashboardLayout>
   );
