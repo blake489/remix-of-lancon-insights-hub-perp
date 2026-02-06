@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
+import { useMessages } from '@/hooks/useMessages';
 import {
   Sidebar,
   SidebarContent,
@@ -64,6 +65,7 @@ export function AppSidebar() {
   const { user, profile, signOut } = useAuth();
   const { state } = useSidebar();
   const navigate = useNavigate();
+  const { unreadCount } = useMessages();
   const isCollapsed = state === 'collapsed';
 
   const initials = profile?.display_name
@@ -108,7 +110,12 @@ export function AppSidebar() {
                       activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span className="flex-1">{item.title}</span>
+                      {item.title === 'Inbox' && unreadCount > 0 && (
+                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-[10px] font-semibold text-sidebar-primary-foreground">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
