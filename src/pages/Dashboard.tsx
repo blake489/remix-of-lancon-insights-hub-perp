@@ -3,6 +3,7 @@ import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader'
 import { ProjectTable } from '@/components/dashboard/ProjectTable';
 import { SiteManagerPanel } from '@/components/dashboard/SiteManagerPanel';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
+import { UserMenu } from '@/components/auth/UserMenu';
 import {
   getProjectsWithMetrics,
   getCurrentKPIData,
@@ -56,13 +57,16 @@ const Dashboard = () => {
                 <p className="text-xs text-muted-foreground font-medium">Metrics Dashboard</p>
               </div>
             </div>
-            <DashboardFilters
-              selectedMonth={selectedMonth}
-              selectedFortnight={selectedFortnight}
-              availableMonths={availableMonths}
-              onMonthChange={setSelectedMonth}
-              onFortnightChange={setSelectedFortnight}
-            />
+            <div className="flex items-center gap-4">
+              <DashboardFilters
+                selectedMonth={selectedMonth}
+                selectedFortnight={selectedFortnight}
+                availableMonths={availableMonths}
+                onMonthChange={setSelectedMonth}
+                onFortnightChange={setSelectedFortnight}
+              />
+              <UserMenu />
+            </div>
           </div>
         </div>
       </header>
