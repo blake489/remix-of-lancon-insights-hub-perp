@@ -33,6 +33,7 @@ import {
   Instagram,
   Facebook,
   Youtube,
+  CloudSun,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -47,6 +48,7 @@ const navItems = [
   { title: 'Projects', url: '/projects', icon: FileText },
   { title: 'Team', url: '/team', icon: Users },
   { title: 'Calendar', url: '/calendar', icon: Calendar },
+  { title: 'Weather', url: '/weather', icon: CloudSun },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 

@@ -11,6 +11,7 @@ import Calendar from "./pages/Calendar";
 import Team from "./pages/Team";
 import Projects from "./pages/Projects";
 import Settings from "./pages/Settings";
+import Weather from "./pages/Weather";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/weather"
+              element={
+                <ProtectedRoute>
+                  <Weather />
                 </ProtectedRoute>
               }
             />
