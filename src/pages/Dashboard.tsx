@@ -44,15 +44,12 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-full gradient-mesh">
-        {/* Page Header with Filters */}
-        <div className="border-b border-border/30 bg-card/30 backdrop-blur-sm">
-          <div className="mx-auto max-w-7xl px-6 py-4">
+      <div className="min-h-full bg-background">
+        {/* Minimal Header */}
+        <div className="border-b border-border/40 bg-background">
+          <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">Monitor your project metrics and KPIs</p>
-              </div>
+              <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
               <DashboardFilters
                 selectedMonth={selectedMonth}
                 selectedFortnight={selectedFortnight}
@@ -65,50 +62,43 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content */}
-        <main className="mx-auto max-w-7xl px-6 py-8 space-y-8">
-          {/* Today Widget + Magic Equation Header */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-fade-in">
-            <div className="lg:col-span-1">
-              <TodayWidget />
+        <main className="mx-auto max-w-7xl px-6 py-8">
+          <div className="space-y-10">
+            {/* Today Widget + KPI Metrics */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-1">
+                <TodayWidget />
+              </div>
+              <div className="lg:col-span-4">
+                <MagicEquationHeader
+                  monthlyKPI={monthlyKPI}
+                  currentFortnightKPI={currentFortnightKPI}
+                  previousFortnightKPI={previousFortnightKPI}
+                  selectedMonth={selectedMonth}
+                  selectedFortnight={selectedFortnight}
+                />
+              </div>
             </div>
-            <div className="lg:col-span-3">
-              <MagicEquationHeader
-                monthlyKPI={monthlyKPI}
-                currentFortnightKPI={currentFortnightKPI}
-                previousFortnightKPI={previousFortnightKPI}
-                selectedMonth={selectedMonth}
-                selectedFortnight={selectedFortnight}
+
+            {/* Projects Table */}
+            <section>
+              <ProjectTable
+                projects={projectsWithMetrics}
+                siteManagers={siteManagers}
               />
-            </div>
-          </div>
+            </section>
 
-          {/* Projects Table */}
-          <div className="animate-slide-in-up stagger-2">
-            <ProjectTable
-              projects={projectsWithMetrics}
-              siteManagers={siteManagers}
-            />
-          </div>
-
-          {/* Site Manager Panel */}
-          <div className="animate-slide-in-up stagger-3">
-            <SiteManagerPanel
-              activities={activities}
-              projects={mockProjects}
-              siteManagers={siteManagers}
-              onActivityUpdate={handleActivityUpdate}
-            />
+            {/* Site Manager Panel */}
+            <section>
+              <SiteManagerPanel
+                activities={activities}
+                projects={mockProjects}
+                siteManagers={siteManagers}
+                onActivityUpdate={handleActivityUpdate}
+              />
+            </section>
           </div>
         </main>
-
-        {/* Footer */}
-        <footer className="border-t border-border/30 bg-card/50 backdrop-blur-sm py-6">
-          <div className="mx-auto max-w-7xl px-6">
-            <p className="text-center text-sm text-muted-foreground font-medium">
-              LanCon Qld Internal Metrics Dashboard • Magic Equation: $1.65M/month @ 18% GP
-            </p>
-          </div>
-        </footer>
       </div>
     </DashboardLayout>
   );
