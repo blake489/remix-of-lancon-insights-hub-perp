@@ -1,0 +1,182 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { NavLink } from '@/components/NavLink';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+  useSidebar,
+} from '@/components/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Building2,
+  LayoutDashboard,
+  Users,
+  FileText,
+  Calendar,
+  Settings,
+  LogIn,
+  LogOut,
+  ChevronUp,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+const navItems = [
+  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Projects', url: '/projects', icon: FileText },
+  { title: 'Team', url: '/team', icon: Users },
+  { title: 'Calendar', url: '/calendar', icon: Calendar },
+  { title: 'Settings', url: '/settings', icon: Settings },
+];
+
+export function AppSidebar() {
+  const { user, profile, signOut } = useAuth();
+  const { state } = useSidebar();
+  const navigate = useNavigate();
+  const isCollapsed = state === 'collapsed';
+
+  const initials = profile?.display_name
+    ? profile.display_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() || 'U';
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  return (
+    <Sidebar collapsible="icon">
+      {/* Header with Logo */}
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex items-center gap-3 px-2 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary shadow-md">
+            <Building2 className="h-5 w-5 text-primary-foreground" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-sidebar-foreground">LanCon Qld</span>
+              <span className="text-xs text-sidebar-foreground/60">Metrics Dashboard</span>
+            </div>
+          )}
+        </div>
+      </SidebarHeader>
+
+      {/* Navigation Content */}
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
+                      end={item.url === '/'}
+                      className="flex items-center gap-2"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      {/* Footer with Auth */}
+      <SidebarFooter className="border-t border-sidebar-border">
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="w-full data-[state=open]:bg-sidebar-accent"
+              >
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={profile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                  <>
+                    <div className="flex flex-1 flex-col text-left text-sm">
+                      <span className="truncate font-medium">
+                        {profile?.display_name || 'User'}
+                      </span>
+                      <span className="truncate text-xs text-sidebar-foreground/60">
+                        {user.email}
+                      </span>
+                    </div>
+                    <ChevronUp className="h-4 w-4 shrink-0 text-sidebar-foreground/60" />
+                  </>
+                )}
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="top"
+              align="start"
+              className="w-56"
+            >
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{profile?.display_name || 'User'}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="text-destructive focus:text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Sign in"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={() => navigate('/auth')}
+                >
+                  <LogIn className="h-4 w-4" />
+                  {!isCollapsed && <span>Sign in</span>}
+                </Button>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
