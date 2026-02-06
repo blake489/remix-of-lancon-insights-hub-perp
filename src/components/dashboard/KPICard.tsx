@@ -29,25 +29,34 @@ export function KPICard({
   return (
     <div
       className={cn(
-        'kpi-card animate-slide-in-up',
+        'kpi-card group',
         size === 'large' && 'p-8',
         className
       )}
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <p className={cn('kpi-label', size === 'large' && 'text-base')}>{title}</p>
-          <p className={cn('kpi-value text-foreground', size === 'large' && 'text-5xl')}>{value}</p>
+        <div className="space-y-2">
+          <p className={cn('kpi-label', size === 'large' && 'text-xs')}>{title}</p>
+          <p className={cn(
+            'kpi-value text-foreground transition-transform duration-300 group-hover:scale-[1.02]', 
+            size === 'large' && 'text-5xl'
+          )}>
+            {value}
+          </p>
           {subtitle && (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>
           )}
         </div>
-        {status && <TrafficLight status={status} size="lg" pulse />}
+        {status && (
+          <div className="animate-float">
+            <TrafficLight status={status} size="lg" pulse />
+          </div>
+        )}
       </div>
       
       {trend && trendValue && (
         <div className={cn(
-          'mt-4 flex items-center gap-1.5 text-sm font-medium',
+          'mt-5 flex items-center gap-2 text-sm font-semibold transition-all duration-300',
           trend === 'up' && 'text-success',
           trend === 'down' && 'text-danger',
           trend === 'flat' && 'text-muted-foreground'
