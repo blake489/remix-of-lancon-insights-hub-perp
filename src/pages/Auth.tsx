@@ -110,7 +110,7 @@ export default function Auth() {
         {/* Hero Content */}
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
           <div className="max-w-lg">
-            <h2 className="text-4xl xl:text-5xl font-serif font-semibold leading-tight mb-4">
+            <h2 className="text-4xl xl:text-5xl font-bold leading-tight mb-4">
               Live in a LanCon
             </h2>
             <p className="text-lg text-white/90 leading-relaxed">

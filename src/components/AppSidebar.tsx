@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
+  Building2,
   LayoutDashboard,
   Users,
   FileText,
@@ -36,7 +37,6 @@ import {
   Mail,
   CloudSun,
 } from 'lucide-react';
-import lanconLogo from '@/assets/lancon-logo.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,11 +82,9 @@ export function AppSidebar() {
       {/* Header with Logo */}
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-3">
-          <img 
-            src={lanconLogo} 
-            alt="LanCon Qld" 
-            className="h-9 w-9 shrink-0 rounded-lg object-cover shadow-md"
-          />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-md">
+            <Building2 className="h-5 w-5 text-primary" />
+          </div>
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="text-sm font-bold text-sidebar-foreground">LanCon Qld</span>
