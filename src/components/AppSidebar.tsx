@@ -33,6 +33,7 @@ import {
   Instagram,
   Facebook,
   Youtube,
+  Mail,
   CloudSun,
 } from 'lucide-react';
 import {
@@ -48,6 +49,7 @@ const navItems = [
   { title: 'Projects', url: '/projects', icon: FileText },
   { title: 'Team', url: '/team', icon: Users },
   { title: 'Calendar', url: '/calendar', icon: Calendar },
+  { title: 'Inbox', url: '/inbox', icon: Mail },
   { title: 'Weather', url: '/weather', icon: CloudSun },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
