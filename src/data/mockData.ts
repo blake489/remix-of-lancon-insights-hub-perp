@@ -13,7 +13,7 @@ import {
 export const magicEquationConfig: MagicEquationConfig = {
   monthlyRevenueTarget: 1650000,
   gpPercentTarget: 18,
-  overheadPercent: 10.5,
+  overheadPercent: 9.70,
   thresholds: {
     gpGreen: 16,
     gpOrange: 12,
