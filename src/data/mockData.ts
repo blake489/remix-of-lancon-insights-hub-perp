@@ -787,14 +787,31 @@ export function calculateKPIData(
   };
 }
 
+// Jobs that are LanCon's own builds - excluded from weighted GP% calculation
+// but included in all revenue metrics. These jobs target only 10.5% to cover overheads.
+const ownJobIds = ['durimbil-28', 'tranters-117a'];
+
+// Calculate weighted average GP% excluding own jobs
+function getWeightedGpPercent(): number {
+  let totalContractValue = 0;
+  let weightedGpSum = 0;
+  for (const project of mockProjects) {
+    if (ownJobIds.includes(project.id)) continue;
+    const forecast = mockForecasts[project.id];
+    if (!forecast) continue;
+    totalContractValue += project.contractValueExGst;
+    weightedGpSum += project.contractValueExGst * forecast.forecastGpPercent;
+  }
+  return totalContractValue > 0 ? weightedGpSum / totalContractValue : 0;
+}
+
 // Get current month KPI data - February 2026 from Metrics_10.02.26.xlsx
-// Total builds: $15,481,755, Total forecast GP: $2,759,081
-// Weighted average margin: 18.17%, Average margin: 17.85%
+// GP% weighted average excludes own jobs (28 Durimbil, 117A Tranters)
 export function getCurrentKPIData() {
-  // Sum of Feb 2026 monthly claims
+  // Sum of Feb 2026 monthly claims (all jobs including own builds)
   const totalMonthlyRevenue = Object.values(mockMonthlyClaims).reduce((sum, v) => sum + v, 0);
-  // Using weighted average margin of 17.85% from Metrics file
-  const avgGpPercent = 17.85;
+  // Weighted GP% excludes own jobs
+  const avgGpPercent = getWeightedGpPercent();
   const totalMonthlyGrossProfit = totalMonthlyRevenue * (avgGpPercent / 100);
   
   return calculateKPIData(totalMonthlyRevenue, totalMonthlyGrossProfit, magicEquationConfig);
@@ -802,10 +819,9 @@ export function getCurrentKPIData() {
 
 // Fortnight 1 data (Feb 1-14, 2026)
 export function getFortnight1KPIData() {
-  // Approximately 45% of monthly claims in first fortnight
   const totalMonthlyRevenue = Object.values(mockMonthlyClaims).reduce((sum, v) => sum + v, 0);
   const totalRevenue = totalMonthlyRevenue * 0.45;
-  const avgGpPercent = 17.85;
+  const avgGpPercent = getWeightedGpPercent();
   const totalGrossProfit = totalRevenue * (avgGpPercent / 100);
   
   return calculateKPIData(totalRevenue, totalGrossProfit, magicEquationConfig);
@@ -813,9 +829,8 @@ export function getFortnight1KPIData() {
 
 // Previous fortnight data (Jan 15-31, 2026)
 export function getPreviousFortnightKPIData() {
-  // January second half estimate from claims data: ~$660K
   const totalRevenue = 660000;
-  const avgGpPercent = 17.80;
+  const avgGpPercent = getWeightedGpPercent();
   const totalGrossProfit = totalRevenue * (avgGpPercent / 100);
   
   return calculateKPIData(totalRevenue, totalGrossProfit, magicEquationConfig);
