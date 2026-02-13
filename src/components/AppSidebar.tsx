@@ -37,6 +37,7 @@ import {
   Mail,
   CloudSun,
   Database,
+  Landmark,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -48,6 +49,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Development', url: '/development', icon: Landmark },
   { title: 'Projects', url: '/projects', icon: FileText },
   { title: 'Team', url: '/team', icon: Users },
   { title: 'Calendar', url: '/calendar', icon: Calendar },
