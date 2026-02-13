@@ -14,6 +14,10 @@ import Settings from "./pages/Settings";
 import Weather from "./pages/Weather";
 import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
+import SourceDataHome from "./pages/SourceDataHome";
+import ManageForms from "./pages/ManageForms";
+import FormBuilder from "./pages/FormBuilder";
+import FormEntry from "./pages/FormEntry";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +86,10 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/source-data" element={<ProtectedRoute><SourceDataHome /></ProtectedRoute>} />
+            <Route path="/source-data/manage" element={<ProtectedRoute><ManageForms /></ProtectedRoute>} />
+            <Route path="/source-data/manage/:formId" element={<ProtectedRoute><FormBuilder /></ProtectedRoute>} />
+            <Route path="/source-data/form/:slug" element={<ProtectedRoute><FormEntry /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
