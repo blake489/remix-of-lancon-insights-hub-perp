@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Settings, ClipboardList } from 'lucide-react';
+import { FileText, Settings, ClipboardList, Landmark } from 'lucide-react';
 
 export default function SourceDataHome() {
   const { data: forms, isLoading } = useSourceForms();
@@ -20,12 +20,20 @@ export default function SourceDataHome() {
                 <h1 className="text-xl font-semibold text-foreground">Source Data</h1>
                 <p className="text-sm text-muted-foreground mt-1">Submit and manage data entry forms</p>
               </div>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/source-data/manage">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Manage Forms
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/development/import">
+                    <Landmark className="mr-2 h-4 w-4" />
+                    Development Data Import
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/source-data/manage">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Manage Forms
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

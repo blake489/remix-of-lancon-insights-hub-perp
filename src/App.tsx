@@ -18,6 +18,8 @@ import SourceDataHome from "./pages/SourceDataHome";
 import ManageForms from "./pages/ManageForms";
 import FormBuilder from "./pages/FormBuilder";
 import FormEntry from "./pages/FormEntry";
+import DevelopmentDashboard from "./pages/DevelopmentDashboard";
+import DevelopmentImport from "./pages/DevelopmentImport";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/development" element={<ProtectedRoute><DevelopmentDashboard /></ProtectedRoute>} />
+            <Route path="/development/import" element={<ProtectedRoute><DevelopmentImport /></ProtectedRoute>} />
             <Route path="/source-data" element={<ProtectedRoute><SourceDataHome /></ProtectedRoute>} />
             <Route path="/source-data/manage" element={<ProtectedRoute><ManageForms /></ProtectedRoute>} />
             <Route path="/source-data/manage/:formId" element={<ProtectedRoute><FormBuilder /></ProtectedRoute>} />

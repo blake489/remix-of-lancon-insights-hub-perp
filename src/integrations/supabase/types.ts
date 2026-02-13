@@ -74,6 +74,45 @@ export type Database = {
         }
         Relationships: []
       }
+      development_projects: {
+        Row: {
+          created_at: string
+          current_loan: number
+          current_value: number
+          forecast_margin_on_costs: number
+          funds_in_offset: number
+          grv: number
+          id: string
+          is_active: boolean
+          project_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_loan?: number
+          current_value?: number
+          forecast_margin_on_costs?: number
+          funds_in_offset?: number
+          grv?: number
+          id?: string
+          is_active?: boolean
+          project_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_loan?: number
+          current_value?: number
+          forecast_margin_on_costs?: number
+          funds_in_offset?: number
+          grv?: number
+          id?: string
+          is_active?: boolean
+          project_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kpi_settings: {
         Row: {
           created_at: string
