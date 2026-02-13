@@ -235,6 +235,172 @@ export type Database = {
         }
         Relationships: []
       }
+      source_form_fields: {
+        Row: {
+          created_at: string
+          field_key: string
+          field_type: string
+          form_id: string
+          id: string
+          label: string
+          options: Json | null
+          required: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_key: string
+          field_type?: string
+          form_id: string
+          id?: string
+          label: string
+          options?: Json | null
+          required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_key?: string
+          field_type?: string
+          form_id?: string
+          id?: string
+          label?: string
+          options?: Json | null
+          required?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_form_fields_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "source_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      source_form_response_values: {
+        Row: {
+          field_id: string
+          id: string
+          response_id: string
+          value: string | null
+        }
+        Insert: {
+          field_id: string
+          id?: string
+          response_id: string
+          value?: string | null
+        }
+        Update: {
+          field_id?: string
+          id?: string
+          response_id?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_form_response_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "source_form_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_form_response_values_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "source_form_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      source_form_responses: {
+        Row: {
+          form_id: string
+          id: string
+          submitted_at: string
+          submitted_by_staff_id: string | null
+          submitted_by_user_id: string | null
+        }
+        Insert: {
+          form_id: string
+          id?: string
+          submitted_at?: string
+          submitted_by_staff_id?: string | null
+          submitted_by_user_id?: string | null
+        }
+        Update: {
+          form_id?: string
+          id?: string
+          submitted_at?: string
+          submitted_by_staff_id?: string | null
+          submitted_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_form_responses_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "source_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_form_responses_submitted_by_staff_id_fkey"
+            columns: ["submitted_by_staff_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      source_forms: {
+        Row: {
+          assigned_staff_member_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_staff_member_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_staff_member_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_forms_assigned_staff_member_id_fkey"
+            columns: ["assigned_staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           created_at: string

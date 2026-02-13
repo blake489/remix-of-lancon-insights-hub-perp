@@ -36,6 +36,7 @@ import {
   Youtube,
   Mail,
   CloudSun,
+  Database,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -52,6 +53,7 @@ const navItems = [
   { title: 'Calendar', url: '/calendar', icon: Calendar },
   { title: 'Inbox', url: '/inbox', icon: Mail },
   { title: 'Weather', url: '/weather', icon: CloudSun },
+  { title: 'Source Data', url: '/source-data', icon: Database },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
 
