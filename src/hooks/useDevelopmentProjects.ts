@@ -15,7 +15,7 @@ export interface DevelopmentProject {
 }
 
 export interface DevelopmentProjectWithLVR extends DevelopmentProject {
-  current_lvr: number;
+  grv_lvr: number;
 }
 
 export interface GroupMetrics {
@@ -27,9 +27,9 @@ export interface GroupMetrics {
   group_current_lvr: number;
 }
 
-function computeLVR(loan: number, value: number): number {
-  if (value === 0) return 0;
-  return (loan / value) * 100;
+function computeGrvLvr(loan: number, grv: number): number {
+  if (grv === 0) return 0;
+  return (loan / grv) * 100;
 }
 
 export function computeGroupMetrics(projects: DevelopmentProject[]): GroupMetrics {
@@ -47,14 +47,14 @@ export function computeGroupMetrics(projects: DevelopmentProject[]): GroupMetric
 
   return {
     ...totals,
-    group_current_lvr: computeLVR(totals.total_current_loan, totals.total_current_value),
+    group_current_lvr: computeGrvLvr(totals.total_current_loan, totals.total_grv),
   };
 }
 
 export function addLVR(project: DevelopmentProject): DevelopmentProjectWithLVR {
   return {
     ...project,
-    current_lvr: computeLVR(Number(project.current_loan), Number(project.current_value)),
+    grv_lvr: computeGrvLvr(Number(project.current_loan), Number(project.grv)),
   };
 }
 
