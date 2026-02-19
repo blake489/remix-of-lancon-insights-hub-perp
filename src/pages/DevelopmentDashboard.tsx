@@ -7,8 +7,8 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { Building2, TrendingUp, TrendingDown } from 'lucide-react';
 
 function ProjectDetail({ project }: { project: DevelopmentProjectWithLVR }) {
-  const lvrStatus = project.current_lvr > 80 ? 'danger' as const : project.current_lvr > 60 ? 'warning' as const : 'success' as const;
-  const lvrTrend = project.current_lvr > 80 ? 'down' as const : project.current_lvr > 60 ? 'flat' as const : 'up' as const;
+  const lvrStatus = project.grv_lvr > 80 ? 'danger' as const : project.grv_lvr > 60 ? 'warning' as const : 'success' as const;
+  const lvrTrend = project.grv_lvr > 80 ? 'down' as const : project.grv_lvr > 60 ? 'flat' as const : 'up' as const;
 
   return (
     <div className="space-y-6">
@@ -20,7 +20,7 @@ function ProjectDetail({ project }: { project: DevelopmentProjectWithLVR }) {
           lvrStatus === 'warning' && 'status-badge-warning',
           lvrStatus === 'danger' && 'status-badge-danger',
         )}>
-          LVR {formatPercent(project.current_lvr)}
+          GRV LVR {formatPercent(project.grv_lvr)}
         </span>
       </div>
 
@@ -54,8 +54,8 @@ function ProjectDetail({ project }: { project: DevelopmentProjectWithLVR }) {
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-xl font-bold text-foreground">{formatPercent(project.current_lvr)}</p>
-              <p className="text-xs text-muted-foreground mt-1">LVR</p>
+              <p className="text-xl font-bold text-foreground">{formatPercent(project.grv_lvr)}</p>
+              <p className="text-xs text-muted-foreground mt-1">GRV LVR</p>
             </div>
             <div>
               <p className="text-xl font-bold text-foreground">{formatCurrency(Number(project.current_loan), true)}</p>
@@ -146,7 +146,7 @@ export default function DevelopmentDashboard() {
                   subtitle="Gross Realised Value"
                 />
                 <KPICard
-                  title="Group Debt LVR"
+                  title="Group GRV LVR"
                   value={formatPercent(group.group_current_lvr)}
                   subtitle={`Debt: ${formatCurrency(group.total_current_loan, true)}`}
                   status={groupLvrStatus}
@@ -184,7 +184,7 @@ export default function DevelopmentDashboard() {
                             'block text-xs mt-0.5',
                             selected?.id === p.id ? 'text-primary-foreground/70' : 'text-muted-foreground'
                           )}>
-                            {formatCurrency(Number(p.current_value), true)} · LVR {formatPercent(p.current_lvr)}
+                            {formatCurrency(Number(p.current_value), true)} · GRV LVR {formatPercent(p.grv_lvr)}
                           </span>
                         </button>
                       ))}
