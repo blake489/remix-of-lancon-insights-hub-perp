@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { SiteManagerPanel } from '@/components/dashboard/SiteManagerPanel';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { mockProjects, mockSiteManagerActivities, siteManagers } from '@/data/mockData';
+import { mockProjects, mockSiteManagerActivities } from '@/data/mockData';
 import { SiteManagerActivity } from '@/types/dashboard';
+import { useSiteManagers } from '@/hooks/useSiteManagers';
 
 const SiteManagers = () => {
   const [activities, setActivities] = useState(mockSiteManagerActivities);
+  const { siteManagers, isLoading } = useSiteManagers();
 
   const handleActivityUpdate = (activityId: string, field: keyof SiteManagerActivity, value: boolean | number) => {
     setActivities(prev =>
@@ -24,12 +26,16 @@ const SiteManagers = () => {
           </div>
         </div>
         <main className="mx-auto max-w-7xl px-6 py-8">
-          <SiteManagerPanel
-            activities={activities}
-            projects={mockProjects}
-            siteManagers={siteManagers}
-            onActivityUpdate={handleActivityUpdate}
-          />
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading...</div>
+          ) : (
+            <SiteManagerPanel
+              activities={activities}
+              projects={mockProjects}
+              siteManagers={siteManagers}
+              onActivityUpdate={handleActivityUpdate}
+            />
+          )}
         </main>
       </div>
     </DashboardLayout>
