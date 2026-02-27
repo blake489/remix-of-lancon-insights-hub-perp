@@ -14,7 +14,7 @@ export function OrgChartTree({ nodes, onMemberClick, level = 0 }: OrgChartTreePr
   return (
     <div className="flex flex-col items-center">
       <div className={cn(
-        "flex flex-wrap justify-center gap-6",
+        "flex justify-center gap-6",
         level > 0 && "pt-6"
       )}>
         {nodes.map((node) => (

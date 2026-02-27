@@ -463,18 +463,18 @@ export default function Team() {
                 No team members yet. Add your first team member to see the org chart!
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {orgTree.map((rootNode) => (
-                  <Card key={rootNode.member.id} className="bg-card/50 backdrop-blur-sm border-border/50">
+                  <Card key={rootNode.member.id} className="bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden">
                     <CardHeader className="pb-2">
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Network className="h-4 w-4" />
                         {rootNode.member.name}'s Team
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                       <ScrollArea className="w-full">
-                        <div className="min-w-[400px] py-4">
+                        <div className="min-w-[600px] px-6 py-4">
                           <OrgChartTree nodes={[rootNode]} onMemberClick={handleOrgChartClick} />
                         </div>
                         <ScrollBar orientation="horizontal" />
