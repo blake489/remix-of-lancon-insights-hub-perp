@@ -2,10 +2,13 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Construction } from 'lucide-react';
+import { ProjectTable } from '@/components/dashboard/ProjectTable';
+import { FileText } from 'lucide-react';
+import { getProjectsWithMetrics, siteManagers } from '@/data/mockData';
 
 export default function Projects() {
+  const projectsWithMetrics = getProjectsWithMetrics();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -19,23 +22,11 @@ export default function Projects() {
           </div>
         </header>
 
-        <main className="flex-1 flex items-center justify-center p-6">
-          <Card className="max-w-md text-center">
-            <CardHeader>
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                <Construction className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <CardTitle>Projects Coming Soon</CardTitle>
-              <CardDescription>
-                This page will display all construction projects with financial tracking, claims, and stage progression.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Features planned: project list, claim history, forecast GP%, schedule status, and detailed project views.
-              </p>
-            </CardContent>
-          </Card>
+        <main className="mx-auto max-w-7xl w-full px-6 py-8">
+          <ProjectTable
+            projects={projectsWithMetrics}
+            siteManagers={siteManagers}
+          />
         </main>
       </SidebarInset>
     </SidebarProvider>
