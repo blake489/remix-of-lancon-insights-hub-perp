@@ -74,6 +74,77 @@ export type Database = {
         }
         Relationships: []
       }
+      claims_schedule_snapshots: {
+        Row: {
+          created_at: string
+          gp_percent: number
+          id: string
+          monthly_overhead: number
+          notes: string | null
+          snapshot_date: string | null
+          snapshot_label: string
+          snapshot_order: number
+        }
+        Insert: {
+          created_at?: string
+          gp_percent?: number
+          id?: string
+          monthly_overhead?: number
+          notes?: string | null
+          snapshot_date?: string | null
+          snapshot_label: string
+          snapshot_order: number
+        }
+        Update: {
+          created_at?: string
+          gp_percent?: number
+          id?: string
+          monthly_overhead?: number
+          notes?: string | null
+          snapshot_date?: string | null
+          snapshot_label?: string
+          snapshot_order?: number
+        }
+        Relationships: []
+      }
+      claims_snapshot_months: {
+        Row: {
+          created_at: string
+          id: string
+          includes_pending: boolean
+          month: string
+          revenue_ex_gst: number
+          revenue_inc_gst: number
+          snapshot_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          includes_pending?: boolean
+          month: string
+          revenue_ex_gst?: number
+          revenue_inc_gst?: number
+          snapshot_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          includes_pending?: boolean
+          month?: string
+          revenue_ex_gst?: number
+          revenue_inc_gst?: number
+          snapshot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claims_snapshot_months_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "claims_schedule_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       development_projects: {
         Row: {
           created_at: string
