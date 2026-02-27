@@ -17,19 +17,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Search, Users, HardHat, Briefcase, Calculator, FileText, Pencil, Trash2, Network, List, Crown, User, TrendingUp } from 'lucide-react';
+import { Plus, Search, Users, HardHat, Briefcase, Calculator, FileText, Pencil, Trash2, Network, List, Crown, User, TrendingUp, Palette, SwatchBook } from 'lucide-react';
 import { OrgChartTree } from '@/components/org/OrgChartTree';
 import { buildOrgTree, TeamMember, getRoleLevelColor, getRoleLevelLabel } from '@/lib/orgChart';
 
-type TeamDepartment = 'site_supervisor' | 'management' | 'administration' | 'accounts' | 'sales';
+type TeamDepartment = 'site_supervisor' | 'management' | 'sales' | 'estimating' | 'finance_admin' | 'design_studio' | 'selections';
 type RoleLevel = 'director' | 'manager' | 'staff';
 
 const departmentConfig: Record<TeamDepartment, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  site_supervisor: { label: 'Site Supervisors', icon: HardHat, color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  sales: { label: 'Sales', icon: TrendingUp, color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  site_supervisor: { label: 'Construction', icon: HardHat, color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  estimating: { label: 'Estimating', icon: Calculator, color: 'bg-violet-500/20 text-violet-400 border-violet-500/30' },
+  finance_admin: { label: 'Finance & Admin', icon: FileText, color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' },
+  design_studio: { label: 'Elevate Design Studio', icon: Palette, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  selections: { label: 'Selections', icon: SwatchBook, color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
   management: { label: 'Management', icon: Briefcase, color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  administration: { label: 'Administration', icon: FileText, color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  accounts: { label: 'Accounts', icon: Calculator, color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  sales: { label: 'Sales', icon: TrendingUp, color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
 };
 
 const roleLevelConfig: Record<RoleLevel, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -42,7 +44,7 @@ const teamMemberSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email address').max(255),
   phone: z.string().max(20).optional().or(z.literal('')),
-  department: z.enum(['site_supervisor', 'management', 'administration', 'accounts', 'sales']),
+  department: z.enum(['site_supervisor', 'management', 'sales', 'estimating', 'finance_admin', 'design_studio', 'selections']),
   job_title: z.string().max(100).optional().or(z.literal('')),
   role_level: z.enum(['director', 'manager', 'staff']),
   reports_to: z.string().uuid().nullable().optional(),
@@ -165,7 +167,7 @@ export default function Team() {
       name: member.name,
       email: member.email,
       phone: member.phone || '',
-      department: member.department,
+      department: member.department as TeamDepartment,
       job_title: member.job_title || '',
       role_level: member.role_level,
       reports_to: member.reports_to,
@@ -431,7 +433,7 @@ export default function Team() {
         </div>
 
         {/* Department Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {Object.entries(departmentConfig).map(([key, config]) => {
             const Icon = config.icon;
             const count = departmentCounts[key as TeamDepartment] || 0;

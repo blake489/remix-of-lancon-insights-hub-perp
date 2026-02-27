@@ -23,8 +23,13 @@ function getRoleIcon(level: 'director' | 'manager' | 'staff') {
 
 function getDepartmentLabel(department: string): string {
   const labels: Record<string, string> = {
-    site_supervisor: 'Site Supervisor',
+    site_supervisor: 'Construction',
     management: 'Management',
+    sales: 'Sales',
+    estimating: 'Estimating',
+    finance_admin: 'Finance & Admin',
+    design_studio: 'Elevate Design Studio',
+    selections: 'Selections',
     administration: 'Administration',
     accounts: 'Accounts',
   };
