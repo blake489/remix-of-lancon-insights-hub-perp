@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
 import { ProjectTable } from '@/components/dashboard/ProjectTable';
-import { SiteManagerPanel } from '@/components/dashboard/SiteManagerPanel';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
@@ -10,12 +9,9 @@ import {
   getCurrentKPIData,
   getFortnight1KPIData,
   getPreviousFortnightKPIData,
-  mockProjects,
-  mockSiteManagerActivities,
   siteManagers,
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
-import { SiteManagerActivity } from '@/types/dashboard';
 
 const availableMonths = [
   '2025-02',
@@ -27,20 +23,10 @@ const availableMonths = [
 const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [selectedFortnight, setSelectedFortnight] = useState<1 | 2>(getCurrentFortnight());
-  const [activities, setActivities] = useState(mockSiteManagerActivities);
-
   const projectsWithMetrics = getProjectsWithMetrics();
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
-
-  const handleActivityUpdate = (activityId: string, field: keyof SiteManagerActivity, value: boolean | number) => {
-    setActivities(prev => 
-      prev.map(a => 
-        a.id === activityId ? { ...a, [field]: value } : a
-      )
-    );
-  };
 
   return (
     <DashboardLayout>
@@ -88,15 +74,6 @@ const Dashboard = () => {
               />
             </section>
 
-            {/* Site Manager Panel */}
-            <section>
-              <SiteManagerPanel
-                activities={activities}
-                projects={mockProjects}
-                siteManagers={siteManagers}
-                onActivityUpdate={handleActivityUpdate}
-              />
-            </section>
           </div>
         </main>
       </div>
