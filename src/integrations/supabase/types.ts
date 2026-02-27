@@ -74,6 +74,56 @@ export type Database = {
         }
         Relationships: []
       }
+      claims: {
+        Row: {
+          amount: number
+          claim_date: string
+          claim_type: string
+          created_at: string
+          direction: string
+          id: string
+          month_key: string
+          notes: string | null
+          project_id: string
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          claim_date: string
+          claim_type: string
+          created_at?: string
+          direction?: string
+          id?: string
+          month_key: string
+          notes?: string | null
+          project_id: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          claim_date?: string
+          claim_type?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          month_key?: string
+          notes?: string | null
+          project_id?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claims_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims_schedule_snapshots: {
         Row: {
           created_at: string
