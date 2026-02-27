@@ -345,6 +345,69 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          address: string | null
+          category: Database["public"]["Enums"]["project_category"]
+          client_name: string | null
+          contract_value_ex_gst: number
+          contract_value_inc_gst: number
+          created_at: string
+          created_by: string | null
+          current_stage: string | null
+          forecast_cost: number
+          forecast_gp_percent: number
+          forecast_gross_profit: number
+          id: string
+          job_name: string
+          pc_date: string | null
+          site_manager: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["project_category"]
+          client_name?: string | null
+          contract_value_ex_gst?: number
+          contract_value_inc_gst?: number
+          created_at?: string
+          created_by?: string | null
+          current_stage?: string | null
+          forecast_cost?: number
+          forecast_gp_percent?: number
+          forecast_gross_profit?: number
+          id?: string
+          job_name: string
+          pc_date?: string | null
+          site_manager?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["project_category"]
+          client_name?: string | null
+          contract_value_ex_gst?: number
+          contract_value_inc_gst?: number
+          created_at?: string
+          created_by?: string | null
+          current_stage?: string | null
+          forecast_cost?: number
+          forecast_gp_percent?: number
+          forecast_gross_profit?: number
+          id?: string
+          job_name?: string
+          pc_date?: string | null
+          site_manager?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       source_form_fields: {
         Row: {
           created_at: string
@@ -610,6 +673,7 @@ export type Database = {
         | "reminder"
         | "task"
         | "other"
+      project_category: "pre_construction" | "construction" | "handover"
       role_level: "director" | "manager" | "staff"
       team_department:
         | "site_supervisor"
@@ -752,6 +816,7 @@ export const Constants = {
         "task",
         "other",
       ],
+      project_category: ["pre_construction", "construction", "handover"],
       role_level: ["director", "manager", "staff"],
       team_department: [
         "site_supervisor",
