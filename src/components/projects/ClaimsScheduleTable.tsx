@@ -11,23 +11,34 @@ import {
 
 export type ClaimScheduleType = 'standard' | 'retaining_wall';
 
-const schedules: Record<ClaimScheduleType, { stage: string; percent: number }[]> = {
+interface StageRow {
+  stage: string;
+  percent: number;
+  /** Timeframe from prior stage: number of days or weeks */
+  timeValue: number;
+  /** 'days' or 'weeks' */
+  timeUnit: 'days' | 'weeks';
+}
+
+const schedules: Record<ClaimScheduleType, StageRow[]> = {
   standard: [
-    { stage: 'Deposit', percent: 5 },
-    { stage: 'Slab/Base Stage', percent: 15 },
-    { stage: 'Frame Stage', percent: 20 },
-    { stage: 'Enclosed Stage', percent: 25 },
-    { stage: 'Fixing Stage', percent: 20 },
-    { stage: 'PC', percent: 15 },
+    { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
+    { stage: 'Deposit', percent: 5, timeValue: 7, timeUnit: 'days' },
+    { stage: 'Slab/Base Stage', percent: 15, timeValue: 5, timeUnit: 'weeks' },
+    { stage: 'Frame Stage', percent: 20, timeValue: 5, timeUnit: 'weeks' },
+    { stage: 'Enclosed Stage', percent: 25, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'Fixing Stage', percent: 20, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'PC', percent: 15, timeValue: 8, timeUnit: 'weeks' },
   ],
   retaining_wall: [
-    { stage: 'Deposit', percent: 5 },
-    { stage: 'Retaining Wall', percent: 7.5 },
-    { stage: 'Slab/Base Stage', percent: 15 },
-    { stage: 'Frame Stage', percent: 22.5 },
-    { stage: 'Enclosed Stage', percent: 25 },
-    { stage: 'Fixing Stage', percent: 15 },
-    { stage: 'PC', percent: 10 },
+    { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
+    { stage: 'Deposit', percent: 5, timeValue: 7, timeUnit: 'days' },
+    { stage: 'Retaining Wall', percent: 7.5, timeValue: 3, timeUnit: 'weeks' },
+    { stage: 'Slab/Base Stage', percent: 15, timeValue: 5, timeUnit: 'weeks' },
+    { stage: 'Frame Stage', percent: 22.5, timeValue: 5, timeUnit: 'weeks' },
+    { stage: 'Enclosed Stage', percent: 25, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'Fixing Stage', percent: 15, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'PC', percent: 10, timeValue: 8, timeUnit: 'weeks' },
   ],
 };
 
@@ -40,6 +51,23 @@ interface ClaimsScheduleTableProps {
 const formatCurrency = (val: number) =>
   val === 0 ? '—' : `$${val.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+function formatTimeframe(row: StageRow): string {
+  if (row.timeValue === 0) return '—';
+  return `${row.timeValue} ${row.timeUnit}`;
+}
+
+/** Compute cumulative weeks from contract sign */
+function cumulativeWeeks(rows: StageRow[]): number[] {
+  const cumulative: number[] = [];
+  let total = 0;
+  for (const row of rows) {
+    const weeks = row.timeUnit === 'days' ? row.timeValue / 7 : row.timeValue;
+    total += weeks;
+    cumulative.push(total);
+  }
+  return cumulative;
+}
+
 export function ClaimsScheduleTable({
   scheduleType,
   onScheduleTypeChange,
@@ -47,6 +75,7 @@ export function ClaimsScheduleTable({
 }: ClaimsScheduleTableProps) {
   const rows = schedules[scheduleType];
   const totalPercent = rows.reduce((s, r) => s + r.percent, 0);
+  const cumWeeks = cumulativeWeeks(rows);
 
   return (
     <fieldset className="space-y-4">
@@ -72,26 +101,38 @@ export function ClaimsScheduleTable({
           <TableHeader>
             <TableRow className="bg-muted/40">
               <TableHead className="font-semibold">Stage</TableHead>
+              <TableHead className="text-right font-semibold">Timeframe</TableHead>
+              <TableHead className="text-right font-semibold">Cum. Weeks</TableHead>
               <TableHead className="text-right font-semibold">%</TableHead>
               <TableHead className="text-right font-semibold">Ex GST</TableHead>
               <TableHead className="text-right font-semibold">Inc GST</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((row) => {
+            {rows.map((row, i) => {
               const exGst = contractValueExGst * (row.percent / 100);
               const incGst = exGst * 1.1;
               return (
                 <TableRow key={row.stage}>
                   <TableCell className="font-medium">{row.stage}</TableCell>
-                  <TableCell className="text-right tabular-nums">{row.percent}%</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatCurrency(exGst)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatCurrency(incGst)}</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
+                    {formatTimeframe(row)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
+                    {cumWeeks[i] === 0 ? '—' : `${Math.round(cumWeeks[i] * 10) / 10} wks`}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? `${row.percent}%` : '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? formatCurrency(exGst) : '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? formatCurrency(incGst) : '—'}</TableCell>
                 </TableRow>
               );
             })}
             <TableRow className="bg-muted/30 font-semibold">
               <TableCell>Total</TableCell>
+              <TableCell />
+              <TableCell className="text-right tabular-nums text-xs">
+                {`${Math.round(cumWeeks[cumWeeks.length - 1] * 10) / 10} wks`}
+              </TableCell>
               <TableCell className="text-right tabular-nums">{totalPercent}%</TableCell>
               <TableCell className="text-right tabular-nums">{formatCurrency(contractValueExGst)}</TableCell>
               <TableCell className="text-right tabular-nums">{formatCurrency(contractValueExGst * 1.1)}</TableCell>
