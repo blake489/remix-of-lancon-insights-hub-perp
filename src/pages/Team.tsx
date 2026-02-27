@@ -455,30 +455,36 @@ export default function Team() {
 
         {/* Org Chart View */}
         {viewMode === 'org' && (
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Network className="h-5 w-5" />
-                Organization Chart
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading org chart...</div>
-              ) : teamMembers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No team members yet. Add your first team member to see the org chart!
-                </div>
-              ) : (
-                <ScrollArea className="w-full">
-                  <div className="min-w-[800px] py-6">
-                    <OrgChartTree nodes={orgTree} onMemberClick={handleOrgChartClick} />
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading org chart...</div>
+            ) : teamMembers.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No team members yet. Add your first team member to see the org chart!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {orgTree.map((rootNode) => (
+                  <Card key={rootNode.member.id} className="bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Network className="h-4 w-4" />
+                        {rootNode.member.name}'s Team
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="w-full">
+                        <div className="min-w-[400px] py-4">
+                          <OrgChartTree nodes={[rootNode]} onMemberClick={handleOrgChartClick} />
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* List View */}
