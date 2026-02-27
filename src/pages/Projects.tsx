@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { FileText } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
+import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
 
 const categoryOrder: { key: ProjectCategory; label: string }[] = [
@@ -15,7 +16,8 @@ const categoryOrder: { key: ProjectCategory; label: string }[] = [
 ];
 
 export default function Projects() {
-  const { projects, isLoading, addProject } = useProjects();
+  const { projects, isLoading, addProject, updateProject } = useProjects();
+  const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
 
   const grouped = useMemo(() => {
     return categoryOrder.map(cat => ({
@@ -55,10 +57,19 @@ export default function Projects() {
                 key={group.key}
                 label={group.label}
                 projects={group.projects}
+                onEdit={setEditingProject}
               />
             ))
           )}
         </main>
+
+        <EditProjectDialog
+          project={editingProject}
+          open={!!editingProject}
+          onOpenChange={(open) => { if (!open) setEditingProject(null); }}
+          onSubmit={(data) => updateProject.mutate(data)}
+          isSubmitting={updateProject.isPending}
+        />
       </SidebarInset>
     </SidebarProvider>
   );
