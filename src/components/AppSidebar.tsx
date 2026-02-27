@@ -48,11 +48,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const navItems = [
+const topItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Development', url: '/development', icon: Landmark },
+];
+
+const buildingItems = [
   { title: 'Projects', url: '/projects', icon: FileText },
   { title: 'Site Managers', url: '/site-managers', icon: HardHat },
+];
+
+const developmentItems = [
+  { title: 'Development', url: '/development', icon: Landmark },
+];
+
+const adminItems = [
   { title: 'Team', url: '/team', icon: Users },
   { title: 'Calendar', url: '/calendar', icon: Calendar },
   { title: 'Inbox', url: '/inbox', icon: Mail },
@@ -100,21 +109,78 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      {/* Navigation Content */}
       <SidebarContent>
+        {/* Dashboard */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {topItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === '/'}
-                      className="flex items-center gap-2"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
+                    <NavLink to={item.url} end className="flex items-center gap-2" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Building */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Building</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {buildingItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink to={item.url} className="flex items-center gap-2" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Development */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Development</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {developmentItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink to={item.url} className="flex items-center gap-2" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Administration */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Administration</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink to={item.url} className="flex items-center gap-2" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
                       <item.icon className="h-4 w-4" />
                       <span className="flex-1">{item.title}</span>
                       {item.title === 'Inbox' && unreadCount > 0 && (
