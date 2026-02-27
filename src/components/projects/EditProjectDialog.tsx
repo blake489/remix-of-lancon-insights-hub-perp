@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects';
+import { useSiteManagers } from '@/hooks/useSiteManagers';
 
 const stages = ['Deposit', 'Retaining', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover'];
-const siteManagers = ['ROBBIE', 'BRIAN', 'JUSTIN', 'JULES'];
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
   { value: 'construction', label: 'Construction' },
@@ -23,6 +23,7 @@ interface EditProjectDialogProps {
 }
 
 export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSubmitting }: EditProjectDialogProps) {
+  const { siteManagers } = useSiteManagers();
   const [form, setForm] = useState<Record<string, string>>({});
 
   // Reset form when project changes
