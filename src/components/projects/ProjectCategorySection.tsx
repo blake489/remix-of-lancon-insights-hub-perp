@@ -8,11 +8,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Pencil } from 'lucide-react';
 
 interface ProjectCategorySectionProps {
   label: string;
   projects: ProjectRow[];
+  onEdit?: (project: ProjectRow) => void;
 }
 
 const formatCurrency = (val: number) => {
@@ -27,7 +30,7 @@ const getGpColor = (gp: number) => {
   return 'text-danger';
 };
 
-export function ProjectCategorySection({ label, projects }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -48,11 +51,12 @@ export function ProjectCategorySection({ label, projects }: ProjectCategorySecti
               <TableHead className="text-right">Forecast GP</TableHead>
               <TableHead className="text-right">GP%</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {projects.map((project) => (
-              <TableRow key={project.id} className="group">
+              <TableRow key={project.id} className="group cursor-pointer hover:bg-accent/50" onClick={() => onEdit?.(project)}>
                 <TableCell>
                   <div className="space-y-0.5">
                     <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
@@ -87,6 +91,11 @@ export function ProjectCategorySection({ label, projects }: ProjectCategorySecti
                   <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
                     {project.status}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); onEdit?.(project); }}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -26,6 +26,7 @@ export interface ProjectRow {
 }
 
 export type ProjectInsert = Omit<ProjectRow, 'id' | 'created_at' | 'updated_at'>;
+export type ProjectUpdate = Partial<ProjectInsert> & { id: string };
 
 export function useProjects() {
   const queryClient = useQueryClient();
@@ -62,5 +63,25 @@ export function useProjects() {
     },
   });
 
-  return { projects, isLoading, addProject };
+  const updateProject = useMutation({
+    mutationFn: async ({ id, ...updates }: ProjectUpdate) => {
+      const { data, error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({ title: 'Project updated', description: 'Changes saved.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  return { projects, isLoading, addProject, updateProject };
 }
