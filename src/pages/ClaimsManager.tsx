@@ -47,8 +47,8 @@ export default function ClaimsManager() {
 
   // Month range
   const now = new Date();
-  const [startMonth, setStartMonth] = useState(format(subMonths(now, 1), 'yyyy-MM'));
-  const [endMonth, setEndMonth] = useState(format(addMonths(now, 3), 'yyyy-MM'));
+  const [startMonth, setStartMonth] = useState(format(now, 'yyyy-MM'));
+  const [endMonth, setEndMonth] = useState(format(addMonths(now, 11), 'yyyy-MM'));
   const [tempStart, setTempStart] = useState(startMonth);
   const [tempEnd, setTempEnd] = useState(endMonth);
 
