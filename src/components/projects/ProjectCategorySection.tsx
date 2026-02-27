@@ -45,7 +45,7 @@ export function ProjectCategorySection({ label, projects, onEdit }: ProjectCateg
             <TableRow className="border-b border-border/50">
               <TableHead className="min-w-[180px]">Project</TableHead>
               <TableHead>Site Manager</TableHead>
-              <TableHead>Stage</TableHead>
+              
               <TableHead className="text-right">Contract (ex GST)</TableHead>
               <TableHead className="text-right">Forecast Cost</TableHead>
               <TableHead className="text-right">Forecast GP</TableHead>
@@ -69,11 +69,6 @@ export function ProjectCategorySection({ label, projects, onEdit }: ProjectCateg
                 </TableCell>
                 <TableCell className="text-muted-foreground font-medium">
                   {project.site_manager || '—'}
-                </TableCell>
-                <TableCell>
-                  {project.current_stage ? (
-                    <Badge variant="outline" className="text-xs">{project.current_stage}</Badge>
-                  ) : '—'}
                 </TableCell>
                 <TableCell className="text-right font-semibold tabular-nums">
                   {project.contract_value_ex_gst > 0 ? formatCurrency(project.contract_value_ex_gst) : '—'}

@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
+import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
 
-const stages = ['Deposit', 'Retaining', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover'];
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
   { value: 'construction', label: 'Construction' },
@@ -59,7 +59,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     
     const fields = [
       'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager', 'category',
-      'current_stage', 'status', 'start_date', 'pc_date',
+      'status', 'start_date', 'pc_date',
     ];
     const numFields = [
       'contract_value_ex_gst', 'contract_value_inc_gst',
@@ -129,15 +129,18 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Current Stage</Label>
-                <Select value={getVal('current_stage')} onValueChange={v => updateField('current_stage', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    {stages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+            </div>
+          </fieldset>
+
+          <ClaimsScheduleTable
+            scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
+            onScheduleTypeChange={v => updateField('schedule_type', v)}
+            contractValueExGst={parseFloat(getVal('contract_value_ex_gst', '0')) || 0}
+          />
+
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Status</legend>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select value={getVal('status', 'Active')} onValueChange={v => updateField('status', v)}>
