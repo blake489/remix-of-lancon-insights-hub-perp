@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -11,16 +12,14 @@ import {
 
 export type ClaimScheduleType = 'standard' | 'retaining_wall';
 
-interface StageRow {
+export interface StageRow {
   stage: string;
   percent: number;
-  /** Timeframe from prior stage: number of days or weeks */
   timeValue: number;
-  /** 'days' or 'weeks' */
   timeUnit: 'days' | 'weeks';
 }
 
-const schedules: Record<ClaimScheduleType, StageRow[]> = {
+export const defaultSchedules: Record<ClaimScheduleType, StageRow[]> = {
   standard: [
     { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
     { stage: 'Deposit', percent: 5, timeValue: 7, timeUnit: 'days' },
@@ -46,17 +45,13 @@ interface ClaimsScheduleTableProps {
   scheduleType: ClaimScheduleType;
   onScheduleTypeChange: (type: ClaimScheduleType) => void;
   contractValueExGst: number;
+  customTimeframes?: Record<string, number>;
+  onTimeframeChange?: (stage: string, value: number) => void;
 }
 
 const formatCurrency = (val: number) =>
   val === 0 ? '—' : `$${val.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-function formatTimeframe(row: StageRow): string {
-  if (row.timeValue === 0) return '—';
-  return `${row.timeValue} ${row.timeUnit}`;
-}
-
-/** Compute cumulative weeks from contract sign */
 function cumulativeWeeks(rows: StageRow[]): number[] {
   const cumulative: number[] = [];
   let total = 0;
@@ -72,8 +67,14 @@ export function ClaimsScheduleTable({
   scheduleType,
   onScheduleTypeChange,
   contractValueExGst,
+  customTimeframes,
+  onTimeframeChange,
 }: ClaimsScheduleTableProps) {
-  const rows = schedules[scheduleType];
+  const baseRows = defaultSchedules[scheduleType];
+  const rows = baseRows.map(r => ({
+    ...r,
+    timeValue: customTimeframes && r.stage in customTimeframes ? customTimeframes[r.stage] : r.timeValue,
+  }));
   const totalPercent = rows.reduce((s, r) => s + r.percent, 0);
   const cumWeeks = cumulativeWeeks(rows);
 
@@ -115,8 +116,19 @@ export function ClaimsScheduleTable({
               return (
                 <TableRow key={row.stage}>
                   <TableCell className="font-medium">{row.stage}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
-                    {formatTimeframe(row)}
+                  <TableCell className="text-right">
+                    {row.timeValue === 0 ? '—' : (
+                      <div className="flex items-center justify-end gap-1">
+                        <Input
+                          type="number"
+                          min={0}
+                          className="w-16 h-7 text-xs text-right tabular-nums p-1"
+                          value={row.timeValue}
+                          onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
+                        />
+                        <span className="text-xs text-muted-foreground">{row.timeUnit}</span>
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
                     {cumWeeks[i] === 0 ? '—' : `${Math.round(cumWeeks[i] * 10) / 10} wks`}
