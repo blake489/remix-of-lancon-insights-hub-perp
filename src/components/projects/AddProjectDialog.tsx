@@ -23,6 +23,7 @@ interface AddProjectDialogProps {
 export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogProps) {
   const { siteManagers } = useSiteManagers();
   const [open, setOpen] = useState(false);
+  const [customTimeframes, setCustomTimeframes] = useState<Record<string, number>>({});
   const [form, setForm] = useState({
     job_name: '',
     client_name: '',
@@ -41,14 +42,17 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     forecast_gp_percent: '',
   });
 
-  const reset = () => setForm({
-    job_name: '', client_name: '', client_mobile: '', client_email: '',
-    address: '', site_manager: '',
-    category: 'pre_construction', schedule_type: 'standard',
-    contract_value_ex_gst: '', contract_value_inc_gst: '',
-    start_date: '', pc_date: '',
-    forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
-  });
+  const reset = () => {
+    setForm({
+      job_name: '', client_name: '', client_mobile: '', client_email: '',
+      address: '', site_manager: '',
+      category: 'pre_construction', schedule_type: 'standard',
+      contract_value_ex_gst: '', contract_value_inc_gst: '',
+      start_date: '', pc_date: '',
+      forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
+    });
+    setCustomTimeframes({});
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +159,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             scheduleType={form.schedule_type}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
             contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
+            customTimeframes={customTimeframes}
+            onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
           />
 
           {/* Dates & Value */}

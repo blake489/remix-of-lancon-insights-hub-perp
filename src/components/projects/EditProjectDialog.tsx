@@ -136,6 +136,15 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
             contractValueExGst={parseFloat(getVal('contract_value_ex_gst', '0')) || 0}
+            customTimeframes={(() => {
+              try { return JSON.parse(getVal('custom_timeframes', '{}')); } catch { return {}; }
+            })()}
+            onTimeframeChange={(stage, value) => {
+              let current: Record<string, number> = {};
+              try { current = JSON.parse(getVal('custom_timeframes', '{}')); } catch {}
+              current[stage] = value;
+              updateField('custom_timeframes', JSON.stringify(current));
+            }}
           />
 
           <fieldset className="space-y-4">
