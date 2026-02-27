@@ -26,6 +26,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
   const [form, setForm] = useState({
     job_name: '',
     client_name: '',
+    client_mobile: '',
+    client_email: '',
     address: '',
     site_manager: '',
     category: 'pre_construction' as ProjectCategory,
@@ -40,7 +42,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
   });
 
   const reset = () => setForm({
-    job_name: '', client_name: '', address: '', site_manager: '',
+    job_name: '', client_name: '', client_mobile: '', client_email: '',
+    address: '', site_manager: '',
     category: 'pre_construction', current_stage: '',
     contract_value_ex_gst: '', contract_value_inc_gst: '',
     start_date: '', pc_date: '',
@@ -52,6 +55,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     onSubmit({
       job_name: form.job_name,
       client_name: form.client_name || null,
+      client_mobile: form.client_mobile || null,
+      client_email: form.client_email || null,
       address: form.address || null,
       site_manager: form.site_manager || null,
       category: form.category,
@@ -116,6 +121,14 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
                 <Input id="address" value={form.address} onChange={e => updateField('address', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_mobile">Client Mobile</Label>
+                <Input id="client_mobile" type="tel" value={form.client_mobile} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_email">Client Email</Label>
+                <Input id="client_email" type="email" value={form.client_email} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
               </div>
               <div className="space-y-2">
                 <Label>Site Manager</Label>
