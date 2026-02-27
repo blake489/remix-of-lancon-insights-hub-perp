@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
-import { ProjectTable } from '@/components/dashboard/ProjectTable';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import {
-  getProjectsWithMetrics,
   getCurrentKPIData,
   getFortnight1KPIData,
   getPreviousFortnightKPIData,
-  siteManagers,
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
 
@@ -23,7 +20,6 @@ const availableMonths = [
 const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [selectedFortnight, setSelectedFortnight] = useState<1 | 2>(getCurrentFortnight());
-  const projectsWithMetrics = getProjectsWithMetrics();
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
@@ -52,25 +48,13 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="mx-auto max-w-7xl px-6 py-8">
-          <div className="space-y-10">
-            {/* KPI Metrics */}
-            <MagicEquationHeader
-              monthlyKPI={monthlyKPI}
-              currentFortnightKPI={currentFortnightKPI}
-              previousFortnightKPI={previousFortnightKPI}
-              selectedMonth={selectedMonth}
-              selectedFortnight={selectedFortnight}
-            />
-
-            {/* Projects Table */}
-            <section>
-              <ProjectTable
-                projects={projectsWithMetrics}
-                siteManagers={siteManagers}
-              />
-            </section>
-
-          </div>
+          <MagicEquationHeader
+            monthlyKPI={monthlyKPI}
+            currentFortnightKPI={currentFortnightKPI}
+            previousFortnightKPI={previousFortnightKPI}
+            selectedMonth={selectedMonth}
+            selectedFortnight={selectedFortnight}
+          />
         </main>
       </div>
     </DashboardLayout>
