@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
+import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
 
-const stages = ['Deposit', 'Retaining', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover'];
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
   { value: 'construction', label: 'Construction' },
@@ -31,7 +31,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     address: '',
     site_manager: '',
     category: 'pre_construction' as ProjectCategory,
-    current_stage: '',
+    schedule_type: 'standard' as ClaimScheduleType,
     contract_value_ex_gst: '',
     contract_value_inc_gst: '',
     start_date: '',
@@ -44,7 +44,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
   const reset = () => setForm({
     job_name: '', client_name: '', client_mobile: '', client_email: '',
     address: '', site_manager: '',
-    category: 'pre_construction', current_stage: '',
+    category: 'pre_construction', schedule_type: 'standard',
     contract_value_ex_gst: '', contract_value_inc_gst: '',
     start_date: '', pc_date: '',
     forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
@@ -60,7 +60,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       address: form.address || null,
       site_manager: form.site_manager || null,
       category: form.category,
-      current_stage: form.current_stage || null,
+      current_stage: null,
       contract_value_ex_gst: parseFloat(form.contract_value_ex_gst) || 0,
       contract_value_inc_gst: parseFloat(form.contract_value_inc_gst) || 0,
       start_date: form.start_date || null,
@@ -148,17 +148,14 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Current Stage</Label>
-                <Select value={form.current_stage} onValueChange={v => updateField('current_stage', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    {stages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </fieldset>
+
+          <ClaimsScheduleTable
+            scheduleType={form.schedule_type}
+            onScheduleTypeChange={v => updateField('schedule_type', v)}
+            contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
+          />
 
           {/* Dates & Value */}
           <fieldset className="space-y-4">
