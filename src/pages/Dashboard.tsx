@@ -31,11 +31,14 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="min-h-full bg-background">
-        {/* Minimal Header */}
+        {/* Header */}
         <div className="border-b border-border/40 bg-background">
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+              <div className="flex items-center gap-6">
+                <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+                <TodayWidget variant="inline" />
+              </div>
               <DashboardFilters
                 selectedMonth={selectedMonth}
                 selectedFortnight={selectedFortnight}
@@ -50,21 +53,14 @@ const Dashboard = () => {
         {/* Main Content */}
         <main className="mx-auto max-w-7xl px-6 py-8">
           <div className="space-y-10">
-            {/* Today Widget + KPI Metrics */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              <div className="lg:col-span-1">
-                <TodayWidget />
-              </div>
-              <div className="lg:col-span-4">
-                <MagicEquationHeader
-                  monthlyKPI={monthlyKPI}
-                  currentFortnightKPI={currentFortnightKPI}
-                  previousFortnightKPI={previousFortnightKPI}
-                  selectedMonth={selectedMonth}
-                  selectedFortnight={selectedFortnight}
-                />
-              </div>
-            </div>
+            {/* KPI Metrics */}
+            <MagicEquationHeader
+              monthlyKPI={monthlyKPI}
+              currentFortnightKPI={currentFortnightKPI}
+              previousFortnightKPI={previousFortnightKPI}
+              selectedMonth={selectedMonth}
+              selectedFortnight={selectedFortnight}
+            />
 
             {/* Projects Table */}
             <section>
