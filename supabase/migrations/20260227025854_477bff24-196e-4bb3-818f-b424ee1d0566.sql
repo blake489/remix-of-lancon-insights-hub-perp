@@ -1,0 +1,1 @@
+ALTER TYPE public.team_department ADD VALUE 'sales';
