@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
+import { useSiteManagers } from '@/hooks/useSiteManagers';
 
 const stages = ['Deposit', 'Retaining', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover'];
-const siteManagers = ['ROBBIE', 'BRIAN', 'JUSTIN', 'JULES'];
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
   { value: 'construction', label: 'Construction' },
@@ -21,6 +21,7 @@ interface AddProjectDialogProps {
 }
 
 export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogProps) {
+  const { siteManagers } = useSiteManagers();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     job_name: '',
