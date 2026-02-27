@@ -39,6 +39,7 @@ import {
   CloudSun,
   Database,
   Landmark,
+  Receipt,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -54,6 +55,7 @@ const topItems = [
 
 const buildingItems = [
   { title: 'Projects', url: '/projects', icon: FileText },
+  { title: 'Claims Manager', url: '/claims', icon: Receipt },
   { title: 'Site Managers', url: '/site-managers', icon: HardHat },
 ];
 
