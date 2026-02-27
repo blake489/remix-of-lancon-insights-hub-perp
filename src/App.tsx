@@ -20,6 +20,7 @@ import FormBuilder from "./pages/FormBuilder";
 import FormEntry from "./pages/FormEntry";
 import DevelopmentDashboard from "./pages/DevelopmentDashboard";
 import DevelopmentImport from "./pages/DevelopmentImport";
+import SiteManagers from "./pages/SiteManagers";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/site-managers" element={<ProtectedRoute><SiteManagers /></ProtectedRoute>} />
             <Route path="/development" element={<ProtectedRoute><DevelopmentDashboard /></ProtectedRoute>} />
             <Route path="/development/import" element={<ProtectedRoute><DevelopmentImport /></ProtectedRoute>} />
             <Route path="/source-data" element={<ProtectedRoute><SourceDataHome /></ProtectedRoute>} />
