@@ -58,7 +58,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     const updates: any = { id: currentProject.id };
     
     const fields = [
-      'job_name', 'client_name', 'address', 'site_manager', 'category',
+      'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager', 'category',
       'current_stage', 'status', 'start_date', 'pc_date',
     ];
     const numFields = [
@@ -102,6 +102,14 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
               <div className="space-y-2">
                 <Label>Address</Label>
                 <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Client Mobile</Label>
+                <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
+              </div>
+              <div className="space-y-2">
+                <Label>Client Email</Label>
+                <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
               </div>
               <div className="space-y-2">
                 <Label>Site Manager</Label>

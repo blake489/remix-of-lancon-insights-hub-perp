@@ -8,6 +8,8 @@ export interface ProjectRow {
   id: string;
   job_name: string;
   client_name: string | null;
+  client_mobile: string | null;
+  client_email: string | null;
   address: string | null;
   site_manager: string | null;
   category: ProjectCategory;

@@ -349,6 +349,8 @@ export type Database = {
         Row: {
           address: string | null
           category: Database["public"]["Enums"]["project_category"]
+          client_email: string | null
+          client_mobile: string | null
           client_name: string | null
           contract_value_ex_gst: number
           contract_value_inc_gst: number
@@ -369,6 +371,8 @@ export type Database = {
         Insert: {
           address?: string | null
           category?: Database["public"]["Enums"]["project_category"]
+          client_email?: string | null
+          client_mobile?: string | null
           client_name?: string | null
           contract_value_ex_gst?: number
           contract_value_inc_gst?: number
@@ -389,6 +393,8 @@ export type Database = {
         Update: {
           address?: string | null
           category?: Database["public"]["Enums"]["project_category"]
+          client_email?: string | null
+          client_mobile?: string | null
           client_name?: string | null
           contract_value_ex_gst?: number
           contract_value_inc_gst?: number
