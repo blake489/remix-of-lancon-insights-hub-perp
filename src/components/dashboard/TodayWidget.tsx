@@ -73,71 +73,42 @@ function InlineWidget() {
   if (!weather) return null;
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-3 py-1.5 text-sm transition-colors hover:bg-accent/50">
-          <span className="font-medium text-muted-foreground">{format(today, 'EEE d MMM')}</span>
+    <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 px-3 py-1.5 text-sm">
+      <span className="font-medium text-muted-foreground">{format(today, 'EEE d MMM')}</span>
+      <span className="h-4 w-px bg-border/60" />
+      {getWeatherIcon(weather.weatherCode, "h-4 w-4")}
+      <span className="font-semibold text-foreground">{weather.temperature}°C</span>
+      {weather.rainChance > 0 && (
+        <>
           <span className="h-4 w-px bg-border/60" />
-          {getWeatherIcon(weather.weatherCode, "h-4 w-4")}
-          <span className="font-semibold text-foreground">{weather.temperature}°C</span>
-          {weather.rainChance > 0 && (
-            <>
-              <span className="h-4 w-px bg-border/60" />
-              <span className="flex items-center gap-1 text-xs text-primary font-medium">
-                <Umbrella className="h-3 w-3" />
-                {weather.rainChance}%
-              </span>
-            </>
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-4" align="start">
-        <div className="space-y-3">
-          <div className="text-center pb-2 border-b border-border/30">
-            <p className="font-bold text-foreground">{format(today, 'EEEE')}</p>
-            <p className="text-xs text-muted-foreground">{format(today, 'd MMM yyyy')}</p>
-          </div>
-          <div className="flex items-center justify-between">
-            {getWeatherIcon(weather.weatherCode)}
-            <span className="text-2xl font-bold text-foreground">{weather.temperature}°C</span>
-          </div>
-          {weather.rainChance > 0 && (
-            <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5 border border-primary/10">
-              <div className="flex items-center gap-2">
-                <Umbrella className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-foreground">Rain</span>
-              </div>
-              <div className="text-right">
-                <span className="text-sm font-bold text-foreground">{weather.rainChance}%</span>
-                {weather.rainAmount > 0 && (
-                  <span className="text-xs text-muted-foreground ml-1">({weather.rainAmount}mm)</span>
-                )}
-              </div>
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Droplets className="h-3.5 w-3.5" />
-              <span>{weather.humidity}%</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Wind className="h-3.5 w-3.5" />
-              <span>{weather.windSpeed} km/h</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30 text-xs">
-            <div className="flex items-center gap-1.5">
-              <Sunrise className="h-3.5 w-3.5 text-warning" />
-              <span className="text-muted-foreground">{format(new Date(weather.sunrise), 'h:mm a')}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Sunset className="h-3.5 w-3.5 text-warning" />
-              <span className="text-muted-foreground">{format(new Date(weather.sunset), 'h:mm a')}</span>
-            </div>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+          <span className="flex items-center gap-1 text-xs text-primary font-medium">
+            <Umbrella className="h-3 w-3" />
+            {weather.rainChance}%
+            {weather.rainAmount > 0 && (
+              <span className="text-muted-foreground">({weather.rainAmount}mm)</span>
+            )}
+          </span>
+        </>
+      )}
+      <span className="h-4 w-px bg-border/60" />
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Droplets className="h-3 w-3" />
+        {weather.humidity}%
+      </span>
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Wind className="h-3 w-3" />
+        {weather.windSpeed} km/h
+      </span>
+      <span className="h-4 w-px bg-border/60" />
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Sunrise className="h-3 w-3 text-warning" />
+        {format(new Date(weather.sunrise), 'h:mm a')}
+      </span>
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Sunset className="h-3 w-3 text-warning" />
+        {format(new Date(weather.sunset), 'h:mm a')}
+      </span>
+    </div>
   );
 }
 
