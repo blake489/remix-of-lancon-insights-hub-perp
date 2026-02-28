@@ -9,6 +9,7 @@ export interface SalesLead {
   revenue_type: 'prospective' | 'firm';
   status: string;
   notes: string | null;
+  target_start_date: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
