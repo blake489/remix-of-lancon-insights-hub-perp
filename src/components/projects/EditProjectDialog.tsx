@@ -5,6 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
@@ -12,7 +23,7 @@ import { ForecastAuditTrail } from './ForecastAuditTrail';
 import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { supabase } from '@/integrations/supabase/client';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { deriveCategory } from '@/lib/deriveCategory';
 
 // Category is auto-derived — no manual selection needed
@@ -22,10 +33,12 @@ interface EditProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: ProjectUpdate) => void;
+  onDelete?: (id: string) => void;
   isSubmitting?: boolean;
+  isDeleting?: boolean;
 }
 
-export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSubmitting }: EditProjectDialogProps) {
+export function EditProjectDialog({ project, open, onOpenChange, onSubmit, onDelete, isSubmitting, isDeleting }: EditProjectDialogProps) {
   const { siteManagers } = useSiteManagers();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
@@ -363,11 +376,41 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           }}
         />
 
-        <div className="flex justify-end gap-2 pt-1">
-          <Button type="button" variant="outline" size="sm" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
-          <Button type="submit" size="sm" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
-          </Button>
+        <div className="flex justify-between items-center pt-1">
+          {onDelete ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete Project
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete "{currentProject.job_name}"?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently remove the project, its claims, forecast history, and all related data. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                    onClick={() => onDelete(currentProject.id)}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete Project'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : <div />}
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

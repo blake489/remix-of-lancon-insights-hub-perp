@@ -28,7 +28,7 @@ export default function Projects() {
   const prefillValue = searchParams.get('prefill_value') || undefined;
   const hasPrefill = !!prefillName;
 
-  const { projects, isLoading, addProject, updateProject } = useProjects();
+  const { projects, isLoading, addProject, updateProject, deleteProject } = useProjects();
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
@@ -131,7 +131,12 @@ export default function Projects() {
                   projects={group.projects}
                   onEdit={handleToggleEdit}
                   onSubmitEdit={(data) => updateProject.mutate(data)}
+                  onDeleteProject={(id) => {
+                    deleteProject.mutate(id);
+                    setEditingProject(null);
+                  }}
                   isSubmittingEdit={updateProject.isPending}
+                  isDeletingProject={deleteProject.isPending}
                   expandedProjectId={expandedProjectId}
                   trends={trends}
                   claimStages={claimStages}

@@ -25,7 +25,9 @@ interface ProjectCategorySectionProps {
   projects: ProjectRow[];
   onEdit?: (project: ProjectRow) => void;
   onSubmitEdit?: (data: ProjectUpdate) => void;
+  onDeleteProject?: (id: string) => void;
   isSubmittingEdit?: boolean;
+  isDeletingProject?: boolean;
   expandedProjectId?: string | null;
   trends?: Record<string, { schedule: string; profit: string; scheduleDays: number; profitDelta: number }>;
   claimStages?: Record<string, ClaimStageInfo>;
@@ -94,7 +96,7 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
   );
 }
 
-export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, isSubmittingEdit, expandedProjectId, trends, claimStages, highlighted = true, eotTallies }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, onDeleteProject, isSubmittingEdit, isDeletingProject, expandedProjectId, trends, claimStages, highlighted = true, eotTallies }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -295,7 +297,9 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                           open={true}
                           onOpenChange={(open) => { if (!open) onEdit?.(null as any); }}
                           onSubmit={onSubmitEdit}
+                          onDelete={onDeleteProject}
                           isSubmitting={isSubmittingEdit}
+                          isDeleting={isDeletingProject}
                         />
                       </td>
                     </tr>
