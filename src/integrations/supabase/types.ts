@@ -78,32 +78,41 @@ export type Database = {
         Row: {
           claim_id: string
           claim_type: string
+          days_delta: number | null
           id: string
           moved_at: string
           moved_by: string | null
           new_date: string
           old_date: string
           project_id: string
+          reason_category: string | null
+          reason_text: string | null
         }
         Insert: {
           claim_id: string
           claim_type: string
+          days_delta?: number | null
           id?: string
           moved_at?: string
           moved_by?: string | null
           new_date: string
           old_date: string
           project_id: string
+          reason_category?: string | null
+          reason_text?: string | null
         }
         Update: {
           claim_id?: string
           claim_type?: string
+          days_delta?: number | null
           id?: string
           moved_at?: string
           moved_by?: string | null
           new_date?: string
           old_date?: string
           project_id?: string
+          reason_category?: string | null
+          reason_text?: string | null
         }
         Relationships: [
           {
