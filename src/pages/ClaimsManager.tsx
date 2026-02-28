@@ -109,6 +109,7 @@ export default function ClaimsManager() {
     reference: '',
     notes: '',
     status: 'planned' as string,
+    claimed_date: '' as string,
   });
 
   // Inline editing
@@ -251,6 +252,7 @@ export default function ClaimsManager() {
       reference: '',
       notes: '',
       status: 'planned',
+      claimed_date: '',
     });
     setEditingClaim(null);
   }, []);
@@ -271,6 +273,7 @@ export default function ClaimsManager() {
       reference: claim.reference || '',
       notes: claim.notes || '',
       status: claim.status || 'planned',
+      claimed_date: (claim as any).claimed_date || '',
     });
     setClaimDialogOpen(true);
   };
@@ -287,6 +290,7 @@ export default function ClaimsManager() {
       reference: '',
       notes: `Scheduled ${pc.stage} claim`,
       status: 'planned',
+      claimed_date: '',
     });
     setClaimDialogOpen(true);
   };
@@ -294,6 +298,10 @@ export default function ClaimsManager() {
   const handleSaveClaim = async () => {
     if (!claimForm.project_id || !claimForm.claim_date || !claimForm.amount) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' });
+      return;
+    }
+    if (claimForm.status === 'claimed' && !claimForm.claimed_date) {
+      toast({ title: 'Please confirm the date this claim was made', variant: 'destructive' });
       return;
     }
     const payload: ClaimInsert = {
@@ -305,6 +313,7 @@ export default function ClaimsManager() {
       reference: claimForm.reference || null,
       notes: claimForm.notes || null,
       status: claimForm.status || 'planned',
+      claimed_date: claimForm.status === 'claimed' ? claimForm.claimed_date || null : null,
     };
     try {
       if (editingClaim) {
@@ -808,6 +817,11 @@ export default function ClaimsManager() {
                                             'text-[11px] text-emerald-700 dark:text-emerald-400': claim.status === 'claimed',
                                           })}>
                                             {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
+                                            {claim.status === 'claimed' && (claim as any).claimed_date && (
+                                              <span className="text-[9px] font-normal text-muted-foreground ml-1">
+                                                {format(new Date((claim as any).claimed_date + 'T00:00:00'), 'dd/MM')}
+                                              </span>
+                                            )}
                                           </span>
                                           {/* Move arrows - shown on hover */}
                                           <div className="flex items-center justify-between mt-0.5 opacity-0 group-hover/tile:opacity-100 transition-opacity">
@@ -942,7 +956,7 @@ export default function ClaimsManager() {
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={claimForm.status} onValueChange={v => setClaimForm(f => ({ ...f, status: v }))}>
+              <Select value={claimForm.status} onValueChange={v => setClaimForm(f => ({ ...f, status: v, claimed_date: v === 'claimed' && !f.claimed_date ? format(new Date(), 'yyyy-MM-dd') : f.claimed_date }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="planned">Planned</SelectItem>
@@ -951,6 +965,18 @@ export default function ClaimsManager() {
                 </SelectContent>
               </Select>
             </div>
+
+            {claimForm.status === 'claimed' && (
+              <div className="space-y-2">
+                <Label>Date Claimed *</Label>
+                <Input
+                  type="date"
+                  value={claimForm.claimed_date}
+                  onChange={e => setClaimForm(f => ({ ...f, claimed_date: e.target.value }))}
+                />
+                <p className="text-[10px] text-muted-foreground">Confirm the date this claim was submitted</p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Notes</Label>

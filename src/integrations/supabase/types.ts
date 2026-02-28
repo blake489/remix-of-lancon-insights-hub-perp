@@ -136,6 +136,7 @@ export type Database = {
           amount: number
           claim_date: string
           claim_type: string
+          claimed_date: string | null
           created_at: string
           direction: string
           id: string
@@ -150,6 +151,7 @@ export type Database = {
           amount?: number
           claim_date: string
           claim_type: string
+          claimed_date?: string | null
           created_at?: string
           direction?: string
           id?: string
@@ -164,6 +166,7 @@ export type Database = {
           amount?: number
           claim_date?: string
           claim_type?: string
+          claimed_date?: string | null
           created_at?: string
           direction?: string
           id?: string

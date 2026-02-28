@@ -1,0 +1,1 @@
+ALTER TABLE public.claims ADD COLUMN claimed_date date DEFAULT NULL;

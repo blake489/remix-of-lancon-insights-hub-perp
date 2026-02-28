@@ -28,6 +28,7 @@ export interface ClaimInsert {
   reference?: string | null;
   notes?: string | null;
   status?: string;
+  claimed_date?: string | null;
 }
 
 export function useClaims() {
@@ -83,6 +84,7 @@ export function useClaims() {
         reference: input.reference || null,
         notes: input.notes || null,
         status: input.status || 'planned',
+        claimed_date: input.claimed_date || null,
       }).eq('id', id);
       if (error) throw error;
     },
