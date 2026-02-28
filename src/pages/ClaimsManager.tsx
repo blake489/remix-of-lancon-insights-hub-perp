@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { ClaimMoveAuditPanel } from '@/components/claims/ClaimMoveAuditPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -875,6 +876,12 @@ export default function ClaimsManager() {
           )}
         </div>
       </div>
+
+      {/* Audit Trail Panel - shown when a project is selected */}
+      {selectedProjectId && (() => {
+        const proj = (projects || []).find((p: ProjectRow) => p.id === selectedProjectId);
+        return proj ? <ClaimMoveAuditPanel projectId={selectedProjectId} projectName={proj.job_name} /> : null;
+      })()}
 
       {/* Claim Dialog (Add / Edit) */}
       <Dialog open={claimDialogOpen} onOpenChange={v => { if (!v) { setClaimDialogOpen(false); resetClaimForm(); } else setClaimDialogOpen(true); }}>
