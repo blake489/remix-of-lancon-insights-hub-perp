@@ -112,7 +112,7 @@ export default function ClaimsManager() {
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSupervisor, setFilterSupervisor] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('Active');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   // Selected project row
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -162,10 +162,10 @@ export default function ClaimsManager() {
         p.job_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.address?.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchSupervisor = filterSupervisor === 'all' || p.site_manager === filterSupervisor;
-      const matchStatus = filterStatus === 'all' || p.status === filterStatus;
-      return matchSearch && matchSupervisor && matchStatus;
+      const matchCategory = filterCategory === 'all' || p.category === filterCategory;
+      return matchSearch && matchSupervisor && matchCategory;
     });
-  }, [projects, searchQuery, filterSupervisor, filterStatus]);
+  }, [projects, searchQuery, filterSupervisor, filterCategory]);
 
   // Supervisors for filter
   const supervisors = useMemo(() => {
@@ -579,13 +579,13 @@ export default function ClaimsManager() {
               </SelectContent>
             </Select>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-32 h-9 text-sm"><SelectValue /></SelectTrigger>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-40 h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Complete">Complete</SelectItem>
-                <SelectItem value="On Hold">On Hold</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="pre_construction">Pre Construction</SelectItem>
+                <SelectItem value="construction">Construction</SelectItem>
+                <SelectItem value="handover">Handover</SelectItem>
               </SelectContent>
             </Select>
 
