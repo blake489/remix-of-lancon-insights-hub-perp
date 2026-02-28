@@ -164,7 +164,13 @@ export default function Sales() {
     setEditing(null);
   };
 
-  const openAdd = () => { resetForm(); setDialogOpen(true); };
+  const openAdd = (prefillDate?: Date) => {
+    resetForm();
+    if (prefillDate) {
+      setForm(f => ({ ...f, target_start_date: format(prefillDate, 'yyyy-MM-dd') }));
+    }
+    setDialogOpen(true);
+  };
   const openEdit = (lead: SalesLead) => {
     setEditing(lead);
     setForm({
@@ -227,7 +233,7 @@ export default function Sales() {
             <h1 className="text-2xl font-bold text-foreground">Sales</h1>
             <p className="text-sm text-muted-foreground">Opportunities tracker</p>
           </div>
-          <Button onClick={openAdd} className="gap-2">
+          <Button onClick={() => openAdd()} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Opportunity
           </Button>
@@ -332,21 +338,31 @@ export default function Sales() {
                             return (
                               <div
                                 key={slotIdx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (opp) {
+                                    openEdit(opp);
+                                  } else {
+                                    openAdd(m.month);
+                                  }
+                                }}
                                 className={cn(
-                                  "h-7 rounded-sm border flex items-center justify-center transition-all text-[8px] font-semibold truncate px-0.5",
+                                  "h-7 rounded-sm border flex items-center justify-center transition-all text-[8px] font-semibold truncate px-0.5 cursor-pointer",
                                   isFilled
-                                    ? "bg-emerald-100 border-emerald-300 text-emerald-700 dark:bg-emerald-900/40 dark:border-emerald-700 dark:text-emerald-300"
+                                    ? "bg-emerald-100 border-emerald-300 text-emerald-700 dark:bg-emerald-900/40 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-200"
                                     : isPending
-                                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300 border-dashed"
-                                    : "bg-muted/30 border-border/40 text-muted-foreground/30"
+                                    ? "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300 border-dashed hover:bg-amber-100"
+                                    : "bg-muted/30 border-border/40 text-muted-foreground/30 hover:bg-primary/10 hover:border-primary/40 hover:text-primary/60"
                                 )}
-                                title={opp ? `${opp.client_name} — ${formatCurrency(opp.estimated_value)}` : 'Empty slot'}
+                                title={opp ? `${opp.client_name} — ${formatCurrency(opp.estimated_value)}` : 'Click to add opportunity'}
                               >
                                 {isFilled ? (
                                   <CheckCircle2 className="h-3 w-3 shrink-0" />
                                 ) : isPending ? (
                                   <span className="truncate">{opp?.client_name?.split(' ')[0]}</span>
-                                ) : null}
+                                ) : (
+                                  <Plus className="h-3 w-3 opacity-0 group-hover/slot:opacity-100 transition-opacity" />
+                                )}
                               </div>
                             );
                           })}
@@ -395,7 +411,7 @@ export default function Sales() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
               <p className="text-sm">No opportunities found</p>
-              <Button variant="outline" size="sm" onClick={openAdd}>Add your first opportunity</Button>
+              <Button variant="outline" size="sm" onClick={() => openAdd()}>Add your first opportunity</Button>
             </div>
           ) : (
             <div className="overflow-auto h-full">
