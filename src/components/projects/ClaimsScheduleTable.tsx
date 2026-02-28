@@ -117,8 +117,8 @@ export function ClaimsScheduleTable({
                 <TableRow key={row.stage}>
                   <TableCell className="font-medium">{row.stage}</TableCell>
                   <TableCell className="text-right">
-                    {row.timeValue === 0 ? '—' : (
-                      <div className="flex items-center justify-end gap-1">
+                    {row.stage === 'Contract Sign' ? '—' : (
+                      <div className="flex items-center justify-end gap-1.5">
                         <Input
                           type="number"
                           min={0}
@@ -126,7 +126,12 @@ export function ClaimsScheduleTable({
                           value={row.timeValue}
                           onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
                         />
-                        <span className="text-xs text-muted-foreground">{row.timeUnit}</span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {row.timeUnit}
+                        </span>
+                        <span className="text-xs text-muted-foreground/60 whitespace-nowrap">
+                          ({row.timeUnit === 'days' ? row.timeValue : row.timeValue * 7}d)
+                        </span>
                       </div>
                     )}
                   </TableCell>
