@@ -114,6 +114,7 @@ export default function ClaimsManager() {
 
   // Drag state
   const [dragClaim, setDragClaim] = useState<{ id: string; projectId: string } | null>(null);
+  const [dragOverCell, setDragOverCell] = useState<string | null>(null);
 
   // Move-date dialog state (shown after drop)
   const [moveDateDialog, setMoveDateDialog] = useState<{
@@ -365,10 +366,11 @@ export default function ClaimsManager() {
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e: React.DragEvent, projectId: string) => {
+  const handleDragOver = (e: React.DragEvent, projectId: string, cellKey: string) => {
     if (dragClaim && dragClaim.projectId === projectId) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
+      if (dragOverCell !== cellKey) setDragOverCell(cellKey);
     }
   };
 
@@ -644,9 +646,11 @@ export default function ClaimsManager() {
                                     className={cn(
                                       "w-1/2 p-1 flex flex-col gap-1 transition-colors",
                                       half === 1 && "border-r",
-                                      dragClaim?.projectId === p.id && "bg-accent/20"
+                                      dragClaim?.projectId === p.id && "bg-accent/20",
+                                      dragOverCell === `${p.id}__${mk}__${half}` && "bg-primary/15 ring-2 ring-primary/40 ring-inset"
                                     )}
-                                    onDragOver={e => handleDragOver(e, p.id)}
+                                    onDragOver={e => handleDragOver(e, p.id, `${p.id}__${mk}__${half}`)}
+                                    onDragLeave={() => setDragOverCell(null)}
                                     onDrop={e => handleDrop(e, p.id, mk, half)}
                                   >
                                     {/* Actual Claims */}
@@ -657,7 +661,7 @@ export default function ClaimsManager() {
                                           key={claim.id}
                                           draggable
                                           onDragStart={e => handleDragStart(e, claim.id, p.id)}
-                                          onDragEnd={() => setDragClaim(null)}
+                                          onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
                                           className={cn(
                                             "w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
                                             sc.bg, sc.border, sc.darkBg, sc.darkBorder
