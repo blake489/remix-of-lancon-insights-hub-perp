@@ -644,7 +644,7 @@ export default function ClaimsManager() {
                                   <div
                                     key={half}
                                     className={cn(
-                                      "w-1/2 p-1 flex flex-col gap-1 transition-colors",
+                                      "w-1/2 p-1 flex flex-col gap-1 transition-all duration-200 ease-in-out ring-0 ring-transparent",
                                       half === 1 && "border-r",
                                       dragClaim?.projectId === p.id && "bg-accent/20",
                                       dragOverCell === `${p.id}__${mk}__${half}` && "bg-primary/15 ring-2 ring-primary/40 ring-inset"
