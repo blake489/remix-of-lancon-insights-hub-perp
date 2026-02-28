@@ -27,6 +27,7 @@ export const siteManagers = [
   'BRIAN', 
   'JUSTIN',
   'JULES',
+  'TOMMY',
 ];
 
 // Projects from Metrics_10.02.26.xlsx - Active Jobs + Budgets Not Finalised
@@ -227,6 +228,33 @@ export const mockProjects: Project[] = [
     pcDate: '2026-06-15',
     status: 'Active',
     currentStage: 'Base',
+  },
+  // ── TOMMY's Projects ──
+  {
+    id: 'test-15',
+    jobName: '15 Test Street',
+    clientName: 'Client',
+    address: '15 Test Street',
+    siteManager: 'TOMMY',
+    contractValueExGst: 650000,
+    contractValueIncGst: 715000,
+    startDate: '2026-02-01',
+    pcDate: '2026-12-01',
+    status: 'Active',
+    currentStage: 'Deposit',
+  },
+  {
+    id: 'boundary-42',
+    jobName: '42 Boundary Rd',
+    clientName: 'Client',
+    address: '42 Boundary Rd',
+    siteManager: 'TOMMY',
+    contractValueExGst: 725000,
+    contractValueIncGst: 797500,
+    startDate: '2026-04-01',
+    pcDate: '2027-02-01',
+    status: 'Active',
+    currentStage: 'Deposit',
   },
 ];
 
@@ -700,6 +728,27 @@ export const mockSiteManagerActivities: SiteManagerActivity[] = [
     clientMessageSent: true,
     photoUploads: 4,
     hsWalkthroughCompleted: true,
+  },
+  // TOMMY - 2 projects (15 Test Street, 42 Boundary Rd)
+  {
+    id: 'SMA-016',
+    projectId: 'test-15',
+    siteManager: 'TOMMY',
+    fortnightStart: '2026-02-01',
+    fortnightEnd: '2026-02-14',
+    clientMessageSent: true,
+    photoUploads: 3,
+    hsWalkthroughCompleted: false,
+  },
+  {
+    id: 'SMA-017',
+    projectId: 'boundary-42',
+    siteManager: 'TOMMY',
+    fortnightStart: '2026-02-01',
+    fortnightEnd: '2026-02-14',
+    clientMessageSent: false,
+    photoUploads: 0,
+    hsWalkthroughCompleted: false,
   },
 ];
 
