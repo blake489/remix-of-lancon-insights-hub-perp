@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { useKPISettings } from '@/hooks/useKPISettings';
 import { format, parse, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
 
 function formatCurrency(val: number) {
   const abs = Math.abs(val);
@@ -193,7 +194,7 @@ export default function ClaimsLedger() {
                 {formatCurrency(totals.revenue)} rev × {totals.weightedGpPct.toFixed(1)}% wGP
               </p>
             </div>
-            <div className="rounded-lg border bg-card p-3">
+            <Link to="/" className="rounded-lg border bg-card p-3 hover:bg-muted/40 transition-colors cursor-pointer block">
               <div className="flex items-center gap-1.5">
                 <ArrowDown className="h-3.5 w-3.5 text-red-500" />
                 <p className="text-xs text-muted-foreground font-medium">Fixed Costs</p>
@@ -202,7 +203,7 @@ export default function ClaimsLedger() {
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 {(kpiSettings?.overhead_percent ?? 10.5).toFixed(1)}% of {formatCurrency(kpiSettings?.monthly_revenue_target ?? 1650000)} target
               </p>
-            </div>
+            </Link>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
                 <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
