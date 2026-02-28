@@ -89,5 +89,22 @@ export function useProjects() {
     },
   });
 
-  return { projects, isLoading, addProject, updateProject };
+  const deleteProject = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast({ title: 'Project deleted', description: 'The project has been removed.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  return { projects, isLoading, addProject, updateProject, deleteProject };
 }
