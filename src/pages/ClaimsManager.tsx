@@ -19,7 +19,7 @@ import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtil
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight, Clock, CalendarDays } from 'lucide-react';
 // Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -706,7 +706,7 @@ export default function ClaimsManager() {
           </div>
 
           {/* Pipeline Metrics Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             {(() => {
               const { plannedTotal, confirmedTotal, claimedTotal, totalPipeline, plannedCount, confirmedCount, claimedCount, projectsWithClaims, onTimeCount, avgDaysBehind, conversionRate } = pipelineMetrics;
               const pipeMax = totalPipeline || 1;
@@ -733,6 +733,13 @@ export default function ClaimsManager() {
                 { label: 'Active Projects', value: String(projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary', tooltip: `${activePct.toFixed(0)}% of projects active`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${activePct}%` }} /></div> },
                 { label: 'On Time', value: `${onTimeCount}/${activeProjects.length}`, sub: avgDaysBehind > 0 ? `avg ${avgDaysBehind}d behind` : 'all on track', icon: Clock, color: avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500', tooltip: `${onTimePct.toFixed(0)}% on time`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", onTimePct >= 80 ? "bg-emerald-400" : onTimePct >= 50 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${onTimePct}%` }} /></div> },
                 { label: 'Conversion', value: `${conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500', tooltip: `${convPct.toFixed(1)}% claimed vs total`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", conversionRate >= 50 ? "bg-emerald-400" : "bg-amber-400")} style={{ width: `${convPct}%` }} /></div> },
+                (() => {
+                  const today = new Date();
+                  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                  const daysLeft = lastDay - today.getDate();
+                  const pctElapsed = (today.getDate() / lastDay) * 100;
+                  return { label: 'Days Left', value: String(daysLeft), sub: `of ${lastDay} days`, icon: CalendarDays, color: daysLeft <= 5 ? 'text-red-500' : daysLeft <= 10 ? 'text-amber-500' : 'text-sky-500', tooltip: `${pctElapsed.toFixed(0)}% of month elapsed`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", daysLeft <= 5 ? "bg-red-400" : daysLeft <= 10 ? "bg-amber-400" : "bg-sky-400")} style={{ width: `${100 - pctElapsed}%` }} /></div> };
+                })(),
               ];
 
               return cards.map(m => (
