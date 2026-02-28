@@ -1,9 +1,18 @@
 import { KPICard } from './KPICard';
 import { ProfitMetricsTable } from './ProfitMetricsTable';
-import { KPIData } from '@/types/dashboard';
+import { TrafficLight } from './TrafficLight';
+import { KPIData, TrafficLightStatus } from '@/types/dashboard';
 import { formatCurrency, formatPercent } from '@/lib/formatters';
 import { DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+
+export interface ClaimsRevenueSummary {
+  total: number;
+  planned: number;
+  confirmed: number;
+  claimed: number;
+  target: number;
+}
 
 interface MagicEquationHeaderProps {
   monthlyKPI: KPIData;
@@ -14,6 +23,7 @@ interface MagicEquationHeaderProps {
   overheadOverride?: number;
   onOverheadChange?: (value: number) => void;
   activeGpPercent?: number;
+  claimsRevenue?: ClaimsRevenueSummary;
 }
 
 const OVERHEAD_STEP = 5000;
@@ -40,6 +50,7 @@ export function MagicEquationHeader({
   overheadOverride,
   onOverheadChange,
   activeGpPercent,
+  claimsRevenue,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const pureProfit = monthlyKPI.grossProfit - overheadValue;
@@ -49,12 +60,47 @@ export function MagicEquationHeader({
     <div className="space-y-6">
       {/* Primary KPI Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title="Monthly Revenue"
-          value={formatCurrency(monthlyKPI.revenue, true)}
-          subtitle={`of ${formatCurrency(monthlyKPI.revenueTarget, true)}`}
-          status={monthlyKPI.revenueStatus}
-        />
+        {/* Revenue from Claims */}
+        {claimsRevenue ? (
+          <div className="glass-card p-5 transition-all duration-300 hover:shadow-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Revenue</p>
+                <p className="text-2xl font-bold text-foreground">{formatCurrency(claimsRevenue.total, true)}</p>
+                <p className="text-xs text-muted-foreground">of {formatCurrency(claimsRevenue.target, true)}</p>
+              </div>
+              <TrafficLight
+                status={
+                  claimsRevenue.total >= claimsRevenue.target ? 'success'
+                    : claimsRevenue.total >= claimsRevenue.target * 0.85 ? 'warning'
+                    : 'danger'
+                }
+                size="md"
+              />
+            </div>
+            <div className="mt-3 flex items-center gap-3 text-[10px] font-medium">
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                Claimed {formatCurrency(claimsRevenue.claimed, true)}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                Confirmed {formatCurrency(claimsRevenue.confirmed, true)}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/40" />
+                Planned {formatCurrency(claimsRevenue.planned, true)}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <KPICard
+            title="Monthly Revenue"
+            value={formatCurrency(monthlyKPI.revenue, true)}
+            subtitle={`of ${formatCurrency(monthlyKPI.revenueTarget, true)}`}
+            status={monthlyKPI.revenueStatus}
+          />
+        )}
         <KPICard
           title="Monthly Gross Profit"
           value={activeGpPercent != null ? formatPercent(activeGpPercent) : formatPercent(monthlyKPI.gpPercent)}

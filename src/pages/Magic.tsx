@@ -20,8 +20,10 @@ import {
   getPreviousFortnightKPIData,
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
+import { format } from 'date-fns';
 import { useProjects } from '@/hooks/useProjects';
 import { useKPISettings } from '@/hooks/useKPISettings';
+import { useClaims } from '@/hooks/useClaims';
 import { gpStatus, gpTextColor, GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { cn } from '@/lib/utils';
 import { Sparkles, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
@@ -53,7 +55,19 @@ const Magic = () => {
 
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
+  const { claims } = useClaims();
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
+  const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
+
+  // Claims revenue for current month
+  const currentMonthKey = format(new Date(), 'yyyy-MM');
+  const claimsRevenue = useMemo(() => {
+    const monthClaims = claims.filter(c => c.month_key === currentMonthKey);
+    const planned = monthClaims.filter(c => c.status === 'planned').reduce((s, c) => s + Math.abs(c.amount), 0);
+    const confirmed = monthClaims.filter(c => c.status === 'confirmed').reduce((s, c) => s + Math.abs(c.amount), 0);
+    const claimed = monthClaims.filter(c => c.status === 'claimed').reduce((s, c) => s + Math.abs(c.amount), 0);
+    return { total: planned + confirmed + claimed, planned, confirmed, claimed, target: revenueTarget };
+  }, [claims, currentMonthKey, revenueTarget]);
 
   // Weighted average GP% of active projects (excluding own jobs)
   const OWN_JOBS = ['28 durimbil st', '117a tranters ave'];
@@ -129,6 +143,7 @@ const Magic = () => {
             overheadOverride={overheadOverride}
             onOverheadChange={setOverheadOverride}
             activeGpPercent={activeGpPercent}
+            claimsRevenue={claimsRevenue}
           />
 
           {/* Project Breakdown Table */}
