@@ -130,15 +130,13 @@ export function ClaimsScheduleTable({
   );
 
   return (
-    <fieldset className="space-y-4">
-      <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-        Claims Schedule
-      </legend>
+    <fieldset className="space-y-3 border-2 border-amber-400/30 bg-amber-500/[0.03] rounded-lg px-3 py-3 ring-1 ring-amber-400/10 transition-all duration-300">
+      <legend className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-1.5">📅 Claims Schedule</legend>
 
-      <div className="space-y-2">
-        <Label>Schedule Type *</Label>
+      <div className="space-y-1">
+        <Label className="text-[11px] font-medium text-muted-foreground">Schedule Type *</Label>
         <Select value={scheduleType} onValueChange={(v) => onScheduleTypeChange(v as ClaimScheduleType)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9 text-sm font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -148,16 +146,16 @@ export function ClaimsScheduleTable({
         </Select>
       </div>
 
-      <div className="rounded-md border border-border overflow-hidden">
+      <div className="rounded-md border border-border/60 overflow-hidden bg-card/60">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40">
-              <TableHead className="font-semibold">Stage</TableHead>
-              <TableHead className="text-right font-semibold">Timeframe</TableHead>
-              <TableHead className="text-right font-semibold">Cum. Weeks</TableHead>
-              <TableHead className="text-right font-semibold">%</TableHead>
-              <TableHead className="text-right font-semibold">Ex GST</TableHead>
-              <TableHead className="text-right font-semibold">Inc GST</TableHead>
+            <TableRow className="bg-amber-50/60 dark:bg-amber-950/20 border-b border-amber-200/40 dark:border-amber-800/30">
+              <TableHead className="font-semibold text-xs">Stage</TableHead>
+              <TableHead className="text-right font-semibold text-xs">Timeframe</TableHead>
+              <TableHead className="text-right font-semibold text-xs">Cum. Weeks</TableHead>
+              <TableHead className="text-right font-semibold text-xs">%</TableHead>
+              <TableHead className="text-right font-semibold text-xs">Ex GST</TableHead>
+              <TableHead className="text-right font-semibold text-xs">Inc GST</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -167,8 +165,15 @@ export function ClaimsScheduleTable({
               const isSiteStart = row.stage === 'Site Start';
               const isContractSign = row.stage === 'Contract Sign';
               return (
-                <TableRow key={row.stage} className={isSiteStart ? 'bg-primary/5' : undefined}>
-                  <TableCell className="font-medium">
+                <TableRow
+                  key={row.stage}
+                  className={cn(
+                    "transition-colors",
+                    isSiteStart && 'bg-primary/5 border-l-2 border-l-primary/40',
+                    isContractSign && 'border-l-2 border-l-amber-400/40',
+                  )}
+                >
+                  <TableCell className="font-medium text-sm">
                     {row.stage}
                     {isSiteStart && (
                       <span className="text-[10px] text-muted-foreground ml-1">(claims base date)</span>
@@ -200,21 +205,21 @@ export function ClaimsScheduleTable({
                   <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
                     {isSiteStart ? '—' : cumWeeks[i] === 0 ? '—' : `${Math.round(cumWeeks[i] * 10) / 10} wks`}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? `${row.percent}%` : '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? formatCurrency(exGst) : '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">{row.percent > 0 ? formatCurrency(incGst) : '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums text-sm">{row.percent > 0 ? `${row.percent}%` : '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums text-sm">{row.percent > 0 ? formatCurrency(exGst) : '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums text-sm">{row.percent > 0 ? formatCurrency(incGst) : '—'}</TableCell>
                 </TableRow>
               );
             })}
-            <TableRow className="bg-muted/30 font-semibold">
-              <TableCell>Total</TableCell>
+            <TableRow className="bg-amber-50/40 dark:bg-amber-950/10 font-semibold border-t-2 border-amber-200/40 dark:border-amber-800/30">
+              <TableCell className="text-sm">Total</TableCell>
               <TableCell />
               <TableCell className="text-right tabular-nums text-xs">
                 {`${Math.round(cumWeeks[cumWeeks.length - 1] * 10) / 10} wks`}
               </TableCell>
-              <TableCell className="text-right tabular-nums">{totalPercent}%</TableCell>
-              <TableCell className="text-right tabular-nums">{formatCurrency(contractValueExGst)}</TableCell>
-              <TableCell className="text-right tabular-nums">{formatCurrency(contractValueExGst * 1.1)}</TableCell>
+              <TableCell className="text-right tabular-nums text-sm">{totalPercent}%</TableCell>
+              <TableCell className="text-right tabular-nums text-sm">{formatCurrency(contractValueExGst)}</TableCell>
+              <TableCell className="text-right tabular-nums text-sm">{formatCurrency(contractValueExGst * 1.1)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>
