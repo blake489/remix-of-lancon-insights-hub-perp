@@ -114,11 +114,11 @@ export default function Sales() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Sales</h1>
-            <p className="text-sm text-muted-foreground">Leads & opportunities tracker</p>
+            <p className="text-sm text-muted-foreground">Opportunities tracker</p>
           </div>
           <Button onClick={openAdd} className="gap-2">
             <Plus className="h-4 w-4" />
-            Add Lead
+            Add Opportunity
           </Button>
         </div>
 
@@ -128,7 +128,7 @@ export default function Sales() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Active Leads</span>
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Active Opportunities</span>
               </div>
               <p className="text-2xl font-bold tabular-nums">{metrics.totalLeads}</p>
             </CardContent>
@@ -193,8 +193,8 @@ export default function Sales() {
             <div className="flex items-center justify-center h-full text-muted-foreground">Loading...</div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-              <p className="text-sm">No leads found</p>
-              <Button variant="outline" size="sm" onClick={openAdd}>Add your first lead</Button>
+              <p className="text-sm">No opportunities found</p>
+              <Button variant="outline" size="sm" onClick={openAdd}>Add your first opportunity</Button>
             </div>
           ) : (
             <div className="overflow-auto h-full">
@@ -245,7 +245,7 @@ export default function Sales() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete lead?</AlertDialogTitle>
+                                  <AlertDialogTitle>Delete opportunity?</AlertDialogTitle>
                                   <AlertDialogDescription>This will permanently remove "{lead.client_name}" from your sales pipeline.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -270,7 +270,7 @@ export default function Sales() {
       <Dialog open={dialogOpen} onOpenChange={o => { if (!o) { setDialogOpen(false); resetForm(); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Lead' : 'Add Lead'}</DialogTitle>
+            <DialogTitle>{editing ? 'Edit Opportunity' : 'Add Opportunity'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
@@ -308,7 +308,7 @@ export default function Sales() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancel</Button>
-              <Button onClick={handleSave} disabled={!form.client_name}>{editing ? 'Save' : 'Add Lead'}</Button>
+              <Button onClick={handleSave} disabled={!form.client_name}>{editing ? 'Save' : 'Add Opportunity'}</Button>
             </div>
           </div>
         </DialogContent>
