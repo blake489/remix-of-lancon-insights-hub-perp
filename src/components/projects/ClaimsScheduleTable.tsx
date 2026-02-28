@@ -63,6 +63,8 @@ interface ClaimsScheduleTableProps {
   onTimeframeChange?: (stage: string, value: number) => void;
   stageStatuses?: Record<string, string>;
   onStageStatusChange?: (stage: string, status: string) => void;
+  stageClaimedDates?: Record<string, string>;
+  onStageClaimedDateChange?: (stage: string, date: string) => void;
 }
 
 const formatCurrency = (val: number) =>
@@ -95,6 +97,8 @@ export function ClaimsScheduleTable({
   onTimeframeChange,
   stageStatuses,
   onStageStatusChange,
+  stageClaimedDates,
+  onStageClaimedDateChange,
 }: ClaimsScheduleTableProps) {
   const baseRows = defaultSchedules[scheduleType];
   const rows = baseRows.map(r => ({
@@ -161,6 +165,7 @@ export function ClaimsScheduleTable({
               <TableHead className="text-right font-semibold text-xs">Ex GST</TableHead>
               <TableHead className="text-right font-semibold text-xs">Inc GST</TableHead>
               <TableHead className="font-semibold text-xs text-center">Status</TableHead>
+              <TableHead className="font-semibold text-xs text-center">Date Claimed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -235,6 +240,15 @@ export function ClaimsScheduleTable({
                       </Select>
                     ) : '—'}
                   </TableCell>
+                  <TableCell className="text-center">
+                    {row.percent > 0 && (stageStatuses?.[row.stage] || 'planned') === 'claimed'
+                      ? renderDatePicker(
+                          'claimed date',
+                          stageClaimedDates?.[row.stage],
+                          (d) => onStageClaimedDateChange?.(row.stage, d)
+                        )
+                      : '—'}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -247,6 +261,7 @@ export function ClaimsScheduleTable({
               <TableCell className="text-right tabular-nums text-sm">{totalPercent}%</TableCell>
               <TableCell className="text-right tabular-nums text-sm">{formatCurrency(contractValueExGst)}</TableCell>
               <TableCell className="text-right tabular-nums text-sm">{formatCurrency(contractValueExGst * 1.1)}</TableCell>
+              <TableCell />
               <TableCell />
             </TableRow>
           </TableBody>
