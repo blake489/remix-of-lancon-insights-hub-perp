@@ -197,7 +197,7 @@ export default function ClaimsLedger() {
             <Link to="/" className="rounded-lg border bg-card p-3 hover:bg-muted/40 transition-colors cursor-pointer block">
               <div className="flex items-center gap-1.5">
                 <ArrowDown className="h-3.5 w-3.5 text-red-500" />
-                <p className="text-xs text-muted-foreground font-medium">Fixed Costs</p>
+                <p className="text-xs text-muted-foreground font-medium">Monthly Overheads</p>
               </div>
               <p className="text-xl font-bold tabular-nums text-red-600">{formatCurrency(totals.overhead)}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
