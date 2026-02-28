@@ -105,13 +105,6 @@ const Magic = () => {
                 </div>
                 <TodayWidget variant="inline" />
               </div>
-              <DashboardFilters
-                selectedMonth={selectedMonth}
-                selectedFortnight={selectedFortnight}
-                availableMonths={availableMonths}
-                onMonthChange={setSelectedMonth}
-                onFortnightChange={setSelectedFortnight}
-              />
             </div>
           </div>
         </div>
