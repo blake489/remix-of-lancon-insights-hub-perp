@@ -18,7 +18,7 @@ import { useProjects, ProjectRow } from '@/hooks/useProjects';
 import { useClaims } from '@/hooks/useClaims';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { format, parse, addMonths, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 
@@ -112,6 +112,22 @@ export default function ClaimsLedger() {
     return { grossProfit, revenue, weightedGpPct, overhead: monthlyOverhead, net: grossProfit - monthlyOverhead, count: monthClaims.length };
   }, [monthClaims, kpiSettings, projectMap]);
 
+  // Handover contracts for the selected month (projects with category === 'handover' that have claims this month)
+  const handoverProjects = useMemo(() => {
+    const handoverProjectIds = new Set(
+      monthClaims
+        .map(c => c.project_id)
+        .filter(id => projectMap.get(id)?.category === 'handover')
+    );
+    return Array.from(handoverProjectIds).map(id => {
+      const project = projectMap.get(id)!;
+      const projectClaims = monthClaims.filter(c => c.project_id === id);
+      const totalUp = projectClaims.filter(c => c.direction === 'Up').reduce((s, c) => s + c.amount, 0);
+      const totalDown = projectClaims.filter(c => c.direction === 'Down').reduce((s, c) => s + c.amount, 0);
+      return { project, claims: projectClaims, totalUp, totalDown, net: totalUp - totalDown };
+    });
+  }, [monthClaims, projectMap]);
+
   const navigateMonth = (dir: 'prev' | 'next') => {
     const d = parse(currentMonth + '-01', 'yyyy-MM-dd', new Date());
     const newMonth = format(dir === 'next' ? addMonths(d, 1) : subMonths(d, 1), 'yyyy-MM');
@@ -123,7 +139,7 @@ export default function ClaimsLedger() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-2rem)] p-4 gap-4">
+      <div className="flex flex-col min-h-[calc(100vh-2rem)] p-4 gap-4">
         {/* Header */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -311,6 +327,63 @@ export default function ClaimsLedger() {
             </div>
           )}
         </div>
+        {/* Handover Contracts Table */}
+        {handoverProjects.length > 0 && (
+          <div className="border rounded-lg overflow-hidden bg-card">
+            <div className="px-4 py-3 border-b bg-muted/30 flex items-center gap-2">
+              <Home className="h-4 w-4 text-teal-600" />
+              <h2 className="text-sm font-semibold text-foreground">Handover Contracts — {monthLabel(currentMonth)}</h2>
+              <Badge variant="secondary" className="text-xs ml-auto">{handoverProjects.length}</Badge>
+            </div>
+            <div className="overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/20">
+                    <TableHead className="font-semibold">Project</TableHead>
+                    <TableHead className="font-semibold">Client</TableHead>
+                    <TableHead className="font-semibold">Supervisor</TableHead>
+                    <TableHead className="font-semibold text-right">Contract Value</TableHead>
+                    <TableHead className="font-semibold text-right">GP%</TableHead>
+                    <TableHead className="font-semibold text-right">Claims Up</TableHead>
+                    <TableHead className="font-semibold text-right">Claims Down</TableHead>
+                    <TableHead className="font-semibold text-right">Net</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {handoverProjects.map(({ project, totalUp, totalDown, net }) => (
+                    <TableRow key={project.id} className="hover:bg-muted/20">
+                      <TableCell className="font-medium text-sm">{project.job_name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{project.client_name || '—'}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{project.site_manager || '—'}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{formatCurrency(project.contract_value_ex_gst)}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{project.forecast_gp_percent.toFixed(1)}%</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm text-emerald-700">{formatCurrency(totalUp)}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm text-red-700">{formatCurrency(totalDown)}</TableCell>
+                      <TableCell className={cn("text-right font-bold tabular-nums text-sm", net >= 0 ? "text-emerald-700" : "text-red-700")}>
+                        {formatCurrency(net)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/30 font-semibold border-t-2">
+                    <TableCell colSpan={5} className="text-right text-sm">Handover Totals</TableCell>
+                    <TableCell className="text-right tabular-nums text-sm text-emerald-700">
+                      {formatCurrency(handoverProjects.reduce((s, h) => s + h.totalUp, 0))}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm text-red-700">
+                      {formatCurrency(handoverProjects.reduce((s, h) => s + h.totalDown, 0))}
+                    </TableCell>
+                    <TableCell className={cn(
+                      "text-right font-bold tabular-nums text-sm",
+                      handoverProjects.reduce((s, h) => s + h.net, 0) >= 0 ? "text-emerald-700" : "text-red-700"
+                    )}>
+                      {formatCurrency(handoverProjects.reduce((s, h) => s + h.net, 0))}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
