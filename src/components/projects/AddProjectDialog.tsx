@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,7 @@ interface AddProjectDialogProps {
   prefillContractValue?: string;
 }
 
-export function AddProjectDialog({ onSubmit, isSubmitting, defaultOpen = false, prefillClientName, prefillContractValue }: AddProjectDialogProps) {
+export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialogProps>(function AddProjectDialog({ onSubmit, isSubmitting, defaultOpen = false, prefillClientName, prefillContractValue }, _ref) {
   const { siteManagers } = useSiteManagers();
   const [open, setOpen] = useState(defaultOpen);
   const [customTimeframes, setCustomTimeframes] = useState<Record<string, number>>({});
@@ -234,4 +234,4 @@ export function AddProjectDialog({ onSubmit, isSubmitting, defaultOpen = false, 
       </DialogContent>
     </Dialog>
   );
-}
+});
