@@ -57,7 +57,7 @@ export function SiteManagerPopover({ siteManagerName, children }: SiteManagerPop
     );
   };
 
-  if (totalJobs === 0) return <>{children}</>;
+  
 
   return (
     <Popover>
@@ -106,7 +106,13 @@ export function SiteManagerPopover({ siteManagerName, children }: SiteManagerPop
             </TableRow>
           </TableHeader>
           <TableBody>
-            {smActivities.map((activity) => {
+            {smActivities.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-6">
+                  No activity records for this fortnight yet.
+                </TableCell>
+              </TableRow>
+            ) : smActivities.map((activity) => {
               const isComplete = activity.clientMessageSent && activity.photoUploads > 0 && activity.hsWalkthroughCompleted;
               const hasMissing = !activity.clientMessageSent || activity.photoUploads === 0;
 
