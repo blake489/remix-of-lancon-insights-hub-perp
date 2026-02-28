@@ -43,15 +43,12 @@ export function MagicEquationHeader({
           value={formatCurrency(monthlyKPI.revenue, true)}
           subtitle={`of ${formatCurrency(monthlyKPI.revenueTarget, true)}`}
           status={monthlyKPI.revenueStatus}
-          trend={monthlyKPI.revenue >= monthlyKPI.revenueTarget ? 'up' : 'down'}
-          trendValue={`${((monthlyKPI.revenue / monthlyKPI.revenueTarget) * 100).toFixed(0)}%`}
         />
         <KPICard
           title="Gross Profit"
           value={formatPercent(monthlyKPI.gpPercent)}
           subtitle="Target: 18%"
           status={monthlyKPI.gpStatus}
-          trend={monthlyKPI.gpPercent >= 18 ? 'up' : monthlyKPI.gpPercent >= DEFAULT_GP_THRESHOLDS.green ? 'flat' : 'down'}
         />
         <KPICard
           title="Overheads"
@@ -62,7 +59,6 @@ export function MagicEquationHeader({
           title="Pure Profit"
           value={formatCurrency(monthlyKPI.pureProfit, true)}
           status={monthlyKPI.pureProfitStatus}
-          trend={monthlyKPI.pureProfit >= 0 ? 'up' : 'down'}
         />
       </div>
 
