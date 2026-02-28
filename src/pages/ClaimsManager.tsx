@@ -10,11 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
-import { useClaims, Claim, ClaimInsert } from '@/hooks/useClaims';
+import { useClaims, Claim, ClaimInsert, ClaimStatus } from '@/hooks/useClaims';
 import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtils';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock } from 'lucide-react';
+import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; darkBg: string; darkBorder: string }> = {
@@ -76,7 +77,7 @@ function getLastDay(monthKey: string): number {
 export default function ClaimsManager() {
   const { toast } = useToast();
   const { projects, isLoading: projectsLoading } = useProjects();
-  const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim } = useClaims();
+  const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim, updateClaimStatus } = useClaims();
 
   // Month range
   const now = new Date();
@@ -180,16 +181,35 @@ export default function ClaimsManager() {
     return { up, down, net: up + down };
   }, [claims, months]);
 
-  // Half-month totals (key: "yyyy-MM__1" or "yyyy-MM__2")
-  const halfTotals = useMemo(() => {
-    const map = new Map<string, number>();
+  // Status-based month metrics: planned/confirmed/claimed per month
+  const monthStatusTotals = useMemo(() => {
+    const map = new Map<string, { planned: number; confirmed: number; claimed: number }>();
     claims.forEach(c => {
-      const half = getHalf(c.claim_date);
-      const key = `${c.month_key}__${half}`;
-      map.set(key, (map.get(key) || 0) + c.amount);
+      if (!months.includes(c.month_key)) return;
+      if (!map.has(c.month_key)) map.set(c.month_key, { planned: 0, confirmed: 0, claimed: 0 });
+      const entry = map.get(c.month_key)!;
+      const amt = Math.abs(c.amount);
+      const status = (c.status || 'planned') as 'planned' | 'confirmed' | 'claimed';
+      entry[status] += amt;
+    });
+    // Also add projected (not yet created) claims as planned
+    (projects || []).forEach((p: ProjectRow) => {
+      if (!p.start_date || p.contract_value_ex_gst <= 0) return;
+      const projected = computeProjectedClaims(
+        p.id, p.start_date,
+        (p.schedule_type || 'standard') as ClaimScheduleType,
+        (p.custom_timeframes || {}) as Record<string, number>,
+        p.contract_value_ex_gst,
+      );
+      projected.forEach(pc => {
+        if (!months.includes(pc.monthKey)) return;
+        if (claims.some(c => c.project_id === pc.projectId && c.claim_type === pc.stage)) return;
+        if (!map.has(pc.monthKey)) map.set(pc.monthKey, { planned: 0, confirmed: 0, claimed: 0 });
+        map.get(pc.monthKey)!.planned += pc.amountExGst;
+      });
     });
     return map;
-  }, [claims]);
+  }, [claims, months, projects]);
 
   // Full month totals for the header
   const monthTotals = useMemo(() => {
@@ -199,6 +219,23 @@ export default function ClaimsManager() {
     });
     return map;
   }, [claims]);
+
+  // Status progression handler
+  const handleStatusToggle = useCallback(async (claim: Claim) => {
+    const nextStatus: Record<string, ClaimStatus> = {
+      planned: 'confirmed',
+      confirmed: 'claimed',
+      claimed: 'claimed', // already at end
+    };
+    const current = (claim.status || 'planned') as string;
+    const next = nextStatus[current] || 'confirmed';
+    if (next === current) return;
+    try {
+      await updateClaimStatus.mutateAsync({ id: claim.id, status: next });
+    } catch (e: any) {
+      toast({ title: 'Error updating status', description: e.message, variant: 'destructive' });
+    }
+  }, [updateClaimStatus, toast]);
 
   const resetClaimForm = useCallback(() => {
     setClaimForm({
@@ -452,6 +489,19 @@ export default function ClaimsManager() {
               <div className="w-3 h-3 rounded bg-red-50 border border-red-200 dark:bg-red-950/30" />
               <span>Claimed (Down)</span>
             </div>
+            <div className="h-3 w-px bg-border" />
+            <div className="flex items-center gap-1.5">
+              <Circle className="h-3 w-3 text-muted-foreground" />
+              <span>Planned</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3 w-3 text-amber-500" />
+              <span>Confirmed</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCheck className="h-3 w-3 text-emerald-500" />
+              <span>Claimed</span>
+            </div>
           </div>
         </div>
 
@@ -500,23 +550,43 @@ export default function ClaimsManager() {
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full w-full">
                   <div className="inline-flex flex-col min-w-full">
-                    {/* Month Headers - Two Rows: Month name spans 2 cols, then sub-headers */}
+                    {/* Month Headers */}
                     <div className="sticky top-0 z-10 bg-muted/40 border-b">
-                      {/* Top row: month names */}
+                      {/* Top row: month names + status metrics */}
                       <div className="flex">
-                        {months.map(mk => (
-                          <div key={mk} className="w-[300px] shrink-0 border-r h-8 flex items-center justify-center gap-2">
-                            <span className="text-xs font-semibold uppercase tracking-wide">{monthLabel(mk)}</span>
-                            {monthTotals.has(mk) && (
-                              <span className={cn(
-                                "text-[10px] font-medium",
-                                (monthTotals.get(mk) || 0) >= 0 ? "text-emerald-600" : "text-red-600"
-                              )}>
-                                {formatCurrency(monthTotals.get(mk) || 0)}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                        {months.map(mk => {
+                          const st = monthStatusTotals.get(mk) || { planned: 0, confirmed: 0, claimed: 0 };
+                          return (
+                            <div key={mk} className="w-[300px] shrink-0 border-r">
+                              <div className="h-7 flex items-center justify-center gap-2">
+                                <span className="text-xs font-semibold uppercase tracking-wide">{monthLabel(mk)}</span>
+                                {monthTotals.has(mk) && (
+                                  <span className={cn(
+                                    "text-[10px] font-medium",
+                                    (monthTotals.get(mk) || 0) >= 0 ? "text-emerald-600" : "text-red-600"
+                                  )}>
+                                    {formatCurrency(monthTotals.get(mk) || 0)}
+                                  </span>
+                                )}
+                              </div>
+                              {/* Status metrics row */}
+                              <div className="flex items-center justify-center gap-2 h-5 border-t bg-muted/20">
+                                <span className="text-[9px] flex items-center gap-0.5">
+                                  <Circle className="h-2 w-2 text-muted-foreground" />
+                                  <span className="text-muted-foreground">{formatCurrency(st.planned)}</span>
+                                </span>
+                                <span className="text-[9px] flex items-center gap-0.5">
+                                  <CheckCircle2 className="h-2 w-2 text-amber-500" />
+                                  <span className="text-amber-600">{formatCurrency(st.confirmed)}</span>
+                                </span>
+                                <span className="text-[9px] flex items-center gap-0.5">
+                                  <CheckCheck className="h-2 w-2 text-emerald-500" />
+                                  <span className="text-emerald-600">{formatCurrency(st.claimed)}</span>
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                       {/* Sub row: fortnight labels */}
                       <div className="flex border-t">
@@ -624,6 +694,25 @@ export default function ClaimsManager() {
                                               {formatCurrency(claim.amount)}
                                             </div>
                                           )}
+                                          {/* Status checkbox */}
+                                          <div
+                                            className="flex items-center gap-1 mt-0.5 cursor-pointer"
+                                            onClick={(e) => { e.stopPropagation(); handleStatusToggle(claim); }}
+                                          >
+                                            <Checkbox
+                                              checked={claim.status === 'claimed'}
+                                              className="h-3 w-3"
+                                              onClick={(e) => e.stopPropagation()}
+                                              onCheckedChange={() => handleStatusToggle(claim)}
+                                            />
+                                            <span className={cn("text-[9px] font-medium", {
+                                              'text-muted-foreground': claim.status === 'planned',
+                                              'text-amber-600': claim.status === 'confirmed',
+                                              'text-emerald-600': claim.status === 'claimed',
+                                            })}>
+                                              {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
+                                            </span>
+                                          </div>
                                         </div>
                                       );
                                     })}
