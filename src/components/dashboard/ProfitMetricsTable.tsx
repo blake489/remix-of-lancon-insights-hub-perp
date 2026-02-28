@@ -9,13 +9,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { KPIData } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Target } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface ProfitMetricsTableProps {
   currentFortnightKPI: KPIData;
   previousFortnightKPI: KPIData;
   monthlyKPI: KPIData;
   overheadOverride: number;
+  bhagTarget?: number;
+  onBhagChange?: (value: number) => void;
 }
 
 const fmt = (v: number) => {
@@ -34,9 +37,9 @@ export function ProfitMetricsTable({
   previousFortnightKPI,
   monthlyKPI,
   overheadOverride,
+  bhagTarget = 1_000_000,
+  onBhagChange,
 }: ProfitMetricsTableProps) {
-  // Derive period data
-  // Quarterly = 3× monthly, Annual = 12× monthly (annualised run-rate)
   const qtrMultiplier = 3;
   const annualMultiplier = 12;
 
@@ -46,8 +49,9 @@ export function ProfitMetricsTable({
       revenue: previousFortnightKPI.revenue,
       gp: previousFortnightKPI.grossProfit,
       gpPct: previousFortnightKPI.gpPercent,
-      overheads: overheadOverride / 2, // half-month
+      overheads: overheadOverride / 2,
       profit: previousFortnightKPI.grossProfit - overheadOverride / 2,
+      multiplierToAnnual: 24,
     },
     {
       label: 'Current FN',
@@ -56,6 +60,7 @@ export function ProfitMetricsTable({
       gpPct: currentFortnightKPI.gpPercent,
       overheads: overheadOverride / 2,
       profit: currentFortnightKPI.grossProfit - overheadOverride / 2,
+      multiplierToAnnual: 24,
     },
     {
       label: 'Monthly',
@@ -64,6 +69,7 @@ export function ProfitMetricsTable({
       gpPct: monthlyKPI.gpPercent,
       overheads: overheadOverride,
       profit: monthlyKPI.grossProfit - overheadOverride,
+      multiplierToAnnual: 12,
     },
     {
       label: 'Quarter',
@@ -72,6 +78,7 @@ export function ProfitMetricsTable({
       gpPct: monthlyKPI.gpPercent,
       overheads: overheadOverride * qtrMultiplier,
       profit: (monthlyKPI.grossProfit - overheadOverride) * qtrMultiplier,
+      multiplierToAnnual: 4,
     },
     {
       label: 'Annual (FY)',
@@ -80,6 +87,7 @@ export function ProfitMetricsTable({
       gpPct: monthlyKPI.gpPercent,
       overheads: overheadOverride * annualMultiplier,
       profit: (monthlyKPI.grossProfit - overheadOverride) * annualMultiplier,
+      multiplierToAnnual: 1,
     },
   ];
 
@@ -133,7 +141,6 @@ export function ProfitMetricsTable({
                           'text-right tabular-nums text-sm',
                           row.colorPositive && val >= 0 && 'text-emerald-600 font-bold',
                           row.colorPositive && val < 0 && 'text-red-600 font-bold',
-                          row.key === 'profit' && 'text-sm',
                         )}
                       >
                         {display}
@@ -142,6 +149,61 @@ export function ProfitMetricsTable({
                   })}
                 </TableRow>
               ))}
+
+              {/* BHAG Target Row */}
+              <TableRow className="border-t border-border/50">
+                <TableCell className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  <div className="flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 text-primary" />
+                    BHAG Target
+                  </div>
+                </TableCell>
+                {periods.map(p => {
+                  const periodBhag = bhagTarget / p.multiplierToAnnual;
+                  if (p.label === 'Annual (FY)') {
+                    return (
+                      <TableCell key={p.label} className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="text-xs text-muted-foreground">$</span>
+                          <Input
+                            type="number"
+                            value={bhagTarget}
+                            onChange={e => onBhagChange?.(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="w-24 h-7 text-sm font-bold tabular-nums text-right p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </div>
+                      </TableCell>
+                    );
+                  }
+                  return (
+                    <TableCell key={p.label} className="text-right tabular-nums text-sm font-medium text-muted-foreground">
+                      {fmt(periodBhag)}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+
+              {/* Gap to BHAG Row */}
+              <TableRow className="bg-muted/20">
+                <TableCell className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                  Gap to BHAG
+                </TableCell>
+                {periods.map(p => {
+                  const periodBhag = bhagTarget / p.multiplierToAnnual;
+                  const gap = p.profit - periodBhag;
+                  return (
+                    <TableCell
+                      key={p.label}
+                      className={cn(
+                        'text-right tabular-nums text-sm font-bold',
+                        gap >= 0 ? 'text-emerald-600' : 'text-red-600',
+                      )}
+                    >
+                      {fmt(gap)}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
             </TableBody>
           </Table>
         </div>

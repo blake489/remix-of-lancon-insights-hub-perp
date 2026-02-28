@@ -54,6 +54,7 @@ const Magic = () => {
   const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
   const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
   const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  const [bhagTarget, setBhagTarget] = useState<number>(1_000_000);
 
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
@@ -169,6 +170,8 @@ const Magic = () => {
             nextMonthOverhead={nextMonthOverhead}
             onLastMonthOverheadChange={setLastMonthOverhead}
             onNextMonthOverheadChange={setNextMonthOverhead}
+            bhagTarget={bhagTarget}
+            onBhagChange={setBhagTarget}
           />
 
           {/* Project Breakdown Table */}
