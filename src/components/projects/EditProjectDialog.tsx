@@ -176,7 +176,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           </fieldset>
 
           <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract & Dates</legend>
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Contract Value (ex GST)</Label>
@@ -185,14 +185,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
               <div className="space-y-2">
                 <Label>Contract Value (inc GST)</Label>
                 <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Input type="date" value={getVal('start_date')} onChange={e => updateField('start_date', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>PC Date</Label>
-                <Input type="date" value={getVal('pc_date')} onChange={e => updateField('pc_date', e.target.value)} />
               </div>
             </div>
           </fieldset>
