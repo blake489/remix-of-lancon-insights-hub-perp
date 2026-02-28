@@ -37,11 +37,7 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
   const removeRow = (index: number) => onChange(variations.filter((_, i) => i !== index));
 
   return (
-    <fieldset className="space-y-4">
-      <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-        Variations
-      </legend>
-
+    <div className="space-y-3">
       {variations.length > 0 && (
         <div className="space-y-2">
           <div className="grid grid-cols-[1fr_140px_36px] gap-2 text-xs font-medium text-muted-foreground px-1">
@@ -50,7 +46,7 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
             <span />
           </div>
           {variations.map((v, i) => (
-            <div key={i} className="grid grid-cols-[1fr_140px_36px] gap-2 items-center">
+            <div key={i} className="grid grid-cols-[1fr_140px_36px] gap-2 items-center animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 50}ms` }}>
               <Input
                 placeholder="e.g. Extra bathroom tiling"
                 value={v.description}
@@ -93,6 +89,6 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
         <Plus className="h-3.5 w-3.5" />
         Add Variation
       </Button>
-    </fieldset>
+    </div>
   );
 }
