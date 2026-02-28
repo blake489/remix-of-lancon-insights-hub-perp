@@ -1,6 +1,7 @@
 import React from 'react';
 import { ProjectRow, ProjectUpdate } from '@/hooks/useProjects';
 import { ClaimStageInfo } from '@/hooks/useProjectClaimStages';
+import { ProjectEOTTally } from '@/hooks/useWeatherEOTLogs';
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle, CloudRain } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { SiteManagerPopover } from './SiteManagerPopover';
 import { gpSemanticColor } from '@/lib/gpThresholds';
@@ -29,6 +30,7 @@ interface ProjectCategorySectionProps {
   trends?: Record<string, { schedule: string; profit: string; scheduleDays: number; profitDelta: number }>;
   claimStages?: Record<string, ClaimStageInfo>;
   highlighted?: boolean;
+  eotTallies?: Record<string, ProjectEOTTally>;
 }
 
 const formatCurrency = (val: number) => {
@@ -87,11 +89,12 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
       <TableCell />
       <TableCell />
       <TableCell />
+      <TableCell />
     </TableRow>
   );
 }
 
-export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, isSubmittingEdit, expandedProjectId, trends, claimStages, highlighted = true }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, isSubmittingEdit, expandedProjectId, trends, claimStages, highlighted = true, eotTallies }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -124,7 +127,13 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                   <TooltipContent>Profit: vs original forecast</TooltipContent>
                 </Tooltip>
               </TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="text-center w-[50px]">
+                <Tooltip>
+                  <TooltipTrigger asChild><span className="flex items-center justify-center"><CloudRain className="h-3.5 w-3.5 text-blue-500" /></span></TooltipTrigger>
+                  <TooltipContent>Weather EOT days this month</TooltipContent>
+                </Tooltip>
+              </TableHead>
+              <TableHead className="text-center w-[50px]">Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -234,6 +243,39 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>
+                    {(() => {
+                      const eot = eotTallies?.[project.id];
+                      const days = eot?.currentMonthDays || 0;
+                      return (
+                        <TableCell className="text-center">
+                          {days > 0 ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    'text-xs tabular-nums',
+                                    days >= 5
+                                      ? 'border-destructive/50 bg-destructive/10 text-destructive'
+                                      : days >= 3
+                                      ? 'border-amber-300 bg-amber-50 text-amber-700'
+                                      : 'border-blue-300 bg-blue-50 text-blue-700'
+                                  )}
+                                >
+                                  {days}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {days} EOT day{days !== 1 ? 's' : ''} this month
+                                {eot?.lifetimeDays ? ` · ${eot.lifetimeDays} lifetime` : ''}
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      );
+                    })()}
                     <TableCell>
                       <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
                         {project.status}
@@ -247,7 +289,7 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                   </TableRow>
                   {isExpanded && onSubmitEdit && (
                     <tr>
-                      <td colSpan={12} className="p-0">
+                      <td colSpan={13} className="p-0">
                         <EditProjectDialog
                           project={project}
                           open={true}
