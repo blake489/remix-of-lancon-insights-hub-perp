@@ -41,7 +41,7 @@ import {
   Landmark,
   Receipt,
   BookOpen,
-  Sparkles,
+  
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -53,7 +53,6 @@ import {
 
 const topItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Magic', url: '/magic', icon: Sparkles },
 ];
 
 const buildingItems = [
