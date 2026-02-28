@@ -704,15 +704,12 @@ export default function ClaimsManager() {
                                         >
                                           <div className="flex items-center justify-between gap-0.5">
                                             <span
-                                              className={cn("font-semibold truncate cursor-pointer text-[10px]", sc.text)}
+                                              className={cn("font-medium truncate cursor-pointer text-[10px]", sc.text)}
                                               onClick={() => openEditClaim(claim)}
                                             >
                                               {claim.claim_type}
                                             </span>
-                                            {claim.direction === 'Up'
-                                              ? <ArrowUp className="h-2.5 w-2.5 text-emerald-600 shrink-0" />
-                                              : <ArrowDown className="h-2.5 w-2.5 text-red-600 shrink-0" />
-                                            }
+                                            <CalendarClock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
                                           </div>
                                           <span className="text-[9px] text-muted-foreground block">
                                             {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM')}
@@ -734,7 +731,7 @@ export default function ClaimsManager() {
                                           ) : (
                                             <div
                                               className={cn(
-                                                "font-bold tabular-nums cursor-pointer hover:underline text-[10px]", sc.text
+                                                "font-semibold tabular-nums cursor-pointer hover:underline text-[10px]", sc.text
                                               )}
                                               onClick={(e) => {
                                                 e.stopPropagation();
