@@ -82,6 +82,7 @@ export function useClaims() {
         claim_type: input.claim_type,
         reference: input.reference || null,
         notes: input.notes || null,
+        status: input.status || 'planned',
       }).eq('id', id);
       if (error) throw error;
     },
