@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import confetti from 'canvas-confetti';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -311,6 +312,14 @@ export default function ClaimsManager() {
         if (payload.status === 'claimed' && editingClaim.status !== 'claimed') {
           setCelebratingClaimId(editingClaim.id);
           setTimeout(() => setCelebratingClaimId(null), 2000);
+          // Full-screen confetti burst
+          const end = Date.now() + 1500;
+          const colors = ['#10b981', '#34d399', '#6ee7b7', '#fbbf24', '#f59e0b'];
+          (function frame() {
+            confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors });
+            confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          })();
         }
         toast({ title: 'Claim updated' });
       } else {
