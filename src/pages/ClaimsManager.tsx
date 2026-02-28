@@ -512,7 +512,7 @@ export default function ClaimsManager() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-2rem)] p-4 gap-4">
+      <div className={cn("flex flex-col p-4 gap-4", selectedProjectId ? "min-h-[calc(100vh-2rem)]" : "h-[calc(100vh-2rem)]")}>
         {/* Top Toolbar */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
