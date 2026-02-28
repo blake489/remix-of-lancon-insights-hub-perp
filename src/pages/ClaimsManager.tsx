@@ -168,6 +168,7 @@ export default function ClaimsManager() {
         (p.schedule_type || 'standard') as ClaimScheduleType,
         (p.custom_timeframes || {}) as Record<string, number>,
         p.contract_value_ex_gst,
+        p.site_start_date,
       );
       projected.forEach(pc => {
         const half = getHalf(format(pc.projectedDate, 'yyyy-MM-dd'));
@@ -211,6 +212,7 @@ export default function ClaimsManager() {
         (p.schedule_type || 'standard') as ClaimScheduleType,
         (p.custom_timeframes || {}) as Record<string, number>,
         p.contract_value_ex_gst,
+        p.site_start_date,
       );
       projected.forEach(pc => {
         if (!months.includes(pc.monthKey)) return;

@@ -16,6 +16,7 @@ export interface ProjectRow {
   contract_value_ex_gst: number;
   contract_value_inc_gst: number;
   start_date: string | null;
+  site_start_date: string | null;
   pc_date: string | null;
   current_stage: string | null;
   status: string;

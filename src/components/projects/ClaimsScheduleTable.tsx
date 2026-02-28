@@ -29,6 +29,7 @@ export const defaultSchedules: Record<ClaimScheduleType, StageRow[]> = {
   standard: [
     { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
     { stage: 'Deposit', percent: 5, timeValue: 7, timeUnit: 'days' },
+    { stage: 'Site Start', percent: 0, timeValue: 0, timeUnit: 'days' },
     { stage: 'Slab/Base Stage', percent: 15, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Frame Stage', percent: 20, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Enclosed Stage', percent: 25, timeValue: 8, timeUnit: 'weeks' },
@@ -39,6 +40,7 @@ export const defaultSchedules: Record<ClaimScheduleType, StageRow[]> = {
   retaining_wall: [
     { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
     { stage: 'Deposit', percent: 5, timeValue: 7, timeUnit: 'days' },
+    { stage: 'Site Start', percent: 0, timeValue: 0, timeUnit: 'days' },
     { stage: 'Retaining Wall', percent: 7.5, timeValue: 3, timeUnit: 'weeks' },
     { stage: 'Slab/Base Stage', percent: 15, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Frame Stage', percent: 22.5, timeValue: 5, timeUnit: 'weeks' },
@@ -55,6 +57,8 @@ interface ClaimsScheduleTableProps {
   contractValueExGst: number;
   contractSignDate?: string;
   onContractSignDateChange?: (date: string) => void;
+  siteStartDate?: string;
+  onSiteStartDateChange?: (date: string) => void;
   customTimeframes?: Record<string, number>;
   onTimeframeChange?: (stage: string, value: number) => void;
 }
@@ -66,6 +70,10 @@ function cumulativeWeeks(rows: StageRow[]): number[] {
   const cumulative: number[] = [];
   let total = 0;
   for (const row of rows) {
+    if (row.stage === 'Site Start') {
+      cumulative.push(total); // Site Start doesn't add time — it resets the baseline
+      continue;
+    }
     const weeks = row.timeUnit === 'days' ? row.timeValue / 7 : row.timeValue;
     total += weeks;
     cumulative.push(total);
@@ -79,6 +87,8 @@ export function ClaimsScheduleTable({
   contractValueExGst,
   contractSignDate,
   onContractSignDateChange,
+  siteStartDate,
+  onSiteStartDateChange,
   customTimeframes,
   onTimeframeChange,
 }: ClaimsScheduleTableProps) {
@@ -89,6 +99,35 @@ export function ClaimsScheduleTable({
   }));
   const totalPercent = rows.reduce((s, r) => s + r.percent, 0);
   const cumWeeks = cumulativeWeeks(rows);
+
+  const renderDatePicker = (label: string, value?: string, onChange?: (date: string) => void) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "h-7 text-xs justify-start font-normal px-2",
+            !value && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="mr-1 h-3 w-3" />
+          {value
+            ? format(new Date(value + 'T00:00:00'), 'dd MMM yyyy')
+            : `Pick ${label}`}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="end">
+        <Calendar
+          mode="single"
+          selected={value ? new Date(value + 'T00:00:00') : undefined}
+          onSelect={(d) => {
+            if (d) onChange?.(format(d, 'yyyy-MM-dd'));
+          }}
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <fieldset className="space-y-4">
@@ -125,37 +164,21 @@ export function ClaimsScheduleTable({
             {rows.map((row, i) => {
               const exGst = contractValueExGst * (row.percent / 100);
               const incGst = exGst * 1.1;
+              const isSiteStart = row.stage === 'Site Start';
+              const isContractSign = row.stage === 'Contract Sign';
               return (
-                <TableRow key={row.stage}>
-                  <TableCell className="font-medium">{row.stage}</TableCell>
+                <TableRow key={row.stage} className={isSiteStart ? 'bg-primary/5' : undefined}>
+                  <TableCell className="font-medium">
+                    {row.stage}
+                    {isSiteStart && (
+                      <span className="text-[10px] text-muted-foreground ml-1">(claims base date)</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
-                    {row.stage === 'Contract Sign' ? (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "h-7 text-xs justify-start font-normal px-2",
-                              !contractSignDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-1 h-3 w-3" />
-                            {contractSignDate
-                              ? format(new Date(contractSignDate + 'T00:00:00'), 'dd MMM yyyy')
-                              : 'Pick date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                          <Calendar
-                            mode="single"
-                            selected={contractSignDate ? new Date(contractSignDate + 'T00:00:00') : undefined}
-                            onSelect={(d) => {
-                              if (d) onContractSignDateChange?.(format(d, 'yyyy-MM-dd'));
-                            }}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                    {isContractSign ? (
+                      renderDatePicker('contract date', contractSignDate, onContractSignDateChange)
+                    ) : isSiteStart ? (
+                      renderDatePicker('site start', siteStartDate, onSiteStartDateChange)
                     ) : (
                       <div className="flex items-center justify-end gap-1.5">
                         <Input
@@ -175,7 +198,7 @@ export function ClaimsScheduleTable({
                     )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
-                    {cumWeeks[i] === 0 ? '—' : `${Math.round(cumWeeks[i] * 10) / 10} wks`}
+                    {isSiteStart ? '—' : cumWeeks[i] === 0 ? '—' : `${Math.round(cumWeeks[i] * 10) / 10} wks`}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{row.percent > 0 ? `${row.percent}%` : '—'}</TableCell>
                   <TableCell className="text-right tabular-nums">{row.percent > 0 ? formatCurrency(exGst) : '—'}</TableCell>
