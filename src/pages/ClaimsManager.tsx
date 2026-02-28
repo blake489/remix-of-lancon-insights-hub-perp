@@ -573,7 +573,7 @@ export default function ClaimsManager() {
                       <div
                         key={p.id}
                         className={cn(
-                          "h-[120px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
+                          "min-h-[90px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
                           selectedProjectId === p.id && "bg-primary/5 border-l-2 border-l-primary"
                         )}
                         onClick={() => setSelectedProjectId(selectedProjectId === p.id ? null : p.id)}
@@ -663,7 +663,7 @@ export default function ClaimsManager() {
                         <div
                           key={p.id}
                           className={cn(
-                            "flex h-[120px] border-b transition-colors",
+                            "flex min-h-[90px] border-b transition-colors",
                             selectedProjectId === p.id && "bg-primary/5"
                           )}
                         >
@@ -698,7 +698,7 @@ export default function ClaimsManager() {
                                           onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
                                           onClick={() => openEditClaim(claim)}
                                           className={cn(
-                                            "w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
+                                            "group/tile w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
                                             sc.bg, sc.border, sc.darkBg, sc.darkBorder
                                           )}
                                         >
@@ -764,8 +764,8 @@ export default function ClaimsManager() {
                                               {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
                                             </span>
                                           </div>
-                                          {/* Move arrows */}
-                                          <div className="flex items-center justify-between mt-0.5">
+                                          {/* Move arrows - shown on hover */}
+                                          <div className="flex items-center justify-between mt-0.5 opacity-0 group-hover/tile:opacity-100 transition-opacity">
                                             <button
                                               className="p-0 h-4 w-4 rounded hover:bg-foreground/10 flex items-center justify-center transition-colors"
                                               title="Move to previous fortnight"
