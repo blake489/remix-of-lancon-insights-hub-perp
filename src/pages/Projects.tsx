@@ -12,6 +12,7 @@ import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
 import { PortfolioSummary } from '@/components/projects/PortfolioSummary';
+import { WeatherEOTTally } from '@/components/projects/WeatherEOTTally';
 
 const categoryOrder: { key: ProjectCategory; label: string }[] = [
   { key: 'pre_construction', label: 'Pre Construction' },
@@ -74,6 +75,7 @@ export default function Projects() {
                   highlighted={highlightCategory === null || highlightCategory === group.key}
                 />
               ))}
+              <WeatherEOTTally projects={projects} />
               <PortfolioSummary
                 projects={projects}
                 onCategoryClick={(cat) => setHighlightCategory(prev => prev === cat ? null : cat)}
