@@ -94,7 +94,7 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
   };
 
   const getGpStatus = (gpPercent: number): 'success' | 'warning' | 'danger' => {
-    if (gpPercent >= 16) return 'success';
+    if (gpPercent >= 17) return 'success';
     if (gpPercent >= 12) return 'warning';
     return 'danger';
   };

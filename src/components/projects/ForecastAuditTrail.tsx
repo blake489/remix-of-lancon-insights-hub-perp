@@ -79,7 +79,7 @@ export function ForecastAuditTrail({ projectId }: { projectId: string }) {
                 )}
                 <span className="flex items-center gap-1">
                   <span className="text-muted-foreground">GP:</span>
-                  <span className={cn("font-semibold", row.new_gp_percent >= 16 ? "text-emerald-600" : row.new_gp_percent >= 12 ? "text-amber-600" : "text-red-600")}>
+                  <span className={cn("font-semibold", row.new_gp_percent >= 17 ? "text-emerald-600" : row.new_gp_percent >= 12 ? "text-amber-600" : "text-red-600")}>
                     {row.new_gp_percent.toFixed(1)}%
                   </span>
                 </span>

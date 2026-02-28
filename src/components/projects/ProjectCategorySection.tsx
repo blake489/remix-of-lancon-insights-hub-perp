@@ -32,7 +32,7 @@ const formatCurrency = (val: number) => {
 };
 
 const getGpColor = (gp: number) => {
-  if (gp >= 16) return 'text-success';
+  if (gp >= 17) return 'text-success';
   if (gp >= 12) return 'text-warning';
   return 'text-danger';
 };
