@@ -88,6 +88,8 @@ const Dashboard = () => {
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
   const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
+  const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
 
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
@@ -116,13 +118,12 @@ const Dashboard = () => {
     const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
     const nextMonthKey = format(addMonths(now, 1), 'yyyy-MM');
     const gpRate = (activeGpPercent ?? 0) / 100;
-    const overhead = overheadOverride ?? monthlyKPI.overheads;
     const getRevenue = (mk: string) => claims.filter(c => c.month_key === mk).reduce((s, c) => s + Math.abs(c.amount), 0);
     return {
-      lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: getRevenue(lastMonthKey) * gpRate - overhead },
-      nextMonth: { label: format(addMonths(now, 1), 'MMM yyyy'), pureProfit: getRevenue(nextMonthKey) * gpRate - overhead },
+      lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: getRevenue(lastMonthKey) * gpRate - lastMonthOverhead },
+      nextMonth: { label: format(addMonths(now, 1), 'MMM yyyy'), pureProfit: getRevenue(nextMonthKey) * gpRate - nextMonthOverhead },
     };
-  }, [claims, activeGpPercent, overheadOverride, monthlyKPI.overheads]);
+  }, [claims, activeGpPercent, lastMonthOverhead, nextMonthOverhead]);
 
   // Sort state for GP breakdown table
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
@@ -237,6 +238,10 @@ const Dashboard = () => {
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
+            lastMonthOverhead={lastMonthOverhead}
+            nextMonthOverhead={nextMonthOverhead}
+            onLastMonthOverheadChange={setLastMonthOverhead}
+            onNextMonthOverheadChange={setNextMonthOverhead}
           />
 
           {/* GP% Breakdown Table */}

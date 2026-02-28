@@ -31,6 +31,10 @@ interface MagicEquationHeaderProps {
   activeGpPercent?: number;
   claimsRevenue?: ClaimsRevenueSummary;
   adjacentMonthProfits?: { lastMonth: MonthProfitSummary; nextMonth: MonthProfitSummary };
+  lastMonthOverhead?: number;
+  nextMonthOverhead?: number;
+  onLastMonthOverheadChange?: (value: number) => void;
+  onNextMonthOverheadChange?: (value: number) => void;
 }
 
 const OVERHEAD_STEP = 5000;
@@ -59,6 +63,10 @@ export function MagicEquationHeader({
   activeGpPercent,
   claimsRevenue,
   adjacentMonthProfits,
+  lastMonthOverhead,
+  nextMonthOverhead,
+  onLastMonthOverheadChange,
+  onNextMonthOverheadChange,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const pureProfit = monthlyKPI.grossProfit - overheadValue;
@@ -123,7 +131,7 @@ export function MagicEquationHeader({
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Overheads</p>
               <p className="text-2xl font-bold text-foreground">{formatCurrency(overheadValue, true)}</p>
-              <p className="text-xs text-muted-foreground">Fixed monthly</p>
+              <p className="text-xs text-muted-foreground">Current month</p>
             </div>
             {onOverheadChange && (
               <div className="flex flex-col gap-0.5">
@@ -144,6 +152,35 @@ export function MagicEquationHeader({
               </div>
             )}
           </div>
+          {/* Adjacent month overheads */}
+          {adjacentMonthProfits && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-md border border-border/50 bg-muted/30 px-2.5 py-1.5">
+                <p className="text-[10px] text-muted-foreground font-medium">{adjacentMonthProfits.lastMonth.label}</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[10px] text-muted-foreground">$</span>
+                  <input
+                    type="number"
+                    value={lastMonthOverhead ?? overheadValue}
+                    onChange={e => onLastMonthOverheadChange?.(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-full text-sm font-bold tabular-nums bg-transparent border-none outline-none text-foreground p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md border border-border/50 bg-muted/30 px-2.5 py-1.5">
+                <p className="text-[10px] text-muted-foreground font-medium">{adjacentMonthProfits.nextMonth.label}</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[10px] text-muted-foreground">$</span>
+                  <input
+                    type="number"
+                    value={nextMonthOverhead ?? overheadValue}
+                    onChange={e => onNextMonthOverheadChange?.(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-full text-sm font-bold tabular-nums bg-transparent border-none outline-none text-foreground p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pure Profit with adjacent months */}

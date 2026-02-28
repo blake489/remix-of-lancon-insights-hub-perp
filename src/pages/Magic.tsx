@@ -52,6 +52,8 @@ const Magic = () => {
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
   const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
+  const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
 
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
@@ -84,7 +86,6 @@ const Magic = () => {
     const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
     const nextMonthKey = format(addMonths(now, 1), 'yyyy-MM');
     const gpRate = (activeGpPercent ?? 0) / 100;
-    const overhead = overheadOverride ?? monthlyKPI.overheads;
 
     const getRevenue = (mk: string) => claims.filter(c => c.month_key === mk).reduce((s, c) => s + Math.abs(c.amount), 0);
 
@@ -92,10 +93,10 @@ const Magic = () => {
     const nextRev = getRevenue(nextMonthKey);
 
     return {
-      lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: lastRev * gpRate - overhead },
-      nextMonth: { label: format(addMonths(now, 1), 'MMM yyyy'), pureProfit: nextRev * gpRate - overhead },
+      lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: lastRev * gpRate - lastMonthOverhead },
+      nextMonth: { label: format(addMonths(now, 1), 'MMM yyyy'), pureProfit: nextRev * gpRate - nextMonthOverhead },
     };
-  }, [claims, activeGpPercent, overheadOverride, monthlyKPI.overheads]);
+  }, [claims, activeGpPercent, lastMonthOverhead, nextMonthOverhead]);
 
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -164,6 +165,10 @@ const Magic = () => {
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
+            lastMonthOverhead={lastMonthOverhead}
+            nextMonthOverhead={nextMonthOverhead}
+            onLastMonthOverheadChange={setLastMonthOverhead}
+            onNextMonthOverheadChange={setNextMonthOverhead}
           />
 
           {/* Project Breakdown Table */}
