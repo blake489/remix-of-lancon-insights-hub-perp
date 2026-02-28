@@ -467,6 +467,7 @@ export type Database = {
           pc_date: string | null
           schedule_type: string
           site_manager: string | null
+          site_start_date: string | null
           start_date: string | null
           status: string
           updated_at: string
@@ -491,6 +492,7 @@ export type Database = {
           pc_date?: string | null
           schedule_type?: string
           site_manager?: string | null
+          site_start_date?: string | null
           start_date?: string | null
           status?: string
           updated_at?: string
@@ -515,6 +517,7 @@ export type Database = {
           pc_date?: string | null
           schedule_type?: string
           site_manager?: string | null
+          site_start_date?: string | null
           start_date?: string | null
           status?: string
           updated_at?: string

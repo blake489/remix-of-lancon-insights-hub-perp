@@ -59,7 +59,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     
     const fields = [
       'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager', 'category',
-      'status', 'start_date', 'pc_date', 'schedule_type',
+      'status', 'start_date', 'site_start_date', 'pc_date', 'schedule_type',
     ];
     const numFields = [
       'contract_value_ex_gst', 'contract_value_inc_gst',
@@ -145,6 +145,8 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             contractValueExGst={parseFloat(getVal('contract_value_ex_gst', '0')) || 0}
             contractSignDate={getVal('start_date')}
             onContractSignDateChange={v => updateField('start_date', v)}
+            siteStartDate={getVal('site_start_date')}
+            onSiteStartDateChange={v => updateField('site_start_date', v)}
             customTimeframes={(() => {
               try { return JSON.parse(getVal('custom_timeframes', '{}')); } catch { return {}; }
             })()}

@@ -36,6 +36,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     contract_value_ex_gst: '',
     contract_value_inc_gst: '',
     start_date: '',
+    site_start_date: '',
     pc_date: '',
     forecast_cost: '',
     forecast_gross_profit: '',
@@ -48,7 +49,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       address: '', site_manager: '',
       category: 'pre_construction', schedule_type: 'standard',
       contract_value_ex_gst: '', contract_value_inc_gst: '',
-      start_date: '', pc_date: '',
+      start_date: '', site_start_date: '', pc_date: '',
       forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
     });
     setCustomTimeframes({});
@@ -68,6 +69,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       contract_value_ex_gst: parseFloat(form.contract_value_ex_gst) || 0,
       contract_value_inc_gst: parseFloat(form.contract_value_inc_gst) || 0,
       start_date: form.start_date || null,
+      site_start_date: form.site_start_date || null,
       pc_date: form.pc_date || null,
       status: 'Active',
       forecast_cost: parseFloat(form.forecast_cost) || 0,
@@ -163,6 +165,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
             contractSignDate={form.start_date}
             onContractSignDateChange={v => updateField('start_date', v)}
+            siteStartDate={form.site_start_date}
+            onSiteStartDateChange={v => updateField('site_start_date', v)}
             customTimeframes={customTimeframes}
             onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
           />
