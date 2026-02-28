@@ -5,6 +5,7 @@ import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { FileText } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
+import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
@@ -17,6 +18,8 @@ const categoryOrder: { key: ProjectCategory; label: string }[] = [
 
 export default function Projects() {
   const { projects, isLoading, addProject, updateProject } = useProjects();
+  const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
+  const { data: trends } = useProjectTrends(projectIds);
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
 
   const grouped = useMemo(() => {
@@ -58,6 +61,7 @@ export default function Projects() {
                 label={group.label}
                 projects={group.projects}
                 onEdit={setEditingProject}
+                trends={trends}
               />
             ))
           )}
