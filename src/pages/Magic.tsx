@@ -56,6 +56,7 @@ const Magic = () => {
   const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
   const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
   const [bhagTarget, setBhagTarget] = useState<number>(1_000_000);
+  const [bhagLoaded, setBhagLoaded] = useState(false);
 
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
@@ -63,12 +64,13 @@ const Magic = () => {
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
 
-  // Sync BHAG from DB on load
+  // Sync BHAG from DB only on initial load
   useEffect(() => {
-    if (kpi?.bhag_target != null) {
+    if (!bhagLoaded && kpi?.bhag_target != null) {
       setBhagTarget(kpi.bhag_target);
+      setBhagLoaded(true);
     }
-  }, [kpi?.bhag_target]);
+  }, [kpi?.bhag_target, bhagLoaded]);
 
   // Save BHAG to DB on change
   const handleBhagChange = async (value: number) => {
