@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -512,7 +513,7 @@ export default function ClaimsManager() {
 
   return (
     <DashboardLayout>
-      <div className={cn("flex flex-col p-4 gap-4", selectedProjectId ? "min-h-[calc(100vh-2rem)]" : "h-[calc(100vh-2rem)]")}>
+      <div className="flex flex-col h-[calc(100vh-2rem)] p-4 gap-4">
         {/* Top Toolbar */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -610,24 +611,33 @@ export default function ClaimsManager() {
                     </div>
                   ) : (
                     activeProjects.map((p: ProjectRow) => (
-                      <div
+                      <Popover
                         key={p.id}
-                        className={cn(
-                          "h-[100px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
-                          selectedProjectId === p.id && "bg-primary/5 border-l-2 border-l-primary"
-                        )}
-                        onClick={() => setSelectedProjectId(selectedProjectId === p.id ? null : p.id)}
+                        open={selectedProjectId === p.id}
+                        onOpenChange={(open) => setSelectedProjectId(open ? p.id : null)}
                       >
-                        <p className="text-sm font-medium truncate leading-tight">{p.job_name}</p>
-                        {p.site_manager && (
-                          <p className="text-xs text-muted-foreground truncate">{p.site_manager}</p>
-                        )}
-                        {p.start_date && (
-                          <p className="text-[10px] text-muted-foreground/60 truncate">
-                            Contract: {format(new Date(p.start_date + 'T00:00:00'), 'dd MMM yyyy')}
-                          </p>
-                        )}
-                      </div>
+                        <PopoverTrigger asChild>
+                          <div
+                            className={cn(
+                              "h-[100px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
+                              selectedProjectId === p.id && "bg-primary/5 border-l-2 border-l-primary"
+                            )}
+                          >
+                            <p className="text-sm font-medium truncate leading-tight">{p.job_name}</p>
+                            {p.site_manager && (
+                              <p className="text-xs text-muted-foreground truncate">{p.site_manager}</p>
+                            )}
+                            {p.start_date && (
+                              <p className="text-[10px] text-muted-foreground/60 truncate">
+                                Contract: {format(new Date(p.start_date + 'T00:00:00'), 'dd MMM yyyy')}
+                              </p>
+                            )}
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent side="right" align="start" className="w-[600px] p-0" sideOffset={8}>
+                          <ClaimMoveAuditPanel projectId={p.id} projectName={p.job_name} />
+                        </PopoverContent>
+                      </Popover>
                     ))
                   )}
                 </div>
@@ -891,11 +901,7 @@ export default function ClaimsManager() {
         </div>
       </div>
 
-      {/* Audit Trail Panel - shown when a project is selected */}
-      {selectedProjectId && (() => {
-        const proj = (projects || []).find((p: ProjectRow) => p.id === selectedProjectId);
-        return proj ? <ClaimMoveAuditPanel projectId={selectedProjectId} projectName={proj.job_name} /> : null;
-      })()}
+      {/* Audit trail is now shown as popover on project row */}
 
       {/* Claim Dialog (Add / Edit) */}
       <Dialog open={claimDialogOpen} onOpenChange={v => { if (!v) { setClaimDialogOpen(false); resetClaimForm(); } else setClaimDialogOpen(true); }}>
