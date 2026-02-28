@@ -11,6 +11,7 @@ import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
 import { ForecastAuditTrail } from './ForecastAuditTrail';
 import { VariationsSection, Variation } from './VariationsSection';
+import { PdfUploadField } from './PdfUploadField';
 import { supabase } from '@/integrations/supabase/client';
 
 const categories: { value: ProjectCategory; label: string }[] = [
@@ -114,11 +115,13 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
 
     // Parse and save custom_timeframes and variations as JSON
     try {
-      updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
+    updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
     } catch {
       updates.custom_timeframes = {};
     }
     updates.variations = currentVariations;
+    updates.plans_pdf_path = getVal('plans_pdf_path') || null;
+    updates.specs_pdf_path = getVal('specs_pdf_path') || null;
 
     // Log forecast audit if cost or contract changed
     const newCost = parseFloat(getVal('forecast_cost', '0')) || 0;
@@ -212,6 +215,25 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </fieldset>
+
+          {/* Document Uploads */}
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Approved Documents</legend>
+            <div className="grid grid-cols-2 gap-4">
+              <PdfUploadField
+                label="Approved Plans"
+                value={getVal('plans_pdf_path') || null}
+                onChange={v => updateField('plans_pdf_path', v || '')}
+                projectId={currentProject.id}
+              />
+              <PdfUploadField
+                label="Approved Specs"
+                value={getVal('specs_pdf_path') || null}
+                onChange={v => updateField('specs_pdf_path', v || '')}
+                projectId={currentProject.id}
+              />
             </div>
           </fieldset>
 

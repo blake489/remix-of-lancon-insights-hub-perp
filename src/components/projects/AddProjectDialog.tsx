@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
+import { PdfUploadField } from './PdfUploadField';
 
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
@@ -42,6 +43,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     forecast_gross_profit: '',
     forecast_gp_percent: '',
   });
+  const [plansPdf, setPlansPdf] = useState<string | null>(null);
+  const [specsPdf, setSpecsPdf] = useState<string | null>(null);
 
   const reset = () => {
     setForm({
@@ -53,10 +56,13 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
     });
     setCustomTimeframes({});
+    setPlansPdf(null);
+    setSpecsPdf(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!plansPdf || !specsPdf) return;
     onSubmit({
       job_name: form.job_name,
       client_name: form.client_name || null,
@@ -78,7 +84,9 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       schedule_type: form.schedule_type,
       custom_timeframes: customTimeframes,
       created_by: null,
-    });
+      plans_pdf_path: plansPdf,
+      specs_pdf_path: specsPdf,
+    } as any);
     reset();
     setOpen(false);
   };
@@ -167,6 +175,15 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </fieldset>
+
+          {/* Document Uploads */}
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Approved Documents</legend>
+            <div className="grid grid-cols-2 gap-4">
+              <PdfUploadField label="Approved Plans" required value={plansPdf} onChange={setPlansPdf} />
+              <PdfUploadField label="Approved Specs" required value={specsPdf} onChange={setSpecsPdf} />
             </div>
           </fieldset>
 
