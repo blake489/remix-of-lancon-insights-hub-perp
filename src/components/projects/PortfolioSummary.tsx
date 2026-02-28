@@ -118,40 +118,37 @@ function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
   const sorted = useMemo(() =>
     projects
       .filter(p => p.forecast_gp_percent > 0)
-      .sort((a, b) => b.forecast_gp_percent - a.forecast_gp_percent)
-      .map(p => ({
-        name: p.job_name.length > 20 ? p.job_name.slice(0, 18) + '…' : p.job_name,
-        fullName: p.job_name,
-        gp: p.forecast_gp_percent,
-      })),
+      .sort((a, b) => b.forecast_gp_percent - a.forecast_gp_percent),
     [projects]
   );
 
-  const barFill = (gp: number) => {
-    if (gp >= GP_THRESHOLD_GREEN) return 'hsl(160, 60%, 45%)';
-    if (gp >= GP_THRESHOLD_AMBER) return 'hsl(35, 80%, 50%)';
-    return 'hsl(0, 65%, 50%)';
+  const maxGp = sorted.length > 0 ? sorted[0].forecast_gp_percent : 20;
+
+  const barColor = (gp: number) => {
+    if (gp >= GP_THRESHOLD_GREEN) return 'bg-emerald-500';
+    if (gp >= GP_THRESHOLD_AMBER) return 'bg-amber-500';
+    return 'bg-red-500';
   };
 
-  const chartHeight = Math.max(200, sorted.length * 32);
-
   return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
-      <BarChart data={sorted} layout="vertical" margin={{ left: 10, right: 40, top: 5, bottom: 5 }}>
-        <XAxis type="number" domain={[0, 'auto']} tickFormatter={(v: number) => `${v}%`} tick={{ fontSize: 11 }} />
-        <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11, fontWeight: 500 }} />
-        <RechartsTooltip
-          formatter={(value: number) => [`${value.toFixed(1)}%`, 'GP%']}
-          labelFormatter={(label: string, payload: any[]) => payload?.[0]?.payload?.fullName || label}
-          contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-        />
-        <Bar dataKey="gp" name="GP%" radius={[0, 4, 4, 0]} barSize={22}>
-          {sorted.map((d, i) => (
-            <Cell key={i} fill={barFill(d.gp)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+      {sorted.map(p => (
+        <div key={p.id} className="flex items-center gap-2 group">
+          <span className="text-[11px] text-muted-foreground font-medium truncate w-[130px] shrink-0 text-right group-hover:text-foreground transition-colors">
+            {p.job_name.length > 18 ? p.job_name.slice(0, 16) + '…' : p.job_name}
+          </span>
+          <div className="flex-1 h-3 rounded-full bg-muted/60 overflow-hidden">
+            <div
+              className={cn('h-full rounded-full transition-all duration-500', barColor(p.forecast_gp_percent))}
+              style={{ width: `${(p.forecast_gp_percent / maxGp) * 100}%` }}
+            />
+          </div>
+          <span className={cn('text-[11px] font-semibold tabular-nums w-[38px] shrink-0', gpColor(p.forecast_gp_percent))}>
+            {p.forecast_gp_percent.toFixed(1)}%
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
