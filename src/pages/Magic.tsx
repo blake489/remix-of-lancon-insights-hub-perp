@@ -181,7 +181,12 @@ const Magic = () => {
                             {p.client_name && <p className="text-[11px] text-muted-foreground">{p.client_name}</p>}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-[10px] capitalize">{catLabel(p.category)}</Badge>
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] capitalize",
+                              p.category === 'pre_construction' && 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+                              p.category === 'construction' && 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
+                              p.category === 'handover' && 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+                            )}>{catLabel(p.category)}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground font-medium">{p.site_manager || '—'}</TableCell>
                           <TableCell className="text-right font-semibold tabular-nums text-sm">
