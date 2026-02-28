@@ -13,12 +13,9 @@ import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { supabase } from '@/integrations/supabase/client';
 import { X } from 'lucide-react';
+import { deriveCategory } from '@/lib/deriveCategory';
 
-const categories: { value: ProjectCategory; label: string }[] = [
-  { value: 'pre_construction', label: 'Pre Construction' },
-  { value: 'construction', label: 'Construction' },
-  { value: 'handover', label: 'Handover' },
-];
+// Category is auto-derived — no manual selection needed
 
 interface EditProjectDialogProps {
   project: ProjectRow | null;
@@ -99,7 +96,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     const updates: any = { id: currentProject.id };
     
     const fields = [
-      'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager', 'category',
+      'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager',
       'status', 'start_date', 'site_start_date', 'pc_date', 'schedule_type',
     ];
     const numFields = [
@@ -115,7 +112,15 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
       updates[f] = parseFloat(getVal(f, '0')) || 0;
     });
 
-    // Parse and save custom_timeframes, claim_stage_statuses, and variations as JSON
+    // Auto-derive category from lifecycle
+    let stageStatuses: Record<string, string> = {};
+    try { stageStatuses = JSON.parse(getVal('claim_stage_statuses', '{}')); } catch {}
+    updates.category = deriveCategory({
+      siteStartDate: updates.site_start_date,
+      claimStageStatuses: stageStatuses,
+      currentStage: getVal('current_stage'),
+    });
+
     try {
     updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
     } catch {
@@ -223,7 +228,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             </div>
           </div>
 
-          {/* Row 3: Assignment & classification */}
+          {/* Row 3: Assignment */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-[11px] font-medium text-muted-foreground">Site Manager</Label>
@@ -231,15 +236,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
                 <SelectTrigger className="h-9 text-sm font-medium"><SelectValue placeholder="Assign manager" /></SelectTrigger>
                 <SelectContent>
                   {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[11px] font-medium text-muted-foreground">Category *</Label>
-              <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
-                <SelectTrigger className="h-9 text-sm font-medium"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
