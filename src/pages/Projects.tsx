@@ -60,7 +60,8 @@ export default function Projects() {
     });
   }, [projects, filterManager, searchQuery]);
 
-  const handleToggleEdit = (project: ProjectRow) => {
+  const handleToggleEdit = (project: ProjectRow | null) => {
+    if (!project) { setEditingProject(null); return; }
     setEditingProject(prev => prev?.id === project.id ? null : project);
   };
 
