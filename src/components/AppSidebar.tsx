@@ -137,7 +137,7 @@ export function AppSidebar() {
 
         {/* Building */}
         <SidebarGroup>
-          <SidebarGroupLabel>Building Contracts</SidebarGroupLabel>
+          <SidebarGroupLabel>Housing Construction</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {buildingItems.map((item) => (
