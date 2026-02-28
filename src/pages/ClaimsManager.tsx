@@ -516,8 +516,16 @@ export default function ClaimsManager() {
             <div className="flex h-full">
               {/* Left Fixed Project Index Pane */}
               <div className="w-[280px] shrink-0 border-r bg-muted/20 flex flex-col">
-                <div className="h-12 border-b bg-muted/40 flex items-center px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Project / Supervisor
+                <div className="border-b bg-muted/40 flex flex-col">
+                  <div className="h-7 flex items-center px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Project
+                  </div>
+                  <div className="h-5 border-t bg-muted/20 flex items-center px-3 text-[9px] text-muted-foreground">
+                    Supervisor
+                  </div>
+                  <div className="h-6 border-t flex items-center px-3 text-[10px] font-medium text-muted-foreground">
+                    Contract Date
+                  </div>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {activeProjects.length === 0 ? (
