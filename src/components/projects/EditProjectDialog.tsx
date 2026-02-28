@@ -176,7 +176,52 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
         </Button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Contract Value + Variations + Forecast — grouped at top */}
+        {/* Project Details — at the top */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 space-y-2">
+              <Label>Job Name *</Label>
+              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Client Name</Label>
+              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Client Mobile</Label>
+              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
+            </div>
+            <div className="space-y-2">
+              <Label>Client Email</Label>
+              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Site Manager</Label>
+              <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category *</Label>
+              <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </fieldset>
+
+        {/* Contract Value + Variations + Forecast */}
         <fieldset className="space-y-4">
           <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
           <div className="grid grid-cols-2 gap-4">
@@ -234,51 +279,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             </div>
           )}
           <ForecastAuditTrail projectId={currentProject.id} />
-        </fieldset>
-
-        {/* Project Details */}
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-2">
-              <Label>Job Name *</Label>
-              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Client Name</Label>
-              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Address</Label>
-              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Client Mobile</Label>
-              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
-            </div>
-            <div className="space-y-2">
-              <Label>Client Email</Label>
-              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
-            </div>
-            <div className="space-y-2">
-              <Label>Site Manager</Label>
-              <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Category *</Label>
-              <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
         </fieldset>
 
         {/* Document Uploads */}
