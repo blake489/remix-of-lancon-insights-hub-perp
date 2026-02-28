@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
 import { useClaims } from '@/hooks/useClaims';
+import { useKPISettings } from '@/hooks/useKPISettings';
 import { format, parse, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -60,6 +61,7 @@ export default function ClaimsLedger() {
 
   const { projects, isLoading: projectsLoading } = useProjects();
   const { claims, isLoading: claimsLoading } = useClaims();
+  const { data: kpiSettings } = useKPISettings();
 
   const projectMap = useMemo(() => {
     const map = new Map<string, ProjectRow>();
@@ -96,9 +98,12 @@ export default function ClaimsLedger() {
   // Totals
   const totals = useMemo(() => {
     const up = monthClaims.filter(c => c.direction === 'Up').reduce((s, c) => s + c.amount, 0);
-    const down = monthClaims.filter(c => c.direction === 'Down').reduce((s, c) => s + c.amount, 0);
-    return { up, down, net: up + down, count: monthClaims.length };
-  }, [monthClaims]);
+    // Monthly overheads from KPI settings (same as Magic dashboard)
+    const revenueTarget = kpiSettings?.monthly_revenue_target ?? 1650000;
+    const overheadPercent = kpiSettings?.overhead_percent ?? 10.5;
+    const monthlyOverhead = revenueTarget * (overheadPercent / 100);
+    return { up, down: monthlyOverhead, net: up - monthlyOverhead, count: monthClaims.length };
+  }, [monthClaims, kpiSettings]);
 
   const navigateMonth = (dir: 'prev' | 'next') => {
     const d = parse(currentMonth + '-01', 'yyyy-MM-dd', new Date());
@@ -182,7 +187,7 @@ export default function ClaimsLedger() {
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
                 <ArrowDown className="h-3.5 w-3.5 text-red-500" />
-                <p className="text-xs text-muted-foreground font-medium">Expenses (Down)</p>
+                <p className="text-xs text-muted-foreground font-medium">Monthly Overheads</p>
               </div>
               <p className="text-xl font-bold tabular-nums text-red-600">{formatCurrency(totals.down)}</p>
             </div>
