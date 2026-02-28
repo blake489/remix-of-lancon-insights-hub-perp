@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +12,7 @@ import { ForecastAuditTrail } from './ForecastAuditTrail';
 import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { supabase } from '@/integrations/supabase/client';
+import { X } from 'lucide-react';
 
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
@@ -168,163 +168,164 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
   if (!currentProject) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) { setForm({}); setVariations([]); setForecastReason(''); } onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 pt-2">
-          {/* Contract Value + Variations + Forecast — grouped at top */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Contract Value (ex GST)</Label>
-                <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Contract Value (inc GST)</Label>
-                <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
-              </div>
+    <div className="border-t border-border bg-muted/20 px-6 py-6 animate-in slide-in-from-top-2 duration-200">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-foreground">Edit — {currentProject.job_name}</h3>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setForm({}); setVariations([]); setForecastReason(''); onOpenChange(false); }}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Contract Value + Variations + Forecast — grouped at top */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Contract Value (ex GST)</Label>
+              <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} />
             </div>
-          </fieldset>
+            <div className="space-y-2">
+              <Label>Contract Value (inc GST)</Label>
+              <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
+            </div>
+          </div>
+        </fieldset>
 
-          <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
+        <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
 
-          {variationsTotal !== 0 && (
-            <div className="text-sm text-muted-foreground px-1">
-              Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+        {variationsTotal !== 0 && (
+          <div className="text-sm text-muted-foreground px-1">
+            Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+          </div>
+        )}
+
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Forecast Cost</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Forecast Gross Profit</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
+            </div>
+            <div className="space-y-2">
+              <Label>Forecast GP%</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
+            </div>
+          </div>
+          {currentProject && (
+            (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
+            (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
+          ) && (
+            <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+              <Label htmlFor="forecast-reason" className="text-sm font-medium">
+                Reason for change <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="forecast-reason"
+                value={forecastReason}
+                onChange={e => setForecastReason(e.target.value)}
+                placeholder="e.g. Updated after subcontractor requote, material price increase..."
+                className="min-h-[60px] text-sm"
+                required
+              />
             </div>
           )}
+          <ForecastAuditTrail projectId={currentProject.id} />
+        </fieldset>
 
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Forecast Cost</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Forecast Gross Profit</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
-              </div>
-              <div className="space-y-2">
-                <Label>Forecast GP%</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
-              </div>
+        {/* Project Details */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 space-y-2">
+              <Label>Job Name *</Label>
+              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} />
             </div>
-            {currentProject && (
-              (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
-              (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
-            ) && (
-              <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-                <Label htmlFor="forecast-reason" className="text-sm font-medium">
-                  Reason for change <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  id="forecast-reason"
-                  value={forecastReason}
-                  onChange={e => setForecastReason(e.target.value)}
-                  placeholder="e.g. Updated after subcontractor requote, material price increase..."
-                  className="min-h-[60px] text-sm"
-                  required
-                />
-              </div>
-            )}
-            <ForecastAuditTrail projectId={currentProject.id} />
-          </fieldset>
-
-          {/* Project Details */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-2">
-                <Label>Job Name *</Label>
-                <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Client Name</Label>
-                <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Address</Label>
-                <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Client Mobile</Label>
-                <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
-              </div>
-              <div className="space-y-2">
-                <Label>Client Email</Label>
-                <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
-              </div>
-              <div className="space-y-2">
-                <Label>Site Manager</Label>
-                <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Category *</Label>
-                <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Client Name</Label>
+              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} />
             </div>
-          </fieldset>
-
-          {/* Document Uploads */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Approved Documents</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <PdfUploadField
-                label="Approved Plans"
-                value={getVal('plans_pdf_path') || null}
-                onChange={v => updateField('plans_pdf_path', v || '')}
-                projectId={currentProject.id}
-              />
-              <PdfUploadField
-                label="Approved Specs"
-                value={getVal('specs_pdf_path') || null}
-                onChange={v => updateField('specs_pdf_path', v || '')}
-                projectId={currentProject.id}
-              />
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
             </div>
-          </fieldset>
-
-          <ClaimsScheduleTable
-            scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
-            onScheduleTypeChange={v => updateField('schedule_type', v)}
-            contractValueExGst={effectiveContract}
-            contractSignDate={getVal('start_date')}
-            onContractSignDateChange={v => updateField('start_date', v)}
-            siteStartDate={getVal('site_start_date')}
-            onSiteStartDateChange={v => updateField('site_start_date', v)}
-            customTimeframes={(() => {
-              try { return JSON.parse(getVal('custom_timeframes', '{}')); } catch { return {}; }
-            })()}
-            onTimeframeChange={(stage, value) => {
-              let current: Record<string, number> = {};
-              try { current = JSON.parse(getVal('custom_timeframes', '{}')); } catch {}
-              current[stage] = value;
-              updateField('custom_timeframes', JSON.stringify(current));
-            }}
-          />
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className="space-y-2">
+              <Label>Client Mobile</Label>
+              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
+            </div>
+            <div className="space-y-2">
+              <Label>Client Email</Label>
+              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Site Manager</Label>
+              <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category *</Label>
+              <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </fieldset>
+
+        {/* Document Uploads */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Approved Documents</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <PdfUploadField
+              label="Approved Plans"
+              value={getVal('plans_pdf_path') || null}
+              onChange={v => updateField('plans_pdf_path', v || '')}
+              projectId={currentProject.id}
+            />
+            <PdfUploadField
+              label="Approved Specs"
+              value={getVal('specs_pdf_path') || null}
+              onChange={v => updateField('specs_pdf_path', v || '')}
+              projectId={currentProject.id}
+            />
+          </div>
+        </fieldset>
+
+        <ClaimsScheduleTable
+          scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
+          onScheduleTypeChange={v => updateField('schedule_type', v)}
+          contractValueExGst={effectiveContract}
+          contractSignDate={getVal('start_date')}
+          onContractSignDateChange={v => updateField('start_date', v)}
+          siteStartDate={getVal('site_start_date')}
+          onSiteStartDateChange={v => updateField('site_start_date', v)}
+          customTimeframes={(() => {
+            try { return JSON.parse(getVal('custom_timeframes', '{}')); } catch { return {}; }
+          })()}
+          onTimeframeChange={(stage, value) => {
+            let current: Record<string, number> = {};
+            try { current = JSON.parse(getVal('custom_timeframes', '{}')); } catch {}
+            current[stage] = value;
+            updateField('custom_timeframes', JSON.stringify(current));
+          }}
+        />
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="outline" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
