@@ -641,24 +641,45 @@ export default function ClaimsManager() {
 
           {/* Pipeline Metrics Bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {[
-              { label: 'Planned', value: formatCurrency(pipelineMetrics.plannedTotal), sub: `${pipelineMetrics.plannedCount} claims`, icon: Circle, color: 'text-amber-500' },
-              { label: 'Confirmed', value: formatCurrency(pipelineMetrics.confirmedTotal), sub: `${pipelineMetrics.confirmedCount} claims`, icon: CheckCircle2, color: 'text-sky-500' },
-              { label: 'Claimed', value: formatCurrency(pipelineMetrics.claimedTotal), sub: `${pipelineMetrics.claimedCount} claims`, icon: CheckCheck, color: 'text-emerald-500' },
-              { label: 'Total Pipeline', value: formatCurrency(pipelineMetrics.totalPipeline), sub: `${months.length} months`, icon: DollarSign, color: 'text-primary' },
-              { label: 'Active Projects', value: String(pipelineMetrics.projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary' },
-              { label: 'On Time', value: `${pipelineMetrics.onTimeCount}/${activeProjects.length}`, sub: pipelineMetrics.avgDaysBehind > 0 ? `avg ${pipelineMetrics.avgDaysBehind}d behind` : 'all on track', icon: Clock, color: pipelineMetrics.avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500' },
-              { label: 'Conversion', value: `${pipelineMetrics.conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: pipelineMetrics.conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500' },
-            ].map(m => (
-              <div key={m.label} className="border rounded-lg bg-card px-3 py-2.5 flex items-start gap-2.5">
-                <m.icon className={cn("h-4 w-4 mt-0.5 shrink-0", m.color)} />
-                <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{m.label}</p>
-                  <p className="text-sm font-bold tabular-nums leading-tight">{m.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+            {(() => {
+              const { plannedTotal, confirmedTotal, claimedTotal, totalPipeline, plannedCount, confirmedCount, claimedCount, projectsWithClaims, onTimeCount, avgDaysBehind, conversionRate } = pipelineMetrics;
+              const pipeMax = totalPipeline || 1;
+              const plannedPct = (plannedTotal / pipeMax) * 100;
+              const confirmedPct = (confirmedTotal / pipeMax) * 100;
+              const claimedPct = (claimedTotal / pipeMax) * 100;
+              const projTotal = activeProjects.length || 1;
+              const onTimePct = (onTimeCount / projTotal) * 100;
+
+              const cards = [
+                { label: 'Planned', value: formatCurrency(plannedTotal), sub: `${plannedCount} claims`, icon: Circle, color: 'text-amber-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${plannedPct}%` }} /></div> },
+                { label: 'Confirmed', value: formatCurrency(confirmedTotal), sub: `${confirmedCount} claims`, icon: CheckCircle2, color: 'text-sky-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-sky-400 transition-all" style={{ width: `${confirmedPct}%` }} /></div> },
+                { label: 'Claimed', value: formatCurrency(claimedTotal), sub: `${claimedCount} claims`, icon: CheckCheck, color: 'text-emerald-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-emerald-400 transition-all" style={{ width: `${claimedPct}%` }} /></div> },
+                { label: 'Total Pipeline', value: formatCurrency(totalPipeline), sub: `${months.length} months`, icon: DollarSign, color: 'text-primary', bar: (
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5 flex">
+                    <div className="h-full bg-emerald-400 transition-all" style={{ width: `${claimedPct}%` }} />
+                    <div className="h-full bg-sky-400 transition-all" style={{ width: `${confirmedPct}%` }} />
+                    <div className="h-full bg-amber-400 transition-all" style={{ width: `${plannedPct}%` }} />
+                  </div>
+                )},
+                { label: 'Active Projects', value: String(projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${(projectsWithClaims / projTotal) * 100}%` }} /></div> },
+                { label: 'On Time', value: `${onTimeCount}/${activeProjects.length}`, sub: avgDaysBehind > 0 ? `avg ${avgDaysBehind}d behind` : 'all on track', icon: Clock, color: avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", onTimePct >= 80 ? "bg-emerald-400" : onTimePct >= 50 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${onTimePct}%` }} /></div> },
+                { label: 'Conversion', value: `${conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", conversionRate >= 50 ? "bg-emerald-400" : "bg-amber-400")} style={{ width: `${Math.min(conversionRate, 100)}%` }} /></div> },
+              ];
+
+              return cards.map(m => (
+                <div key={m.label} className="border rounded-lg bg-card px-3 py-2.5 flex flex-col">
+                  <div className="flex items-start gap-2.5">
+                    <m.icon className={cn("h-4 w-4 mt-0.5 shrink-0", m.color)} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{m.label}</p>
+                      <p className="text-sm font-bold tabular-nums leading-tight">{m.value}</p>
+                      <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+                    </div>
+                  </div>
+                  {m.bar}
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
 
         {/* Spreadsheet Grid */}
