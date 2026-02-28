@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { ChevronDown, ChevronUp, ChevronsUpDown, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { gpStatus } from '@/lib/gpThresholds';
 
 interface ProjectTableProps {
   projects: ProjectWithMetrics[];
@@ -93,11 +94,7 @@ export function ProjectTable({ projects, siteManagers }: ProjectTableProps) {
       : <ChevronDown className="h-4 w-4" />;
   };
 
-  const getGpStatus = (gpPercent: number): 'success' | 'warning' | 'danger' => {
-    if (gpPercent >= 17) return 'success';
-    if (gpPercent >= 12) return 'warning';
-    return 'danger';
-  };
+  const getGpStatus = (gpPercent: number): 'success' | 'warning' | 'danger' => gpStatus(gpPercent);
 
   const ScheduleIcon = ({ status }: { status: 'ahead' | 'on-time' | 'behind' }) => {
     switch (status) {

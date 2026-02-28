@@ -5,8 +5,10 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { BarChart3, DollarSign, Percent, Hash, ArrowUpDown } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import { GpThresholds, DEFAULT_GP_THRESHOLDS, gpTextColor, gpBgColor } from '@/lib/gpThresholds';
 
 const OWN_JOBS = ['28 Durimbil St', '117A Tranters Ave'];
+
 
 const fmt = (v: number) => {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
@@ -14,11 +16,7 @@ const fmt = (v: number) => {
   return `$${v.toFixed(0)}`;
 };
 
-const gpColor = (gp: number) => {
-  if (gp >= 17) return 'text-emerald-600';
-  if (gp >= 12) return 'text-amber-600';
-  return 'text-red-600';
-};
+// gpColor is now a closure that uses thresholds passed to the component
 
 interface MetricProps {
   label: string;
@@ -53,7 +51,7 @@ interface ChartRow {
   count: number;
 }
 
-function CategoryChart({ data, total, onBarClick, activeKey }: { data: ChartRow[]; total: number; onBarClick?: (key: string) => void; activeKey?: string | null }) {
+function CategoryChart({ data, total, onBarClick, activeKey, thresholds }: { data: ChartRow[]; total: number; onBarClick?: (key: string) => void; activeKey?: string | null; thresholds: GpThresholds }) {
   const fmtTooltip = (val: number) => `$${(val / 1_000_000).toFixed(2)}M`;
 
   return (
@@ -101,7 +99,7 @@ function CategoryChart({ data, total, onBarClick, activeKey }: { data: ChartRow[
               </div>
               <div className="flex justify-between text-[10px] text-muted-foreground">
                 <span>{d.count} jobs</span>
-                <span className={cn('font-semibold', gpColor(d.gpPct))}>{d.gpPct.toFixed(1)}% GP</span>
+                <span className={cn('font-semibold', gpTextColor(d.gpPct, thresholds))}>{d.gpPct.toFixed(1)}% GP</span>
               </div>
             </div>
           );
@@ -111,10 +109,9 @@ function CategoryChart({ data, total, onBarClick, activeKey }: { data: ChartRow[
   );
 }
 
-const GP_THRESHOLD_GREEN = 17;
-const GP_THRESHOLD_AMBER = 12;
+// Thresholds now come from props via GpThresholds
 
-function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
+function ProjectGpChart({ projects, thresholds }: { projects: ProjectRow[]; thresholds: GpThresholds }) {
   const sorted = useMemo(() =>
     projects
       .filter(p => p.forecast_gp_percent > 0)
@@ -123,12 +120,6 @@ function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
   );
 
   const maxGp = sorted.length > 0 ? sorted[0].forecast_gp_percent : 20;
-
-  const barColor = (gp: number) => {
-    if (gp >= GP_THRESHOLD_GREEN) return 'bg-emerald-500';
-    if (gp >= GP_THRESHOLD_AMBER) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
@@ -139,11 +130,11 @@ function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
           </span>
           <div className="flex-1 h-3 rounded-full bg-muted/60 overflow-hidden">
             <div
-              className={cn('h-full rounded-full transition-all duration-500', barColor(p.forecast_gp_percent))}
+              className={cn('h-full rounded-full transition-all duration-500', gpBgColor(p.forecast_gp_percent, thresholds))}
               style={{ width: `${(p.forecast_gp_percent / maxGp) * 100}%` }}
             />
           </div>
-          <span className={cn('text-[11px] font-semibold tabular-nums w-[38px] shrink-0', gpColor(p.forecast_gp_percent))}>
+          <span className={cn('text-[11px] font-semibold tabular-nums w-[38px] shrink-0', gpTextColor(p.forecast_gp_percent, thresholds))}>
             {p.forecast_gp_percent.toFixed(1)}%
           </span>
         </div>
@@ -152,7 +143,8 @@ function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
   );
 }
 
-export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: { projects: ProjectRow[]; onCategoryClick?: (cat: string) => void; activeCategory?: string | null }) {
+export function PortfolioSummary({ projects, onCategoryClick, activeCategory, gpThresholds }: { projects: ProjectRow[]; onCategoryClick?: (cat: string) => void; activeCategory?: string | null; gpThresholds?: GpThresholds }) {
+  const t = gpThresholds ?? DEFAULT_GP_THRESHOLDS;
   const metrics = useMemo(() => {
     const all = projects;
     const external = all.filter(p => !OWN_JOBS.some(name => p.job_name.includes(name)));
@@ -262,18 +254,18 @@ export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: 
             <Metric
               label="Weighted GP% (excl. own)"
               value={`${metrics.extWeightedGp.toFixed(1)}%`}
-              className={gpColor(metrics.extWeightedGp)}
+              className={gpTextColor(metrics.extWeightedGp, t)}
               sub="Revenue-weighted average"
             />
             <Metric
               label="Weighted GP% (all)"
               value={`${metrics.allWeightedGp.toFixed(1)}%`}
-              className={gpColor(metrics.allWeightedGp)}
+              className={gpTextColor(metrics.allWeightedGp, t)}
             />
             <Metric
               label="Simple Avg GP%"
               value={`${metrics.simpleAvgGp.toFixed(1)}%`}
-              className={gpColor(metrics.simpleAvgGp)}
+              className={gpTextColor(metrics.simpleAvgGp, t)}
               sub="Unweighted mean"
             />
             <Metric
@@ -347,6 +339,7 @@ export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: 
             total={metrics.totalContract}
             onBarClick={onCategoryClick}
             activeKey={activeCategory}
+            thresholds={t}
           />
         </CardContent>
       </Card>
@@ -359,7 +352,7 @@ export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ProjectGpChart projects={projects} />
+          <ProjectGpChart projects={projects} thresholds={t} />
         </CardContent>
       </Card>
     </section>
