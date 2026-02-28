@@ -177,42 +177,55 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Project Details */}
-        <fieldset className="space-y-1.5">
-          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Project Details</legend>
-          <div className="grid grid-cols-4 gap-2">
-            <div className="col-span-2 space-y-0.5">
-              <Label className="text-[11px]">Job Name *</Label>
-              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} className="h-8 text-sm" />
+        <fieldset className="space-y-3 rounded-lg border border-border/60 bg-card/50 px-3 py-3">
+          <legend className="text-[10px] font-bold text-foreground/70 uppercase tracking-wider px-1.5">🏗️ Project Details</legend>
+          
+          {/* Row 1: Job name + Address */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Job Name *</Label>
+              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} className="h-9 text-sm font-medium" />
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Client Name</Label>
-              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} className="h-8 text-sm" />
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Address</Label>
+              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} className="h-9 text-sm" placeholder="Street address" />
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Address</Label>
-              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} className="h-8 text-sm" />
+          </div>
+
+          {/* Row 2: Client info grouped together */}
+          <div className="rounded-md border border-border/40 bg-muted/20 p-2.5 space-y-2">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Client</span>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Name</Label>
+                <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} className="h-8 text-sm" placeholder="Client name" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Mobile</Label>
+                <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="0412 345 678" className="h-8 text-sm tabular-nums" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">Email</Label>
+                <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="client@email.com" className="h-8 text-sm" />
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Client Mobile</Label>
-              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="0412 345 678" className="h-8 text-sm" />
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Client Email</Label>
-              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="client@email.com" className="h-8 text-sm" />
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Site Manager</Label>
+          </div>
+
+          {/* Row 3: Assignment & classification */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Site Manager</Label>
               <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
-                <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm font-medium"><SelectValue placeholder="Assign manager" /></SelectTrigger>
                 <SelectContent>
                   {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Category *</Label>
+            <div className="space-y-1">
+              <Label className="text-[11px] font-medium text-muted-foreground">Category *</Label>
               <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
-                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm font-medium"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
