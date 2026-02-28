@@ -789,10 +789,10 @@ export default function ClaimsManager() {
                                           onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
                                           onClick={() => openEditClaim(claim)}
                                           className={cn(
-                                            "group/tile w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border relative overflow-visible",
+                                            "group/tile w-full rounded-lg px-2 py-1.5 text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-grab active:cursor-grabbing border relative overflow-visible",
                                             claim.status === 'claimed'
-                                              ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-600'
-                                              : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder)
+                                              ? 'bg-emerald-50 border-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-600 shadow-sm shadow-emerald-200/50'
+                                              : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder, 'shadow-sm')
                                           )}
                                         >
                                           {/* Celebration emoji animation */}
@@ -813,18 +813,34 @@ export default function ClaimsManager() {
                                               ))}
                                             </div>
                                           )}
-                                          <div className="flex items-center justify-between gap-0.5">
-                                            <span
-                                              className={cn("font-medium truncate cursor-pointer text-[10px]", sc.text)}
-                                              onClick={() => openEditClaim(claim)}
-                                            >
+
+                                          {/* Row 1: Stage name + icon */}
+                                          <div className="flex items-center justify-between gap-1">
+                                            <span className={cn(
+                                              "font-semibold truncate leading-tight",
+                                              claim.status === 'claimed' ? 'text-emerald-800 dark:text-emerald-300 text-[11px]' : cn(sc.text, 'text-[11px]')
+                                            )}>
                                               {claim.claim_type}
                                             </span>
-                                            <CalendarClock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                                            <CalendarClock className="h-3 w-3 text-muted-foreground/60 shrink-0" />
                                           </div>
-                                          <span className="text-[9px] text-muted-foreground block">
-                                            {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM')}
-                                          </span>
+
+                                          {/* Row 2: Date + Status badge inline */}
+                                          <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] text-muted-foreground tabular-nums">
+                                              {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM')}
+                                            </span>
+                                            <span className={cn(
+                                              "text-[8px] font-bold uppercase tracking-wider px-1 py-px rounded-sm leading-none",
+                                              claim.status === 'planned' && 'bg-muted text-muted-foreground',
+                                              claim.status === 'confirmed' && 'bg-amber-200/80 text-amber-800',
+                                              claim.status === 'claimed' && 'bg-emerald-200/80 text-emerald-800',
+                                            )}>
+                                              {claim.status === 'planned' ? 'Plan' : claim.status === 'confirmed' ? 'Conf' : 'Paid'}
+                                            </span>
+                                          </div>
+
+                                          {/* Row 3: Amount (prominent) */}
                                           {inlineEditId === claim.id ? (
                                             <Input
                                               type="number"
@@ -842,7 +858,8 @@ export default function ClaimsManager() {
                                           ) : (
                                             <div
                                               className={cn(
-                                                "font-semibold tabular-nums cursor-pointer hover:underline text-[10px]", sc.text
+                                                "font-bold tabular-nums cursor-pointer hover:underline mt-0.5 leading-tight",
+                                                claim.status === 'claimed' ? 'text-emerald-700 dark:text-emerald-300 text-[12px]' : cn(sc.text, 'text-[12px]')
                                               )}
                                               onClick={(e) => {
                                                 e.stopPropagation();
@@ -853,27 +870,19 @@ export default function ClaimsManager() {
                                               {formatCurrency(claim.amount)}
                                             </div>
                                           )}
+
+                                          {/* Row 4: Percentage of contract */}
                                           {(() => {
                                             const proj = (projects || []).find((pr: ProjectRow) => pr.id === claim.project_id);
                                             if (proj && proj.contract_value_ex_gst > 0) {
                                               const pct = (Math.abs(claim.amount) / proj.contract_value_ex_gst * 100).toFixed(0);
-                                              return <span className="text-[9px] text-muted-foreground">{pct}%</span>;
+                                              return (
+                                                <span className="text-[9px] text-muted-foreground/70 tabular-nums">{pct}%</span>
+                                              );
                                             }
                                             return null;
                                           })()}
-                                          {/* Status label */}
-                                          <span className={cn("font-semibold", {
-                                            'text-[9px] text-muted-foreground': claim.status === 'planned',
-                                            'text-[9px] text-amber-600': claim.status === 'confirmed',
-                                            'text-[11px] text-emerald-700 dark:text-emerald-400': claim.status === 'claimed',
-                                          })}>
-                                            {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
-                                            {claim.status === 'claimed' && (claim as any).claimed_date && (
-                                              <span className="text-[9px] font-normal text-muted-foreground ml-1">
-                                                {format(new Date((claim as any).claimed_date + 'T00:00:00'), 'dd/MM')}
-                                              </span>
-                                            )}
-                                          </span>
+
                                           {/* Move arrows - shown on hover */}
                                           <div className="flex items-center justify-between mt-0.5 opacity-0 group-hover/tile:opacity-100 transition-opacity">
                                             <button
@@ -904,23 +913,28 @@ export default function ClaimsManager() {
                                           key={`projected-${pc.stage}`}
                                           onClick={() => openFromProjected(pc)}
                                           className={cn(
-                                            "w-full rounded px-1.5 py-1 text-left text-[10px] border-2 border-dashed hover:shadow-sm transition-all cursor-pointer",
+                                            "w-full rounded-lg px-2 py-1.5 text-left border-2 border-dashed hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer",
                                             sc.bg, sc.darkBg,
                                             sc.border.replace('border-', 'border-dashed border-')
                                           )}
                                           style={{ borderStyle: 'dashed' }}
                                         >
-                                          <div className="flex items-center justify-between gap-0.5">
-                                            <span className={cn("font-medium truncate", sc.text)}>{pc.stage}</span>
-                                            <CalendarClock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                                          <div className="flex items-center justify-between gap-1">
+                                            <span className={cn("font-semibold truncate text-[11px] leading-tight", sc.text)}>{pc.stage}</span>
+                                            <CalendarClock className="h-3 w-3 text-muted-foreground/60 shrink-0" />
                                           </div>
-                                          <span className="text-[9px] text-muted-foreground block">
-                                            {format(pc.projectedDate, 'dd MMM')}
-                                          </span>
-                                          <div className={cn("font-semibold tabular-nums", sc.text)}>
+                                          <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] text-muted-foreground tabular-nums">
+                                              {format(pc.projectedDate, 'dd MMM')}
+                                            </span>
+                                            <span className="text-[8px] font-bold uppercase tracking-wider px-1 py-px rounded-sm leading-none bg-muted/60 text-muted-foreground">
+                                              Sched
+                                            </span>
+                                          </div>
+                                          <div className={cn("font-bold tabular-nums mt-0.5 text-[12px] leading-tight", sc.text)}>
                                             {formatCurrency(pc.amountExGst)}
                                           </div>
-                                          <span className="text-[9px] text-muted-foreground">{pc.percent}%</span>
+                                          <span className="text-[9px] text-muted-foreground/70 tabular-nums">{pc.percent}%</span>
                                         </button>
                                       );
                                     })}
