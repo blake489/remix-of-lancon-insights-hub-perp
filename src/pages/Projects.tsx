@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { FileText } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
+import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
@@ -21,6 +22,7 @@ export default function Projects() {
   const { projects, isLoading, addProject, updateProject } = useProjects();
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
+  const { data: claimStages } = useProjectClaimStages(projectIds);
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
 
   const grouped = useMemo(() => {
@@ -64,6 +66,7 @@ export default function Projects() {
                   projects={group.projects}
                   onEdit={setEditingProject}
                   trends={trends}
+                  claimStages={claimStages}
                 />
               ))}
               <PortfolioSummary projects={projects} />
