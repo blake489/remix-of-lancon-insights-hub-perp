@@ -13,6 +13,7 @@ interface MagicEquationHeaderProps {
   selectedFortnight: 1 | 2;
   overheadOverride?: number;
   onOverheadChange?: (value: number) => void;
+  activeGpPercent?: number;
 }
 
 const OVERHEAD_STEP = 5000;
@@ -38,6 +39,7 @@ export function MagicEquationHeader({
   selectedFortnight,
   overheadOverride,
   onOverheadChange,
+  activeGpPercent,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const pureProfit = monthlyKPI.grossProfit - overheadValue;
@@ -55,9 +57,9 @@ export function MagicEquationHeader({
         />
         <KPICard
           title="Monthly Gross Profit"
-          value={formatPercent(monthlyKPI.gpPercent)}
+          value={activeGpPercent != null ? formatPercent(activeGpPercent) : formatPercent(monthlyKPI.gpPercent)}
           subtitle="Target: 18%"
-          status={monthlyKPI.gpStatus}
+          status={activeGpPercent != null ? (activeGpPercent >= 18 ? 'success' : 'danger') : monthlyKPI.gpStatus}
         />
 
         {/* Editable Overheads Card */}
