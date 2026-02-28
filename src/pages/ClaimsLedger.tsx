@@ -197,6 +197,9 @@ export default function ClaimsLedger() {
                 <p className="text-xs text-muted-foreground font-medium">Fixed Costs</p>
               </div>
               <p className="text-xl font-bold tabular-nums text-red-600">{formatCurrency(totals.overhead)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {(kpiSettings?.overhead_percent ?? 10.5).toFixed(1)}% of {formatCurrency(kpiSettings?.monthly_revenue_target ?? 1650000)} target
+              </p>
             </div>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">

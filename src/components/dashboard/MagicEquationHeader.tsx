@@ -136,6 +136,7 @@ export function MagicEquationHeader({
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Overheads</p>
               <p className="text-2xl font-bold text-foreground">{formatCurrency(overheadValue, true)}</p>
               <p className="text-xs text-muted-foreground">Current month</p>
+              <p className="text-[10px] text-muted-foreground/70 mt-0.5">Based on overhead % × revenue target</p>
             </div>
             {onOverheadChange && (
               <div className="flex flex-col gap-0.5">
