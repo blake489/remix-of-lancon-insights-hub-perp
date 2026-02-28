@@ -20,7 +20,7 @@ import {
   getPreviousFortnightKPIData,
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
-import { format } from 'date-fns';
+import { format, addMonths, subMonths } from 'date-fns';
 import { useProjects } from '@/hooks/useProjects';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { useClaims } from '@/hooks/useClaims';
@@ -77,6 +77,25 @@ const Magic = () => {
     const totalProfit = active.reduce((s, p) => s + (p.forecast_gross_profit || 0), 0);
     return totalContract > 0 ? (totalProfit / totalContract) * 100 : 0;
   }, [projects]);
+
+  // Adjacent month pure profit calculations
+  const adjacentMonthProfits = useMemo(() => {
+    const now = new Date();
+    const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
+    const nextMonthKey = format(addMonths(now, 1), 'yyyy-MM');
+    const gpRate = (activeGpPercent ?? 0) / 100;
+    const overhead = overheadOverride ?? monthlyKPI.overheads;
+
+    const getRevenue = (mk: string) => claims.filter(c => c.month_key === mk).reduce((s, c) => s + Math.abs(c.amount), 0);
+
+    const lastRev = getRevenue(lastMonthKey);
+    const nextRev = getRevenue(nextMonthKey);
+
+    return {
+      lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: lastRev * gpRate - overhead },
+      nextMonth: { label: format(addMonths(now, 1), 'MMM yyyy'), pureProfit: nextRev * gpRate - overhead },
+    };
+  }, [claims, activeGpPercent, overheadOverride, monthlyKPI.overheads]);
 
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -144,6 +163,7 @@ const Magic = () => {
             onOverheadChange={setOverheadOverride}
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
+            adjacentMonthProfits={adjacentMonthProfits}
           />
 
           {/* Project Breakdown Table */}
