@@ -539,6 +539,7 @@ export type Database = {
           start_date: string | null
           status: string
           updated_at: string
+          variations: Json
         }
         Insert: {
           address?: string | null
@@ -564,6 +565,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           updated_at?: string
+          variations?: Json
         }
         Update: {
           address?: string | null
@@ -589,6 +591,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           updated_at?: string
+          variations?: Json
         }
         Relationships: []
       }
