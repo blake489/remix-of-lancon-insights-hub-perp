@@ -15,7 +15,7 @@ export const magicEquationConfig: MagicEquationConfig = {
   gpPercentTarget: 18,
   overheadPercent: 9.70,
   thresholds: {
-    gpGreen: 16,
+    gpGreen: 17,
     gpOrange: 12,
     revenueGreen: 1650000,
     revenueOrange: 1400000,

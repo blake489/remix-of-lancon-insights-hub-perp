@@ -13,7 +13,7 @@ interface MagicEquationHeaderProps {
 
 function getEquationSummary(kpi: KPIData): { text: string; status: 'success' | 'warning' | 'danger' } {
   const revenueRatio = kpi.revenue / kpi.revenueTarget;
-  const gpOnTrack = kpi.gpPercent >= 16;
+  const gpOnTrack = kpi.gpPercent >= 17;
   
   if (revenueRatio >= 1 && gpOnTrack && kpi.pureProfit >= 0) {
     return { text: 'On Track', status: 'success' };
@@ -50,7 +50,7 @@ export function MagicEquationHeader({
           value={formatPercent(monthlyKPI.gpPercent)}
           subtitle="Target: 18%"
           status={monthlyKPI.gpStatus}
-          trend={monthlyKPI.gpPercent >= 18 ? 'up' : monthlyKPI.gpPercent >= 16 ? 'flat' : 'down'}
+          trend={monthlyKPI.gpPercent >= 18 ? 'up' : monthlyKPI.gpPercent >= 17 ? 'flat' : 'down'}
         />
         <KPICard
           title="Overheads"

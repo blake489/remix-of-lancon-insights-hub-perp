@@ -1,0 +1,1 @@
+UPDATE public.kpi_settings SET gp_threshold_green = 17 WHERE gp_threshold_green = 16;
