@@ -11,6 +11,7 @@ export interface KPISettings {
   gp_threshold_orange: number;
   revenue_threshold_green: number;
   revenue_threshold_orange: number;
+  bhag_target: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;

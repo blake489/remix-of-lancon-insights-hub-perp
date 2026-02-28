@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
@@ -28,6 +28,7 @@ import { gpStatus, gpTextColor, GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/li
 import { cn } from '@/lib/utils';
 import { Sparkles, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const availableMonths = [
   '2025-02',
@@ -61,6 +62,21 @@ const Magic = () => {
   const { claims } = useClaims();
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
+
+  // Sync BHAG from DB on load
+  useEffect(() => {
+    if (kpi?.bhag_target != null) {
+      setBhagTarget(kpi.bhag_target);
+    }
+  }, [kpi?.bhag_target]);
+
+  // Save BHAG to DB on change
+  const handleBhagChange = async (value: number) => {
+    setBhagTarget(value);
+    if (kpi?.id) {
+      await supabase.from('kpi_settings').update({ bhag_target: value }).eq('id', kpi.id);
+    }
+  };
 
   // Claims revenue for current month
   const currentMonthKey = format(new Date(), 'yyyy-MM');
@@ -171,7 +187,7 @@ const Magic = () => {
             onLastMonthOverheadChange={setLastMonthOverhead}
             onNextMonthOverheadChange={setNextMonthOverhead}
             bhagTarget={bhagTarget}
-            onBhagChange={setBhagTarget}
+            onBhagChange={handleBhagChange}
           />
 
           {/* Project Breakdown Table */}
