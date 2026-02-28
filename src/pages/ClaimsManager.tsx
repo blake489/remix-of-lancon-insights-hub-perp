@@ -126,6 +126,8 @@ export default function ClaimsManager() {
     targetMonth: string;
     targetHalf: 1 | 2;
     date: string;
+    reasonCategory: string;
+    reasonText: string;
   } | null>(null);
 
   const months = useMemo(() => getMonthRange(startMonth, endMonth), [startMonth, endMonth]);
@@ -392,6 +394,8 @@ export default function ClaimsManager() {
       targetMonth: monthKey,
       targetHalf: half,
       date: defaultDate,
+      reasonCategory: '',
+      reasonText: '',
     });
     setDragClaim(null);
   };
@@ -427,13 +431,28 @@ export default function ClaimsManager() {
       targetMonth: targetMonthKey,
       targetHalf: targetHalf,
       date: format(targetDate, 'yyyy-MM-dd'),
+      reasonCategory: '',
+      reasonText: '',
     });
   };
 
   const handleMoveConfirm = async () => {
     if (!moveDateDialog) return;
-    const { claim, date } = moveDateDialog;
+    const { claim, date, reasonCategory, reasonText } = moveDateDialog;
+
+    // Require a reason
+    if (!reasonCategory) {
+      toast({ title: 'Please select a reason for moving this claim', variant: 'destructive' });
+      return;
+    }
+    if (reasonCategory === 'Custom' && !reasonText.trim()) {
+      toast({ title: 'Please enter a custom reason', variant: 'destructive' });
+      return;
+    }
+
     const oldDate = claim.claim_date;
+    const daysDelta = Math.round((new Date(date + 'T00:00:00').getTime() - new Date(oldDate + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
+
     try {
       await updateClaim.mutateAsync({
         id: claim.id,
@@ -445,15 +464,18 @@ export default function ClaimsManager() {
         reference: claim.reference,
         notes: claim.notes,
       });
-      // Log the move
+      // Log the move with reason and days delta
       await supabase.from('claim_moves').insert({
         claim_id: claim.id,
         project_id: claim.project_id,
         claim_type: claim.claim_type,
         old_date: oldDate,
         new_date: date,
+        days_delta: daysDelta,
+        reason_category: reasonCategory === 'Custom' ? 'Custom' : reasonCategory,
+        reason_text: reasonCategory === 'Custom' ? reasonText.trim() : reasonCategory,
       });
-      toast({ title: `Moved to ${format(new Date(date + 'T00:00:00'), 'dd MMM yyyy')}` });
+      toast({ title: `Moved to ${format(new Date(date + 'T00:00:00'), 'dd MMM yyyy')} (${daysDelta > 0 ? '+' : ''}${daysDelta} days)` });
     } catch (e: any) {
       toast({ title: 'Error moving claim', description: e.message, variant: 'destructive' });
     }
@@ -961,14 +983,51 @@ export default function ClaimsManager() {
               <p className="text-sm text-muted-foreground">
                 Moving <span className="font-semibold text-foreground">{moveDateDialog.claim.claim_type}</span> ({formatCurrency(moveDateDialog.claim.amount)}) to {monthLabel(moveDateDialog.targetMonth)}.
               </p>
+              {/* Days delta preview */}
+              {(() => {
+                const delta = Math.round((new Date(moveDateDialog.date + 'T00:00:00').getTime() - new Date(moveDateDialog.claim.claim_date + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24));
+                return (
+                  <div className={cn("text-sm font-semibold rounded-md px-3 py-2 border", delta > 0 ? "bg-destructive/10 text-destructive border-destructive/20" : delta < 0 ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800" : "bg-muted text-muted-foreground border-border")}>
+                    {delta === 0 ? 'No change in days' : delta > 0 ? `⚠️ ${delta} day${delta !== 1 ? 's' : ''} later (delayed)` : `✅ ${Math.abs(delta)} day${Math.abs(delta) !== 1 ? 's' : ''} earlier (brought forward)`}
+                  </div>
+                );
+              })()}
               <div className="space-y-2">
-                <Label>New Date</Label>
+                <Label>New Date *</Label>
                 <Input
                   type="date"
                   value={moveDateDialog.date}
                   onChange={e => setMoveDateDialog(prev => prev ? { ...prev, date: e.target.value } : null)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Reason for Move *</Label>
+                <Select
+                  value={moveDateDialog.reasonCategory}
+                  onValueChange={v => setMoveDateDialog(prev => prev ? { ...prev, reasonCategory: v, reasonText: v === 'Custom' ? prev.reasonText : '' } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Trade Delay">Trade Delay</SelectItem>
+                    <SelectItem value="Materials Delay">Materials Delay</SelectItem>
+                    <SelectItem value="Weather Delay">Weather Delay</SelectItem>
+                    <SelectItem value="Schedule Delay">Schedule Delay</SelectItem>
+                    <SelectItem value="Custom">Custom Reason</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {moveDateDialog.reasonCategory === 'Custom' && (
+                <div className="space-y-2">
+                  <Label>Custom Reason *</Label>
+                  <Input
+                    placeholder="Enter reason..."
+                    value={moveDateDialog.reasonText}
+                    onChange={e => setMoveDateDialog(prev => prev ? { ...prev, reasonText: e.target.value } : null)}
+                  />
+                </div>
+              )}
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setMoveDateDialog(null)}>Cancel</Button>
                 <Button onClick={handleMoveConfirm}>Confirm Move</Button>
