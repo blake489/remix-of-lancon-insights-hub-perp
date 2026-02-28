@@ -11,10 +11,10 @@ import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
 import { useKPISettings } from '@/hooks/useKPISettings';
+import { useWeatherEOTLogs } from '@/hooks/useWeatherEOTLogs';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
 import { PortfolioSummary } from '@/components/projects/PortfolioSummary';
-import { WeatherEOTTally } from '@/components/projects/WeatherEOTTally';
 
 const categoryOrder: { key: ProjectCategory; label: string }[] = [
   { key: 'pre_construction', label: 'Pre Construction' },
@@ -33,6 +33,7 @@ export default function Projects() {
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
   const { data: kpiSettings } = useKPISettings();
+  const { tallies: eotTallies } = useWeatherEOTLogs();
   const gpThresholds = kpiSettings ? { green: kpiSettings.gp_threshold_green, orange: kpiSettings.gp_threshold_orange } : undefined;
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
   const expandedProjectId = editingProject?.id ?? null;
@@ -122,7 +123,7 @@ export default function Projects() {
             </div>
           ) : (
             <>
-               {grouped.map(group => (
+              {grouped.map(group => (
                 <ProjectCategorySection
                   key={group.key}
                   label={group.label}
@@ -134,9 +135,9 @@ export default function Projects() {
                   trends={trends}
                   claimStages={claimStages}
                   highlighted={highlightCategory === null || highlightCategory === group.key}
+                  eotTallies={eotTallies}
                 />
               ))}
-              <WeatherEOTTally projects={projects} />
               <PortfolioSummary
                 projects={projects}
                 onCategoryClick={(cat) => setHighlightCategory(prev => prev === cat ? null : cat)}
