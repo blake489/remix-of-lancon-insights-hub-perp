@@ -22,6 +22,7 @@ interface ProjectCategorySectionProps {
   onEdit?: (project: ProjectRow) => void;
   trends?: Record<string, { schedule: string; profit: string; scheduleDays: number; profitDelta: number }>;
   claimStages?: Record<string, ClaimStageInfo>;
+  highlighted?: boolean;
 }
 
 const formatCurrency = (val: number) => {
@@ -88,11 +89,11 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
   );
 }
 
-export function ProjectCategorySection({ label, projects, onEdit, trends, claimStages }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit, trends, claimStages, highlighted = true }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
-    <section className="space-y-3">
+    <section className={cn("space-y-3 transition-opacity duration-300", !highlighted && "opacity-30")}>
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-bold text-foreground">{label}</h2>
         <Badge variant="secondary" className="text-xs">{projects.length}</Badge>

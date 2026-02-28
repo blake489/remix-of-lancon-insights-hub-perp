@@ -24,6 +24,7 @@ export default function Projects() {
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
+  const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
 
   const grouped = useMemo(() => {
     return categoryOrder.map(cat => ({
@@ -59,7 +60,7 @@ export default function Projects() {
             </div>
           ) : (
             <>
-              {grouped.map(group => (
+               {grouped.map(group => (
                 <ProjectCategorySection
                   key={group.key}
                   label={group.label}
@@ -67,9 +68,14 @@ export default function Projects() {
                   onEdit={setEditingProject}
                   trends={trends}
                   claimStages={claimStages}
+                  highlighted={highlightCategory === null || highlightCategory === group.key}
                 />
               ))}
-              <PortfolioSummary projects={projects} />
+              <PortfolioSummary
+                projects={projects}
+                onCategoryClick={(cat) => setHighlightCategory(prev => prev === cat ? null : cat)}
+                activeCategory={highlightCategory}
+              />
             </>
           )}
         </main>
