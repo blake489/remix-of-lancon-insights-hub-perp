@@ -571,6 +571,20 @@ export default function ClaimsManager() {
     setEndMonth(format(addMonths(now, span - 1), 'yyyy-MM'));
   };
 
+  const handleThisMonth = () => {
+    setMonthSpan(1);
+    const current = format(now, 'yyyy-MM');
+    setStartMonth(current);
+    setEndMonth(current);
+  };
+
+  const handleNextMonth = () => {
+    setMonthSpan(1);
+    const next = format(addMonths(now, 1), 'yyyy-MM');
+    setStartMonth(next);
+    setEndMonth(next);
+  };
+
   const isLoading = projectsLoading || claimsLoading;
 
   const selectedProject = (projects || []).find((p: ProjectRow) => p.id === claimForm.project_id);
@@ -594,6 +608,22 @@ export default function ClaimsManager() {
           {/* Controls Row */}
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+              <Button
+                size="sm"
+                variant={monthSpan === 1 && startMonth === format(now, 'yyyy-MM') ? 'default' : 'ghost'}
+                className="h-8 px-3 text-xs font-semibold"
+                onClick={handleThisMonth}
+              >
+                This Month
+              </Button>
+              <Button
+                size="sm"
+                variant={monthSpan === 1 && startMonth === format(addMonths(now, 1), 'yyyy-MM') ? 'default' : 'ghost'}
+                className="h-8 px-3 text-xs font-semibold"
+                onClick={handleNextMonth}
+              >
+                Next
+              </Button>
               {[3, 6, 9].map(span => (
                 <Button
                   key={span}
