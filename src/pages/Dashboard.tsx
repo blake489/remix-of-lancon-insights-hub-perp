@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useProjects } from '@/hooks/useProjects';
+import { useMessages } from '@/hooks/useMessages';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 
 import { useKPISettings } from '@/hooks/useKPISettings';
@@ -46,6 +47,7 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  Mail,
 } from 'lucide-react';
 
 const quickLinks = [
@@ -73,6 +75,7 @@ const Dashboard = () => {
   const { projects, isLoading: projLoading } = useProjects();
   const { data: kpi } = useKPISettings();
   const { claims } = useClaims();
+  const { unreadCount } = useMessages();
 
   const now = new Date();
   const nextMonth = addDays(now, 30);
@@ -189,9 +192,20 @@ const Dashboard = () => {
       <div className="min-h-full bg-background">
         <div className="border-b border-border/40 bg-background">
           <div className="mx-auto max-w-7xl px-6 py-5">
-            <div className="flex items-center gap-6">
-              <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
-              <TodayWidget variant="inline" />
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-6">
+                <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+                <TodayWidget variant="inline" />
+              </div>
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => navigate('/inbox')}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
+                >
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold text-primary">{unreadCount} unread</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
