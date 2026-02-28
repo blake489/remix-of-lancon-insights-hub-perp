@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { SiteManagerPopover } from './SiteManagerPopover';
 
 interface ProjectCategorySectionProps {
@@ -184,6 +184,12 @@ export function ProjectCategorySection({ label, projects, onEdit, trends, claimS
                               {stage.nextDate && (
                                 <p className="text-[10px] text-muted-foreground tabular-nums">
                                   {format(new Date(stage.nextDate), 'dd MMM yy')}
+                                  {(() => {
+                                    const days = differenceInDays(new Date(stage.nextDate), new Date());
+                                    if (days === 0) return <span className="ml-1 text-warning font-medium">(today)</span>;
+                                    if (days < 0) return <span className="ml-1 text-danger font-medium">({Math.abs(days)}d ago)</span>;
+                                    return <span className="ml-1 font-medium">(in {days}d)</span>;
+                                  })()}
                                 </p>
                               )}
                             </div>
