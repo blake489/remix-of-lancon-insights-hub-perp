@@ -696,6 +696,7 @@ export default function ClaimsManager() {
                                           draggable
                                           onDragStart={e => handleDragStart(e, claim.id, p.id)}
                                           onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
+                                          onClick={() => openEditClaim(claim)}
                                           className={cn(
                                             "w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
                                             sc.bg, sc.border, sc.darkBg, sc.darkBorder
@@ -735,7 +736,8 @@ export default function ClaimsManager() {
                                               className={cn(
                                                 "font-bold tabular-nums cursor-pointer hover:underline text-[10px]", sc.text
                                               )}
-                                              onClick={() => {
+                                              onClick={(e) => {
+                                                e.stopPropagation();
                                                 setInlineEditId(claim.id);
                                                 setInlineEditAmount(Math.abs(claim.amount).toString());
                                               }}
