@@ -10,13 +10,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
-import { useClaims, Claim, ClaimInsert, ClaimStatus } from '@/hooks/useClaims';
+import { useClaims, Claim, ClaimInsert } from '@/hooks/useClaims';
 import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
 import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+// Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; darkBg: string; darkBorder: string }> = {
@@ -78,7 +78,7 @@ function getLastDay(monthKey: string): number {
 export default function ClaimsManager() {
   const { toast } = useToast();
   const { projects, isLoading: projectsLoading } = useProjects();
-  const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim, updateClaimStatus } = useClaims();
+  const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim } = useClaims();
 
   // Month range
   const now = new Date();
@@ -106,6 +106,7 @@ export default function ClaimsManager() {
     amount: '',
     reference: '',
     notes: '',
+    status: 'planned' as string,
   });
 
   // Inline editing
@@ -230,22 +231,6 @@ export default function ClaimsManager() {
     return map;
   }, [claims]);
 
-  // Status progression handler
-  const handleStatusToggle = useCallback(async (claim: Claim) => {
-    const nextStatus: Record<string, ClaimStatus> = {
-      planned: 'confirmed',
-      confirmed: 'claimed',
-      claimed: 'claimed', // already at end
-    };
-    const current = (claim.status || 'planned') as string;
-    const next = nextStatus[current] || 'confirmed';
-    if (next === current) return;
-    try {
-      await updateClaimStatus.mutateAsync({ id: claim.id, status: next });
-    } catch (e: any) {
-      toast({ title: 'Error updating status', description: e.message, variant: 'destructive' });
-    }
-  }, [updateClaimStatus, toast]);
 
   const resetClaimForm = useCallback(() => {
     setClaimForm({
@@ -256,6 +241,7 @@ export default function ClaimsManager() {
       amount: '',
       reference: '',
       notes: '',
+      status: 'planned',
     });
     setEditingClaim(null);
   }, []);
@@ -275,6 +261,7 @@ export default function ClaimsManager() {
       amount: Math.abs(claim.amount).toString(),
       reference: claim.reference || '',
       notes: claim.notes || '',
+      status: claim.status || 'planned',
     });
     setClaimDialogOpen(true);
   };
@@ -290,6 +277,7 @@ export default function ClaimsManager() {
       amount: pc.amountExGst.toFixed(2),
       reference: '',
       notes: `Scheduled ${pc.stage} claim`,
+      status: 'planned',
     });
     setClaimDialogOpen(true);
   };
@@ -307,6 +295,7 @@ export default function ClaimsManager() {
       amount: parseFloat(claimForm.amount) || 0,
       reference: claimForm.reference || null,
       notes: claimForm.notes || null,
+      status: claimForm.status || 'planned',
     };
     try {
       if (editingClaim) {
@@ -750,25 +739,14 @@ export default function ClaimsManager() {
                                             }
                                             return null;
                                           })()}
-                                          {/* Status checkbox */}
-                                          <div
-                                            className="flex items-center gap-1 mt-0.5 cursor-pointer"
-                                            onClick={(e) => { e.stopPropagation(); handleStatusToggle(claim); }}
-                                          >
-                                            <Checkbox
-                                              checked={claim.status === 'claimed'}
-                                              className="h-3 w-3"
-                                              onClick={(e) => e.stopPropagation()}
-                                              onCheckedChange={() => handleStatusToggle(claim)}
-                                            />
-                                            <span className={cn("text-[9px] font-medium", {
-                                              'text-muted-foreground': claim.status === 'planned',
-                                              'text-amber-600': claim.status === 'confirmed',
-                                              'text-emerald-600': claim.status === 'claimed',
-                                            })}>
-                                              {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
-                                            </span>
-                                          </div>
+                                          {/* Status label */}
+                                          <span className={cn("text-[9px] font-medium", {
+                                            'text-muted-foreground': claim.status === 'planned',
+                                            'text-amber-600': claim.status === 'confirmed',
+                                            'text-emerald-600': claim.status === 'claimed',
+                                          })}>
+                                            {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
+                                          </span>
                                           {/* Move arrows - shown on hover */}
                                           <div className="flex items-center justify-between mt-0.5 opacity-0 group-hover/tile:opacity-100 transition-opacity">
                                             <button
@@ -910,9 +888,22 @@ export default function ClaimsManager() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Reference</Label>
-              <Input placeholder="e.g. 15.16 VAR" value={claimForm.reference} onChange={e => setClaimForm(f => ({ ...f, reference: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={claimForm.status} onValueChange={v => setClaimForm(f => ({ ...f, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">Planned</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="claimed">Claimed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Reference</Label>
+                <Input placeholder="e.g. 15.16 VAR" value={claimForm.reference} onChange={e => setClaimForm(f => ({ ...f, reference: e.target.value }))} />
+              </div>
             </div>
 
             <div className="space-y-2">

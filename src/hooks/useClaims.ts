@@ -27,6 +27,7 @@ export interface ClaimInsert {
   claim_type: string;
   reference?: string | null;
   notes?: string | null;
+  status?: string;
 }
 
 export function useClaims() {
