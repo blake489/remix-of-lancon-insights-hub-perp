@@ -92,13 +92,24 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     if (!isNaN(num)) updateField('contract_value_inc_gst', (num * 1.1).toFixed(2));
   };
 
-  // Auto-calc GP% when cost or profit changes
-  const handleForecastChange = (field: 'forecast_cost' | 'forecast_gross_profit', val: string) => {
-    updateField(field, val);
-    const cost = parseFloat(field === 'forecast_cost' ? val : form.forecast_cost) || 0;
-    const profit = parseFloat(field === 'forecast_gross_profit' ? val : form.forecast_gross_profit) || 0;
-    const total = cost + profit;
-    if (total > 0) updateField('forecast_gp_percent', ((profit / total) * 100).toFixed(2));
+  // Auto-calc Gross Profit = Contract ex GST - Forecast Cost; GP% = Profit / Contract * 100
+  const handleForecastCostChange = (val: string) => {
+    updateField('forecast_cost', val);
+    const contract = parseFloat(form.contract_value_ex_gst) || 0;
+    const cost = parseFloat(val) || 0;
+    const profit = contract - cost;
+    updateField('forecast_gross_profit', profit.toFixed(2));
+    if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
+  };
+
+  // Also recalc when contract value changes
+  const handleExGstChangeWithForecast = (val: string) => {
+    handleExGstChange(val);
+    const contract = parseFloat(val) || 0;
+    const cost = parseFloat(form.forecast_cost) || 0;
+    const profit = contract - cost;
+    updateField('forecast_gross_profit', profit.toFixed(2));
+    if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
   };
 
   return (
@@ -177,7 +188,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contract_ex">Contract Value (ex GST)</Label>
-                <Input id="contract_ex" type="number" step="0.01" value={form.contract_value_ex_gst} onChange={e => handleExGstChange(e.target.value)} placeholder="0.00" />
+                <Input id="contract_ex" type="number" step="0.01" value={form.contract_value_ex_gst} onChange={e => handleExGstChangeWithForecast(e.target.value)} placeholder="0.00" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contract_inc">Contract Value (inc GST)</Label>
@@ -192,15 +203,15 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="forecast_cost">Forecast Cost</Label>
-                <Input id="forecast_cost" type="number" step="0.01" value={form.forecast_cost} onChange={e => handleForecastChange('forecast_cost', e.target.value)} placeholder="0.00" />
+                <Input id="forecast_cost" type="number" step="0.01" value={form.forecast_cost} onChange={e => handleForecastCostChange(e.target.value)} placeholder="0.00" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="forecast_profit">Forecast Gross Profit</Label>
-                <Input id="forecast_profit" type="number" step="0.01" value={form.forecast_gross_profit} onChange={e => handleForecastChange('forecast_gross_profit', e.target.value)} placeholder="0.00" />
+                <Input id="forecast_profit" type="number" step="0.01" value={form.forecast_gross_profit} readOnly className="bg-muted" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="forecast_gp">Forecast GP%</Label>
-                <Input id="forecast_gp" type="number" step="0.01" value={form.forecast_gp_percent} onChange={e => updateField('forecast_gp_percent', e.target.value)} placeholder="Auto-calculated" />
+                <Input id="forecast_gp" type="number" step="0.01" value={form.forecast_gp_percent} readOnly className="bg-muted" />
               </div>
             </div>
           </fieldset>
