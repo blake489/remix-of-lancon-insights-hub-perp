@@ -41,14 +41,21 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     updateField('contract_value_ex_gst', val);
     const num = parseFloat(val);
     if (!isNaN(num)) updateField('contract_value_inc_gst', (num * 1.1).toFixed(2));
+    // Recalc forecast
+    const contract = parseFloat(val) || 0;
+    const cost = parseFloat(getVal('forecast_cost', '0')) || 0;
+    const profit = contract - cost;
+    updateField('forecast_gross_profit', profit.toFixed(2));
+    if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
   };
 
-  const handleForecastChange = (field: 'forecast_cost' | 'forecast_gross_profit', val: string) => {
-    updateField(field, val);
-    const cost = parseFloat(field === 'forecast_cost' ? val : getVal('forecast_cost', '0')) || 0;
-    const profit = parseFloat(field === 'forecast_gross_profit' ? val : getVal('forecast_gross_profit', '0')) || 0;
-    const total = cost + profit;
-    if (total > 0) updateField('forecast_gp_percent', ((profit / total) * 100).toFixed(2));
+  const handleForecastCostChange = (val: string) => {
+    updateField('forecast_cost', val);
+    const contract = parseFloat(getVal('contract_value_ex_gst', '0')) || 0;
+    const cost = parseFloat(val) || 0;
+    const profit = contract - cost;
+    updateField('forecast_gross_profit', profit.toFixed(2));
+    if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -178,15 +185,15 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Forecast Cost</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastChange('forecast_cost', e.target.value)} />
+                <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Forecast Gross Profit</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} onChange={e => handleForecastChange('forecast_gross_profit', e.target.value)} />
+                <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
               </div>
               <div className="space-y-2">
                 <Label>Forecast GP%</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} onChange={e => updateField('forecast_gp_percent', e.target.value)} />
+                <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
               </div>
             </div>
           </fieldset>
