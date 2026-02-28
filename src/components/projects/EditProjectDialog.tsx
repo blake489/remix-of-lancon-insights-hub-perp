@@ -143,6 +143,8 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
             contractValueExGst={parseFloat(getVal('contract_value_ex_gst', '0')) || 0}
+            contractSignDate={getVal('start_date')}
+            onContractSignDateChange={v => updateField('start_date', v)}
             customTimeframes={(() => {
               try { return JSON.parse(getVal('custom_timeframes', '{}')); } catch { return {}; }
             })()}

@@ -1,6 +1,12 @@
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -45,6 +51,8 @@ interface ClaimsScheduleTableProps {
   scheduleType: ClaimScheduleType;
   onScheduleTypeChange: (type: ClaimScheduleType) => void;
   contractValueExGst: number;
+  contractSignDate?: string;
+  onContractSignDateChange?: (date: string) => void;
   customTimeframes?: Record<string, number>;
   onTimeframeChange?: (stage: string, value: number) => void;
 }
@@ -67,6 +75,8 @@ export function ClaimsScheduleTable({
   scheduleType,
   onScheduleTypeChange,
   contractValueExGst,
+  contractSignDate,
+  onContractSignDateChange,
   customTimeframes,
   onTimeframeChange,
 }: ClaimsScheduleTableProps) {
@@ -117,7 +127,34 @@ export function ClaimsScheduleTable({
                 <TableRow key={row.stage}>
                   <TableCell className="font-medium">{row.stage}</TableCell>
                   <TableCell className="text-right">
-                    {row.stage === 'Contract Sign' ? '—' : (
+                    {row.stage === 'Contract Sign' ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "h-7 text-xs justify-start font-normal px-2",
+                              !contractSignDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-1 h-3 w-3" />
+                            {contractSignDate
+                              ? format(new Date(contractSignDate + 'T00:00:00'), 'dd MMM yyyy')
+                              : 'Pick date'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <Calendar
+                            mode="single"
+                            selected={contractSignDate ? new Date(contractSignDate + 'T00:00:00') : undefined}
+                            onSelect={(d) => {
+                              if (d) onContractSignDateChange?.(format(d, 'yyyy-MM-dd'));
+                            }}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
                       <div className="flex items-center justify-end gap-1.5">
                         <Input
                           type="number"
