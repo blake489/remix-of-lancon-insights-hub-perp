@@ -109,6 +109,50 @@ function CategoryChart({ data, total }: { data: ChartRow[]; total: number }) {
   );
 }
 
+const GP_THRESHOLD_GREEN = 16;
+const GP_THRESHOLD_AMBER = 12;
+
+function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
+  const sorted = useMemo(() =>
+    projects
+      .filter(p => p.forecast_gp_percent > 0)
+      .sort((a, b) => b.forecast_gp_percent - a.forecast_gp_percent)
+      .map(p => ({
+        name: p.job_name.length > 20 ? p.job_name.slice(0, 18) + '…' : p.job_name,
+        fullName: p.job_name,
+        gp: p.forecast_gp_percent,
+      })),
+    [projects]
+  );
+
+  const barFill = (gp: number) => {
+    if (gp >= GP_THRESHOLD_GREEN) return 'hsl(160, 60%, 45%)';
+    if (gp >= GP_THRESHOLD_AMBER) return 'hsl(35, 80%, 50%)';
+    return 'hsl(0, 65%, 50%)';
+  };
+
+  const chartHeight = Math.max(200, sorted.length * 32);
+
+  return (
+    <ResponsiveContainer width="100%" height={chartHeight}>
+      <BarChart data={sorted} layout="vertical" margin={{ left: 10, right: 40, top: 5, bottom: 5 }}>
+        <XAxis type="number" domain={[0, 'auto']} tickFormatter={(v: number) => `${v}%`} tick={{ fontSize: 11 }} />
+        <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 11, fontWeight: 500 }} />
+        <RechartsTooltip
+          formatter={(value: number) => [`${value.toFixed(1)}%`, 'GP%']}
+          labelFormatter={(label: string, payload: any[]) => payload?.[0]?.payload?.fullName || label}
+          contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+        />
+        <Bar dataKey="gp" name="GP%" radius={[0, 4, 4, 0]} barSize={22}>
+          {sorted.map((d, i) => (
+            <Cell key={i} fill={barFill(d.gp)} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function PortfolioSummary({ projects }: { projects: ProjectRow[] }) {
   const metrics = useMemo(() => {
     const all = projects;
@@ -290,6 +334,18 @@ export function PortfolioSummary({ projects }: { projects: ProjectRow[] }) {
             ]}
             total={metrics.totalContract}
           />
+        </CardContent>
+      </Card>
+
+      {/* Individual Project GP% Chart */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Percent className="h-3.5 w-3.5" /> Project GP% Ranking
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProjectGpChart projects={projects} />
         </CardContent>
       </Card>
     </section>
