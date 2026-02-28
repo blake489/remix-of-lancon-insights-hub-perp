@@ -15,7 +15,7 @@ import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtil
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck } from 'lucide-react';
+import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
@@ -397,6 +397,40 @@ export default function ClaimsManager() {
     setDragClaim(null);
   };
 
+  // Click-based move: shift claim by one fortnight left or right
+  const handleClickMove = (claim: Claim, direction: 'left' | 'right') => {
+    const currentDate = new Date(claim.claim_date + 'T00:00:00');
+    const day = currentDate.getDate();
+    let targetDate: Date;
+
+    if (direction === 'right') {
+      // Move to next fortnight
+      if (day <= 15) {
+        targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 16);
+      } else {
+        targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+      }
+    } else {
+      // Move to previous fortnight
+      if (day >= 16) {
+        targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      } else {
+        // Go to 16th of previous month
+        targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 16);
+      }
+    }
+
+    const targetMonthKey = format(targetDate, 'yyyy-MM');
+    const targetHalf: 1 | 2 = targetDate.getDate() <= 15 ? 1 : 2;
+
+    setMoveDateDialog({
+      claim,
+      targetMonth: targetMonthKey,
+      targetHalf: targetHalf,
+      date: format(targetDate, 'yyyy-MM-dd'),
+    });
+  };
+
   const handleMoveConfirm = async () => {
     if (!moveDateDialog) return;
     const { claim, date } = moveDateDialog;
@@ -727,6 +761,24 @@ export default function ClaimsManager() {
                                             })}>
                                               {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
                                             </span>
+                                          </div>
+                                          {/* Move arrows */}
+                                          <div className="flex items-center justify-between mt-0.5">
+                                            <button
+                                              className="p-0 h-4 w-4 rounded hover:bg-foreground/10 flex items-center justify-center transition-colors"
+                                              title="Move to previous fortnight"
+                                              onClick={(e) => { e.stopPropagation(); handleClickMove(claim, 'left'); }}
+                                            >
+                                              <ChevronLeft className="h-3 w-3 text-muted-foreground" />
+                                            </button>
+                                            <span className="text-[8px] text-muted-foreground">Move</span>
+                                            <button
+                                              className="p-0 h-4 w-4 rounded hover:bg-foreground/10 flex items-center justify-center transition-colors"
+                                              title="Move to next fortnight"
+                                              onClick={(e) => { e.stopPropagation(); handleClickMove(claim, 'right'); }}
+                                            >
+                                              <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                                            </button>
                                           </div>
                                         </div>
                                       );
