@@ -174,6 +174,67 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           <DialogTitle>Edit Project</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 pt-2">
+          {/* Contract Value + Variations + Forecast — grouped at top */}
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Contract Value (ex GST)</Label>
+                <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Contract Value (inc GST)</Label>
+                <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
+              </div>
+            </div>
+          </fieldset>
+
+          <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
+
+          {variationsTotal !== 0 && (
+            <div className="text-sm text-muted-foreground px-1">
+              Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+            </div>
+          )}
+
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Forecast Cost</Label>
+                <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Forecast Gross Profit</Label>
+                <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
+              </div>
+              <div className="space-y-2">
+                <Label>Forecast GP%</Label>
+                <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
+              </div>
+            </div>
+            {currentProject && (
+              (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
+              (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
+            ) && (
+              <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+                <Label htmlFor="forecast-reason" className="text-sm font-medium">
+                  Reason for change <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="forecast-reason"
+                  value={forecastReason}
+                  onChange={e => setForecastReason(e.target.value)}
+                  placeholder="e.g. Updated after subcontractor requote, material price increase..."
+                  className="min-h-[60px] text-sm"
+                  required
+                />
+              </div>
+            )}
+            <ForecastAuditTrail projectId={currentProject.id} />
+          </fieldset>
+
+          {/* Project Details */}
           <fieldset className="space-y-4">
             <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
             <div className="grid grid-cols-2 gap-4">
@@ -237,28 +298,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             </div>
           </fieldset>
 
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Contract Value (ex GST)</Label>
-                <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Contract Value (inc GST)</Label>
-                <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
-              </div>
-            </div>
-          </fieldset>
-
-          <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
-
-          {variationsTotal !== 0 && (
-            <div className="text-sm text-muted-foreground px-1">
-              Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
-            </div>
-          )}
-
           <ClaimsScheduleTable
             scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
@@ -277,44 +316,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
               updateField('custom_timeframes', JSON.stringify(current));
             }}
           />
-
-
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Forecast Cost</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Forecast Gross Profit</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
-              </div>
-              <div className="space-y-2">
-                <Label>Forecast GP%</Label>
-                <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
-              </div>
-            </div>
-            {currentProject && (
-              (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
-              (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
-            ) && (
-              <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-                <Label htmlFor="forecast-reason" className="text-sm font-medium">
-                  Reason for change <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  id="forecast-reason"
-                  value={forecastReason}
-                  onChange={e => setForecastReason(e.target.value)}
-                  placeholder="e.g. Updated after subcontractor requote, material price increase..."
-                  className="min-h-[60px] text-sm"
-                  required
-                />
-              </div>
-            )}
-            <ForecastAuditTrail projectId={currentProject.id} />
-          </fieldset>
 
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
