@@ -84,6 +84,9 @@ export function ForecastAuditTrail({ projectId }: { projectId: string }) {
                   </span>
                 </span>
               </div>
+              {row.reason && (
+                <span className="text-muted-foreground italic ml-1">— {row.reason}</span>
+              )}
             </div>
           );
         })}

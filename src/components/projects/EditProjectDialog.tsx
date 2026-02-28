@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
@@ -29,6 +30,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
   const { siteManagers } = useSiteManagers();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
+  const [forecastReason, setForecastReason] = useState('');
 
   // Reset form when project changes
   const currentProject = project;
@@ -99,6 +101,13 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     const oldContract = currentProject.contract_value_ex_gst;
 
     if (newCost !== oldCost || newContract !== oldContract) {
+      if (!forecastReason.trim()) {
+        // Show validation - require reason
+        const el = document.getElementById('forecast-reason');
+        if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        return;
+      }
+
       const oldProfit = currentProject.forecast_gross_profit;
       const oldGp = currentProject.forecast_gp_percent;
       const newProfit = newContract - newCost;
@@ -114,6 +123,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
         new_gross_profit: newProfit,
         old_gp_percent: oldGp,
         new_gp_percent: newGp,
+        reason: forecastReason.trim(),
       }).then(() => {
         queryClient.invalidateQueries({ queryKey: ['forecast-audit', currentProject.id] });
       });
@@ -121,13 +131,14 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
 
     onSubmit(updates);
     setForm({});
+    setForecastReason('');
     onOpenChange(false);
   };
 
   if (!currentProject) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) setForm({}); onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { setForm({}); setForecastReason(''); } onOpenChange(v); }}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
@@ -227,6 +238,24 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
                 <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
               </div>
             </div>
+            {currentProject && (
+              (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
+              (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
+            ) && (
+              <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+                <Label htmlFor="forecast-reason" className="text-sm font-medium">
+                  Reason for change <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="forecast-reason"
+                  value={forecastReason}
+                  onChange={e => setForecastReason(e.target.value)}
+                  placeholder="e.g. Updated after subcontractor requote, material price increase..."
+                  className="min-h-[60px] text-sm"
+                  required
+                />
+              </div>
+            )}
             <ForecastAuditTrail projectId={currentProject.id} />
           </fieldset>
 
