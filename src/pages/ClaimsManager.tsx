@@ -690,7 +690,9 @@ export default function ClaimsManager() {
                                           onClick={() => openEditClaim(claim)}
                                           className={cn(
                                             "group/tile w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
-                                            sc.bg, sc.border, sc.darkBg, sc.darkBorder
+                                            claim.status === 'claimed'
+                                              ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-600'
+                                              : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder)
                                           )}
                                         >
                                           <div className="flex items-center justify-between gap-0.5">
@@ -742,10 +744,10 @@ export default function ClaimsManager() {
                                             return null;
                                           })()}
                                           {/* Status label */}
-                                          <span className={cn("text-[9px] font-medium", {
-                                            'text-muted-foreground': claim.status === 'planned',
-                                            'text-amber-600': claim.status === 'confirmed',
-                                            'text-emerald-600': claim.status === 'claimed',
+                                          <span className={cn("font-semibold", {
+                                            'text-[9px] text-muted-foreground': claim.status === 'planned',
+                                            'text-[9px] text-amber-600': claim.status === 'confirmed',
+                                            'text-[11px] text-emerald-700 dark:text-emerald-400': claim.status === 'claimed',
                                           })}>
                                             {claim.status === 'planned' ? 'Planned' : claim.status === 'confirmed' ? 'Confirmed' : 'Claimed'}
                                           </span>
