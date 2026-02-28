@@ -56,7 +56,7 @@ const topItems = [
 ];
 
 const buildingItems = [
-  { title: 'Projects', url: '/projects', icon: FileText },
+  { title: 'Building Contracts', url: '/projects', icon: FileText },
   { title: 'Claims Papi', url: '/claims', icon: Receipt },
   { title: 'Claims Ledger', url: '/claims/ledger', icon: BookOpen },
   

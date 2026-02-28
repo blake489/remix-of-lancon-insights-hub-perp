@@ -50,7 +50,7 @@ export default function Projects() {
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex items-center gap-3 flex-1">
             <FileText className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-semibold">Projects</h1>
+            <h1 className="text-lg font-semibold">Building Contracts</h1>
           </div>
           <AddProjectDialog
             onSubmit={(data) => addProject.mutate(data)}
@@ -64,7 +64,7 @@ export default function Projects() {
           ) : projects.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-2">No projects yet</p>
-              <p className="text-sm text-muted-foreground">Click "Add Project" to get started.</p>
+              <p className="text-sm text-muted-foreground">Click "Add a New Contract" to get started.</p>
             </div>
           ) : (
             <>
