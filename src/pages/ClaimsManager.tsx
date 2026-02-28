@@ -923,7 +923,7 @@ export default function ClaimsManager() {
                                           onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
                                           onClick={() => openEditClaim(claim)}
                                           className={cn(
-                                            "group/tile w-full rounded-lg px-2 py-1.5 text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-grab active:cursor-grabbing border relative overflow-visible",
+                                            "group/tile w-full rounded-md px-1.5 py-1 text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-grab active:cursor-grabbing border relative overflow-visible",
                                             claim.status === 'claimed'
                                               ? 'bg-gradient-to-br from-emerald-50 via-emerald-100/60 to-teal-50 border-emerald-400 dark:from-emerald-950/50 dark:via-emerald-900/30 dark:to-teal-950/40 dark:border-emerald-600 shadow-md shadow-emerald-200/40 ring-1 ring-emerald-300/30'
                                               : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder, 'shadow-sm')
@@ -960,7 +960,7 @@ export default function ClaimsManager() {
                                           </div>
 
                                           {/* Row 2: Date + Status badge inline */}
-                                          <div className="flex items-center gap-1.5 mt-0.5">
+                                          <div className="flex items-center gap-1 mt-px">
                                             <span className="text-[10px] text-muted-foreground tabular-nums">
                                               {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM')}
                                             </span>
@@ -992,8 +992,8 @@ export default function ClaimsManager() {
                                           ) : (
                                             <div
                                               className={cn(
-                                                "font-bold tabular-nums cursor-pointer hover:underline mt-0.5 leading-tight",
-                                                claim.status === 'claimed' ? 'text-emerald-700 dark:text-emerald-300 text-[12px]' : cn(sc.text, 'text-[12px]')
+                                                "font-bold tabular-nums cursor-pointer hover:underline mt-px leading-none",
+                                                claim.status === 'claimed' ? 'text-emerald-700 dark:text-emerald-300 text-[11px]' : cn(sc.text, 'text-[11px]')
                                               )}
                                               onClick={(e) => {
                                                 e.stopPropagation();
@@ -1005,20 +1005,18 @@ export default function ClaimsManager() {
                                             </div>
                                           )}
 
-                                          {/* Row 4: Percentage of contract */}
+                                          {/* Row 4: Percentage + Move arrows - shown on hover */}
+                                          <div className="flex items-center justify-between mt-px opacity-0 group-hover/tile:opacity-100 transition-opacity">
                                           {(() => {
                                             const proj = (projects || []).find((pr: ProjectRow) => pr.id === claim.project_id);
                                             if (proj && proj.contract_value_ex_gst > 0) {
                                               const pct = (Math.abs(claim.amount) / proj.contract_value_ex_gst * 100).toFixed(0);
                                               return (
-                                                <span className="text-[9px] text-muted-foreground/70 tabular-nums">{pct}%</span>
+                                                <span className="text-[8px] text-muted-foreground/70 tabular-nums">{pct}%</span>
                                               );
                                             }
-                                            return null;
+                                            return <span />;
                                           })()}
-
-                                          {/* Move arrows - shown on hover */}
-                                          <div className="flex items-center justify-between mt-0.5 opacity-0 group-hover/tile:opacity-100 transition-opacity">
                                             <button
                                               className="p-0 h-4 w-4 rounded hover:bg-foreground/10 flex items-center justify-center transition-colors"
                                               title="Move to previous fortnight"
