@@ -9,6 +9,7 @@ import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
+import { PortfolioSummary } from '@/components/projects/PortfolioSummary';
 
 const categoryOrder: { key: ProjectCategory; label: string }[] = [
   { key: 'pre_construction', label: 'Pre Construction' },
@@ -55,15 +56,18 @@ export default function Projects() {
               <p className="text-sm text-muted-foreground">Click "Add Project" to get started.</p>
             </div>
           ) : (
-            grouped.map(group => (
-              <ProjectCategorySection
-                key={group.key}
-                label={group.label}
-                projects={group.projects}
-                onEdit={setEditingProject}
-                trends={trends}
-              />
-            ))
+            <>
+              {grouped.map(group => (
+                <ProjectCategorySection
+                  key={group.key}
+                  label={group.label}
+                  projects={group.projects}
+                  onEdit={setEditingProject}
+                  trends={trends}
+                />
+              ))}
+              <PortfolioSummary projects={projects} />
+            </>
           )}
         </main>
 
