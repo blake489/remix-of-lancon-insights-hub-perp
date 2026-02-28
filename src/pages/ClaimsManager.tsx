@@ -361,6 +361,21 @@ export default function ClaimsManager() {
     setClaimDialogOpen(true);
   };
 
+  // Sync claim status back to project's claim_stage_statuses JSONB
+  const syncStageStatus = useCallback(async (projectId: string, claimType: string, status: string) => {
+    try {
+      const project = projects.find(p => p.id === projectId);
+      if (!project) return;
+      const current = (project.claim_stage_statuses || {}) as Record<string, string>;
+      // Only update if the status actually differs
+      if (current[claimType] === status) return;
+      const updated = { ...current, [claimType]: status };
+      await supabase.from('projects').update({ claim_stage_statuses: updated }).eq('id', projectId);
+    } catch (err) {
+      console.error('Failed to sync stage status:', err);
+    }
+  }, [projects]);
+
   const handleSaveClaim = async () => {
     if (!claimForm.project_id || !claimForm.claim_date || !claimForm.amount) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' });
@@ -384,6 +399,8 @@ export default function ClaimsManager() {
     try {
       if (editingClaim) {
         await updateClaim.mutateAsync({ id: editingClaim.id, ...payload });
+        // Sync status back to project's claim_stage_statuses
+        await syncStageStatus(payload.project_id, payload.claim_type, payload.status || 'planned');
         // Trigger celebration if status changed to claimed
         if (payload.status === 'claimed' && editingClaim.status !== 'claimed') {
           setCelebratingClaimId(editingClaim.id);
@@ -400,6 +417,8 @@ export default function ClaimsManager() {
         toast({ title: 'Claim updated' });
       } else {
         await addClaim.mutateAsync(payload);
+        // Sync status back to project's claim_stage_statuses for new claims too
+        await syncStageStatus(payload.project_id, payload.claim_type, payload.status || 'planned');
         toast({ title: 'Claim added' });
       }
       setClaimDialogOpen(false);
