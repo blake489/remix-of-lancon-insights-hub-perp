@@ -214,9 +214,9 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             </div>
           </fieldset>
 
-          {/* Financials */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
+          {/* Financials — highlighted as primary tracking area */}
+          <fieldset className="space-y-4 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-4 py-4 ring-1 ring-primary/10">
+            <legend className="text-sm font-bold text-primary uppercase tracking-wide px-1.5">⚡ Forecast Financials</legend>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="forecast_cost">Forecast Cost</Label>
