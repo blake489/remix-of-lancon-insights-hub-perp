@@ -22,6 +22,7 @@ import { format, addMonths, parse, startOfMonth } from 'date-fns';
 import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 // Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; darkBg: string; darkBorder: string }> = {
   'Deposit':        { bg: 'bg-amber-50',   border: 'border-amber-300',   text: 'text-amber-700',   darkBg: 'dark:bg-amber-950/30',   darkBorder: 'dark:border-amber-700' },
@@ -292,6 +293,16 @@ export default function ClaimsManager() {
     };
   }, [claims, months, daysBehindMap, activeProjects]);
 
+  // Monthly sparkline data for the visible range
+  const sparklineData = useMemo(() => {
+    return months.map(mk => {
+      const monthClaims = claims.filter(c => c.month_key === mk);
+      const planned = monthClaims.filter(c => c.status === 'planned').reduce((s, c) => s + Math.abs(c.amount), 0);
+      const confirmed = monthClaims.filter(c => c.status === 'confirmed').reduce((s, c) => s + Math.abs(c.amount), 0);
+      const claimed = monthClaims.filter(c => c.status === 'claimed').reduce((s, c) => s + Math.abs(c.amount), 0);
+      return { month: monthLabel(mk), planned, confirmed, claimed, total: planned + confirmed + claimed };
+    });
+  }, [claims, months]);
 
   const resetClaimForm = useCallback(() => {
     setClaimForm({
@@ -681,6 +692,42 @@ export default function ClaimsManager() {
               ));
             })()}
           </div>
+
+          {/* Monthly Revenue Sparkline */}
+          {sparklineData.some(d => d.total > 0) && (
+            <div className="border rounded-lg bg-card px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Monthly Revenue Pipeline</p>
+                <div className="flex items-center gap-3">
+                  {[
+                    { label: 'Claimed', color: '#34d399' },
+                    { label: 'Confirmed', color: '#38bdf8' },
+                    { label: 'Planned', color: '#fbbf24' },
+                  ].map(l => (
+                    <div key={l.label} className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
+                      <span className="text-[9px] text-muted-foreground">{l.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={80}>
+                <AreaChart data={sparklineData} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
+                  <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <YAxis hide domain={[0, 'auto']} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                    formatter={(value: number) => [`$${(value / 1000).toFixed(0)}K`, undefined]}
+                    labelStyle={{ fontSize: 10, fontWeight: 600 }}
+                  />
+                  <Area type="monotone" dataKey="claimed" stackId="1" stroke="#10b981" fill="#34d399" fillOpacity={0.6} strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="confirmed" stackId="1" stroke="#0ea5e9" fill="#38bdf8" fillOpacity={0.5} strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="planned" stackId="1" stroke="#f59e0b" fill="#fbbf24" fillOpacity={0.4} strokeWidth={1.5} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
         {/* Spreadsheet Grid */}
         <div className="flex-1 border rounded-lg overflow-hidden bg-card">
