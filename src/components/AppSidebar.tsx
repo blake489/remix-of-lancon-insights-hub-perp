@@ -41,7 +41,8 @@ import {
   Landmark,
   Receipt,
   BookOpen,
-  
+  Handshake,
+
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -59,7 +60,7 @@ const buildingItems = [
   { title: 'Building Contracts', url: '/projects', icon: FileText },
   { title: 'Claims Papi', url: '/claims', icon: Receipt },
   { title: 'Claims Ledger', url: '/claims/ledger', icon: BookOpen },
-  
+  { title: 'Sales', url: '/sales', icon: Handshake },
 ];
 
 const developmentItems = [
