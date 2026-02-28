@@ -62,6 +62,17 @@ function monthLabel(key: string) {
   return format(d, 'MMM yyyy');
 }
 
+/** Determine which fortnight half a date falls into: 1 = 1st-15th, 2 = 16th-end */
+function getHalf(dateStr: string): 1 | 2 {
+  const day = new Date(dateStr + 'T00:00:00').getDate();
+  return day <= 15 ? 1 : 2;
+}
+
+function getLastDay(monthKey: string): number {
+  const [y, m] = monthKey.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
 export default function ClaimsManager() {
   const { toast } = useToast();
   const { projects, isLoading: projectsLoading } = useProjects();
@@ -70,7 +81,7 @@ export default function ClaimsManager() {
   // Month range
   const now = new Date();
   const [startMonth, setStartMonth] = useState(format(now, 'yyyy-MM'));
-  const [endMonth, setEndMonth] = useState(format(addMonths(now, 11), 'yyyy-MM'));
+  const [endMonth, setEndMonth] = useState(format(addMonths(now, 2), 'yyyy-MM'));
   const [tempStart, setTempStart] = useState(startMonth);
   const [tempEnd, setTempEnd] = useState(endMonth);
 
@@ -122,11 +133,12 @@ export default function ClaimsManager() {
     return Array.from(set).sort();
   }, [projects]);
 
-  // Claims grouped by project_id + month_key
+  // Claims grouped by project_id + month_key + half
   const claimMap = useMemo(() => {
     const map = new Map<string, Claim[]>();
     claims.forEach(c => {
-      const key = `${c.project_id}__${c.month_key}`;
+      const half = getHalf(c.claim_date);
+      const key = `${c.project_id}__${c.month_key}__${half}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(c);
     });
@@ -146,7 +158,8 @@ export default function ClaimsManager() {
         p.contract_value_ex_gst,
       );
       projected.forEach(pc => {
-        const key = `${pc.projectId}__${pc.monthKey}`;
+        const half = getHalf(format(pc.projectedDate, 'yyyy-MM-dd'));
+        const key = `${pc.projectId}__${pc.monthKey}__${half}`;
         if (!map.has(key)) map.set(key, []);
         map.get(key)!.push(pc);
       });
@@ -167,7 +180,18 @@ export default function ClaimsManager() {
     return { up, down, net: up + down };
   }, [claims, months]);
 
-  // Month totals
+  // Half-month totals (key: "yyyy-MM__1" or "yyyy-MM__2")
+  const halfTotals = useMemo(() => {
+    const map = new Map<string, number>();
+    claims.forEach(c => {
+      const half = getHalf(c.claim_date);
+      const key = `${c.month_key}__${half}`;
+      map.set(key, (map.get(key) || 0) + c.amount);
+    });
+    return map;
+  }, [claims]);
+
+  // Full month totals for the header
   const monthTotals = useMemo(() => {
     const map = new Map<string, number>();
     claims.forEach(c => {
@@ -476,21 +500,40 @@ export default function ClaimsManager() {
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full w-full">
                   <div className="inline-flex flex-col min-w-full">
-                    {/* Month Headers */}
-                    <div className="flex sticky top-0 z-10 bg-muted/40 border-b">
-                      {months.map(mk => (
-                        <div key={mk} className="w-[180px] shrink-0 h-12 border-r flex flex-col items-center justify-center">
-                          <span className="text-xs font-semibold uppercase tracking-wide">{monthLabel(mk)}</span>
-                          {monthTotals.has(mk) && (
-                            <span className={cn(
-                              "text-[10px] font-medium",
-                              (monthTotals.get(mk) || 0) >= 0 ? "text-emerald-600" : "text-red-600"
-                            )}>
-                              {formatCurrency(monthTotals.get(mk) || 0)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                    {/* Month Headers - Two Rows: Month name spans 2 cols, then sub-headers */}
+                    <div className="sticky top-0 z-10 bg-muted/40 border-b">
+                      {/* Top row: month names */}
+                      <div className="flex">
+                        {months.map(mk => (
+                          <div key={mk} className="w-[300px] shrink-0 border-r h-8 flex items-center justify-center gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide">{monthLabel(mk)}</span>
+                            {monthTotals.has(mk) && (
+                              <span className={cn(
+                                "text-[10px] font-medium",
+                                (monthTotals.get(mk) || 0) >= 0 ? "text-emerald-600" : "text-red-600"
+                              )}>
+                                {formatCurrency(monthTotals.get(mk) || 0)}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Sub row: fortnight labels */}
+                      <div className="flex border-t">
+                        {months.map(mk => {
+                          const lastDay = getLastDay(mk);
+                          return (
+                            <div key={mk} className="w-[300px] shrink-0 flex border-r">
+                              <div className="w-1/2 h-6 flex items-center justify-center border-r text-[10px] font-medium text-muted-foreground">
+                                1st – 15th
+                              </div>
+                              <div className="w-1/2 h-6 flex items-center justify-center text-[10px] font-medium text-muted-foreground">
+                                16th – {lastDay}th
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Claims Rows (per project) */}
@@ -507,116 +550,117 @@ export default function ClaimsManager() {
                             selectedProjectId === p.id && "bg-primary/5"
                           )}
                         >
-                          {months.map(mk => {
-                            const cellClaims = claimMap.get(`${p.id}__${mk}`) || [];
-                            const cellProjected = (projectedClaimMap.get(`${p.id}__${mk}`) || [])
-                              .filter(pc => !hasActualClaim(p.id, pc.stage));
+                          {months.map(mk => (
+                            <div key={mk} className="w-[300px] shrink-0 flex border-r">
+                              {([1, 2] as const).map(half => {
+                                const cellClaims = claimMap.get(`${p.id}__${mk}__${half}`) || [];
+                                const cellProjected = (projectedClaimMap.get(`${p.id}__${mk}__${half}`) || [])
+                                  .filter(pc => !hasActualClaim(p.id, pc.stage));
 
-                            return (
-                              <div
-                                key={mk}
-                                className={cn(
-                                  "w-[180px] shrink-0 border-r p-1.5 flex flex-col gap-1 transition-colors",
-                                  dragClaim?.projectId === p.id && "bg-accent/20"
-                                )}
-                                onDragOver={e => handleDragOver(e, p.id)}
-                                onDrop={e => handleDrop(e, p.id, mk)}
-                              >
-                                {/* Actual Claims */}
-                                {cellClaims.map(claim => {
-                                  const sc = getStageColor(claim.claim_type);
-                                  return (
+                                return (
                                   <div
-                                    key={claim.id}
-                                    draggable
-                                    onDragStart={e => handleDragStart(e, claim.id, p.id)}
-                                    onDragEnd={() => setDragClaim(null)}
+                                    key={half}
                                     className={cn(
-                                      "w-full rounded px-2 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
-                                      sc.bg, sc.border, sc.darkBg, sc.darkBorder
+                                      "w-1/2 p-1 flex flex-col gap-1 transition-colors",
+                                      half === 1 && "border-r",
+                                      dragClaim?.projectId === p.id && "bg-accent/20"
                                     )}
+                                    onDragOver={e => handleDragOver(e, p.id)}
+                                    onDrop={e => handleDrop(e, p.id, mk)}
                                   >
-                                    <div className="flex items-center justify-between gap-1">
-                                      <span
-                                        className={cn("font-semibold truncate cursor-pointer", sc.text)}
-                                        onClick={() => openEditClaim(claim)}
-                                      >
-                                        {claim.claim_type}
-                                      </span>
-                                      {claim.direction === 'Up'
-                                        ? <ArrowUp className="h-3 w-3 text-emerald-600 shrink-0" />
-                                        : <ArrowDown className="h-3 w-3 text-red-600 shrink-0" />
-                                      }
-                                    </div>
-                                    <span className="text-[10px] text-muted-foreground block">
-                                      {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM yyyy')}
-                                    </span>
-                                    {/* Inline editable amount */}
-                                    {inlineEditId === claim.id ? (
-                                      <Input
-                                        type="number"
-                                        step="0.01"
-                                        autoFocus
-                                        className="h-5 text-[10px] p-0.5 mt-0.5 w-full"
-                                        value={inlineEditAmount}
-                                        onChange={e => setInlineEditAmount(e.target.value)}
-                                        onBlur={() => handleInlineSave(claim)}
-                                        onKeyDown={e => {
-                                          if (e.key === 'Enter') handleInlineSave(claim);
-                                          if (e.key === 'Escape') setInlineEditId(null);
-                                        }}
-                                      />
-                                    ) : (
-                                      <div
-                                        className={cn(
-                                          "font-bold tabular-nums cursor-pointer hover:underline", sc.text
-                                        )}
-                                        onClick={() => {
-                                          setInlineEditId(claim.id);
-                                          setInlineEditAmount(Math.abs(claim.amount).toString());
-                                        }}
-                                      >
-                                        {formatCurrency(claim.amount)}
-                                      </div>
-                                    )}
-                                    {claim.reference && (
-                                      <span className="text-muted-foreground text-[10px] truncate block">{claim.reference}</span>
-                                    )}
-                                  </div>
-                                  );
-                                })}
+                                    {/* Actual Claims */}
+                                    {cellClaims.map(claim => {
+                                      const sc = getStageColor(claim.claim_type);
+                                      return (
+                                        <div
+                                          key={claim.id}
+                                          draggable
+                                          onDragStart={e => handleDragStart(e, claim.id, p.id)}
+                                          onDragEnd={() => setDragClaim(null)}
+                                          className={cn(
+                                            "w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
+                                            sc.bg, sc.border, sc.darkBg, sc.darkBorder
+                                          )}
+                                        >
+                                          <div className="flex items-center justify-between gap-0.5">
+                                            <span
+                                              className={cn("font-semibold truncate cursor-pointer text-[10px]", sc.text)}
+                                              onClick={() => openEditClaim(claim)}
+                                            >
+                                              {claim.claim_type}
+                                            </span>
+                                            {claim.direction === 'Up'
+                                              ? <ArrowUp className="h-2.5 w-2.5 text-emerald-600 shrink-0" />
+                                              : <ArrowDown className="h-2.5 w-2.5 text-red-600 shrink-0" />
+                                            }
+                                          </div>
+                                          <span className="text-[9px] text-muted-foreground block">
+                                            {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM')}
+                                          </span>
+                                          {inlineEditId === claim.id ? (
+                                            <Input
+                                              type="number"
+                                              step="0.01"
+                                              autoFocus
+                                              className="h-5 text-[10px] p-0.5 mt-0.5 w-full"
+                                              value={inlineEditAmount}
+                                              onChange={e => setInlineEditAmount(e.target.value)}
+                                              onBlur={() => handleInlineSave(claim)}
+                                              onKeyDown={e => {
+                                                if (e.key === 'Enter') handleInlineSave(claim);
+                                                if (e.key === 'Escape') setInlineEditId(null);
+                                              }}
+                                            />
+                                          ) : (
+                                            <div
+                                              className={cn(
+                                                "font-bold tabular-nums cursor-pointer hover:underline text-[10px]", sc.text
+                                              )}
+                                              onClick={() => {
+                                                setInlineEditId(claim.id);
+                                                setInlineEditAmount(Math.abs(claim.amount).toString());
+                                              }}
+                                            >
+                                              {formatCurrency(claim.amount)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
 
-                                {/* Projected (Scheduled) Claims */}
-                                {cellProjected.map(pc => {
-                                  const sc = getStageColor(pc.stage);
-                                  return (
-                                  <button
-                                    key={`projected-${pc.stage}`}
-                                    onClick={() => openFromProjected(pc)}
-                                    className={cn(
-                                      "w-full rounded px-2 py-1 text-left text-xs border-2 border-dashed hover:shadow-sm transition-all cursor-pointer",
-                                      sc.bg, sc.darkBg,
-                                      sc.border.replace('border-', 'border-dashed border-')
-                                    )}
-                                    style={{ borderStyle: 'dashed' }}
-                                  >
-                                    <div className="flex items-center justify-between gap-1">
-                                      <span className={cn("font-medium truncate", sc.text)}>{pc.stage}</span>
-                                      <CalendarClock className="h-3 w-3 text-muted-foreground shrink-0" />
-                                    </div>
-                                    <span className="text-[10px] text-muted-foreground block">
-                                      {format(pc.projectedDate, 'dd MMM yyyy')}
-                                    </span>
-                                    <div className={cn("font-semibold tabular-nums", sc.text)}>
-                                      {formatCurrency(pc.amountExGst)}
-                                    </div>
-                                    <span className="text-[10px] text-muted-foreground">{pc.percent}% · Click to claim</span>
-                                  </button>
-                                  );
-                                })}
-                              </div>
-                            );
-                          })}
+                                    {/* Projected (Scheduled) Claims */}
+                                    {cellProjected.map(pc => {
+                                      const sc = getStageColor(pc.stage);
+                                      return (
+                                        <button
+                                          key={`projected-${pc.stage}`}
+                                          onClick={() => openFromProjected(pc)}
+                                          className={cn(
+                                            "w-full rounded px-1.5 py-1 text-left text-[10px] border-2 border-dashed hover:shadow-sm transition-all cursor-pointer",
+                                            sc.bg, sc.darkBg,
+                                            sc.border.replace('border-', 'border-dashed border-')
+                                          )}
+                                          style={{ borderStyle: 'dashed' }}
+                                        >
+                                          <div className="flex items-center justify-between gap-0.5">
+                                            <span className={cn("font-medium truncate", sc.text)}>{pc.stage}</span>
+                                            <CalendarClock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                                          </div>
+                                          <span className="text-[9px] text-muted-foreground block">
+                                            {format(pc.projectedDate, 'dd MMM')}
+                                          </span>
+                                          <div className={cn("font-semibold tabular-nums", sc.text)}>
+                                            {formatCurrency(pc.amountExGst)}
+                                          </div>
+                                          <span className="text-[9px] text-muted-foreground">{pc.percent}%</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
                         </div>
                       ))
                     )}
