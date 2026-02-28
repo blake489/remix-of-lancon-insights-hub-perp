@@ -7,6 +7,7 @@ import { FileText } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
+import { useKPISettings } from '@/hooks/useKPISettings';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
@@ -23,6 +24,8 @@ export default function Projects() {
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
+  const { data: kpiSettings } = useKPISettings();
+  const gpThresholds = kpiSettings ? { green: kpiSettings.gp_threshold_green, orange: kpiSettings.gp_threshold_orange } : undefined;
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
   const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
 
@@ -75,6 +78,7 @@ export default function Projects() {
                 projects={projects}
                 onCategoryClick={(cat) => setHighlightCategory(prev => prev === cat ? null : cat)}
                 activeCategory={highlightCategory}
+                gpThresholds={gpThresholds}
               />
             </>
           )}

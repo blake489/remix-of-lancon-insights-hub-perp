@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { SiteManagerPopover } from './SiteManagerPopover';
+import { gpSemanticColor } from '@/lib/gpThresholds';
 
 interface ProjectCategorySectionProps {
   label: string;
@@ -31,11 +32,7 @@ const formatCurrency = (val: number) => {
   return `$${val.toFixed(0)}`;
 };
 
-const getGpColor = (gp: number) => {
-  if (gp >= 17) return 'text-success';
-  if (gp >= 12) return 'text-warning';
-  return 'text-danger';
-};
+// getGpColor now uses shared utility — see usage in component below
 
 function ScheduleTrend({ status, days }: { status: string; days: number }) {
   if (status === 'unknown') return <Minus className="h-4 w-4 text-muted-foreground" />;
@@ -71,7 +68,7 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
       <TableCell className="text-right tabular-nums">{formatCurrency(totalContract)}</TableCell>
       <TableCell className="text-right tabular-nums">{formatCurrency(totalCost)}</TableCell>
       <TableCell className="text-right tabular-nums">{formatCurrency(totalGP)}</TableCell>
-      <TableCell className={cn('text-right font-bold tabular-nums', getGpColor(weightedGp))}>
+      <TableCell className={cn('text-right font-bold tabular-nums', gpSemanticColor(weightedGp))}>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>{weightedGp.toFixed(1)}%</span>
@@ -163,7 +160,7 @@ export function ProjectCategorySection({ label, projects, onEdit, trends, claimS
                   <TableCell className="text-right text-muted-foreground tabular-nums">
                     {project.forecast_gross_profit > 0 ? formatCurrency(project.forecast_gross_profit) : '—'}
                   </TableCell>
-                  <TableCell className={cn('text-right font-bold tabular-nums', getGpColor(project.forecast_gp_percent))}>
+                  <TableCell className={cn('text-right font-bold tabular-nums', gpSemanticColor(project.forecast_gp_percent))}>
                     {project.forecast_gp_percent > 0 ? `${project.forecast_gp_percent.toFixed(1)}%` : '—'}
                   </TableCell>
                   {(() => {
