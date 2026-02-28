@@ -50,7 +50,9 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     if (field in form) return form[field];
     if (!currentProject) return fallback;
     const val = (currentProject as any)[field];
-    return val != null ? String(val) : fallback;
+    if (val == null) return fallback;
+    if (typeof val === 'object') return JSON.stringify(val);
+    return String(val);
   };
 
   const updateField = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
