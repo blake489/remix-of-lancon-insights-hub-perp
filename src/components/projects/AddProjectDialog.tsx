@@ -9,12 +9,9 @@ import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
 import { PdfUploadField } from './PdfUploadField';
+import { deriveCategory } from '@/lib/deriveCategory';
 
-const categories: { value: ProjectCategory; label: string }[] = [
-  { value: 'pre_construction', label: 'Pre Construction' },
-  { value: 'construction', label: 'Construction' },
-  { value: 'handover', label: 'Handover' },
-];
+// Category is now auto-derived — no manual selection needed
 
 interface AddProjectDialogProps {
   onSubmit: (project: ProjectInsert) => void;
@@ -32,7 +29,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
     client_email: '',
     address: '',
     site_manager: '',
-    category: 'pre_construction' as ProjectCategory,
+    category: 'pre_construction' as ProjectCategory, // auto-derived on save
     schedule_type: 'standard' as ClaimScheduleType,
     contract_value_ex_gst: '',
     contract_value_inc_gst: '',
@@ -70,7 +67,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       client_email: form.client_email || null,
       address: form.address || null,
       site_manager: form.site_manager || null,
-      category: form.category,
+      category: deriveCategory({ siteStartDate: form.site_start_date }),
       current_stage: null,
       contract_value_ex_gst: parseFloat(form.contract_value_ex_gst) || 0,
       contract_value_inc_gst: parseFloat(form.contract_value_inc_gst) || 0,
@@ -163,15 +160,6 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Category *</Label>
-                <Select value={form.category} onValueChange={v => updateField('category', v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
