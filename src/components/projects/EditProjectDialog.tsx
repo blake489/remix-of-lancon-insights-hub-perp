@@ -244,9 +244,9 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           </div>
         )}
 
-        {/* Forecast Financials */}
-        <fieldset className="space-y-1.5">
-          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Forecast Financials</legend>
+        {/* Forecast Financials — highlighted as primary tracking area */}
+        <fieldset className="space-y-1.5 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-3 py-3 ring-1 ring-primary/10">
+          <legend className="text-[10px] font-bold text-primary uppercase tracking-wider px-1.5">⚡ Forecast Financials</legend>
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-0.5">
               <Label className="text-[11px]">Forecast Cost</Label>
