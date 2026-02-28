@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
   { value: 'proposal', label: 'Proposal', color: 'bg-violet-100 text-violet-700 border-violet-200' },
   { value: 'negotiation', label: 'Negotiation', color: 'bg-orange-100 text-orange-700 border-orange-200' },
   { value: 'won', label: 'Won', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  { value: 'lost', label: 'Lost', color: 'bg-red-100 text-red-700 border-red-200' },
+  
 ];
 
 function getStatusStyle(status: string) {
