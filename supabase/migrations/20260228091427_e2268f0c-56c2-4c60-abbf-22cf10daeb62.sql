@@ -1,0 +1,2 @@
+ALTER TABLE public.claims DROP CONSTRAINT claims_claim_type_check;
+ALTER TABLE public.claims ADD CONSTRAINT claims_claim_type_check CHECK (claim_type = ANY (ARRAY['Deposit', 'Base', 'Slab/Base', 'Slab/Base Stage', 'Frame', 'Frame Stage', 'Enclosed', 'Enclosed Stage', 'Fixing', 'Fixing Stage', 'PC', 'Handover', 'Variation', 'Retaining Wall', 'Other']));
