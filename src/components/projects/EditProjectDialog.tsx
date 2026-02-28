@@ -113,11 +113,16 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
       updates[f] = parseFloat(getVal(f, '0')) || 0;
     });
 
-    // Parse and save custom_timeframes and variations as JSON
+    // Parse and save custom_timeframes, claim_stage_statuses, and variations as JSON
     try {
     updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
     } catch {
       updates.custom_timeframes = {};
+    }
+    try {
+      updates.claim_stage_statuses = JSON.parse(getVal('claim_stage_statuses', '{}'));
+    } catch {
+      updates.claim_stage_statuses = {};
     }
     updates.variations = currentVariations;
     updates.plans_pdf_path = getVal('plans_pdf_path') || null;
@@ -334,6 +339,15 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             try { current = JSON.parse(getVal('custom_timeframes', '{}')); } catch {}
             current[stage] = value;
             updateField('custom_timeframes', JSON.stringify(current));
+          }}
+          stageStatuses={(() => {
+            try { return JSON.parse(getVal('claim_stage_statuses', '{}')); } catch { return {}; }
+          })()}
+          onStageStatusChange={(stage, status) => {
+            let current: Record<string, string> = {};
+            try { current = JSON.parse(getVal('claim_stage_statuses', '{}')); } catch {}
+            current[stage] = status;
+            updateField('claim_stage_statuses', JSON.stringify(current));
           }}
         />
 
