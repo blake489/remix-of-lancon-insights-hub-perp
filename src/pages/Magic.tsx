@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { Sparkles, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const availableMonths = [
   '2025-02',
@@ -63,6 +64,7 @@ const Magic = () => {
   const { claims } = useClaims();
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
+  const { toast } = useToast();
 
   // Sync BHAG from DB only on initial load
   useEffect(() => {
@@ -72,11 +74,26 @@ const Magic = () => {
     }
   }, [kpi?.bhag_target, bhagLoaded]);
 
-  // Save BHAG to DB on change
-  const handleBhagChange = async (value: number) => {
+  const handleBhagChange = (value: number) => {
     setBhagTarget(value);
-    if (kpi?.id) {
-      await supabase.from('kpi_settings').update({ bhag_target: value }).eq('id', kpi.id);
+  };
+
+  const handleBhagCommit = async (value: number) => {
+    setBhagTarget(value);
+    if (!kpi?.id) return;
+
+    const { error } = await supabase
+      .from('kpi_settings')
+      .update({ bhag_target: value })
+      .eq('id', kpi.id);
+
+    if (error) {
+      setBhagTarget(kpi.bhag_target);
+      toast({
+        title: 'Unable to save BHAG target',
+        description: 'You may not have permission to update KPI settings.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -190,6 +207,7 @@ const Magic = () => {
             onNextMonthOverheadChange={setNextMonthOverhead}
             bhagTarget={bhagTarget}
             onBhagChange={handleBhagChange}
+            onBhagCommit={handleBhagCommit}
           />
 
           {/* Project Breakdown Table */}

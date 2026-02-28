@@ -20,6 +20,7 @@ interface ProfitMetricsTableProps {
   overheadOverride: number;
   bhagTarget?: number;
   onBhagChange?: (value: number) => void;
+  onBhagCommit?: (value: number) => void;
 }
 
 const fmt = (v: number) => {
@@ -32,9 +33,30 @@ const fmt = (v: number) => {
 };
 
 const pct = (v: number) => `${v.toFixed(1)}%`;
-function BhagInput({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+function BhagInput({
+  value,
+  onChange,
+  onCommit,
+}: {
+  value: number;
+  onChange?: (v: number) => void;
+  onCommit?: (v: number) => void;
+}) {
   const [localValue, setLocalValue] = useState(String(value));
-  useEffect(() => { setLocalValue(String(value)); }, [value]);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) setLocalValue(String(value));
+  }, [value, isEditing]);
+
+  const commit = () => {
+    const num = Math.max(0, parseInt(localValue || '0', 10) || 0);
+    setLocalValue(String(num));
+    onChange?.(num);
+    onCommit?.(num);
+    setIsEditing(false);
+  };
+
   return (
     <div className="flex items-center justify-end gap-1">
       <span className="text-xs text-muted-foreground">$</span>
@@ -42,18 +64,18 @@ function BhagInput({ value, onChange }: { value: number; onChange?: (v: number) 
         type="text"
         inputMode="numeric"
         value={localValue}
+        onFocus={() => setIsEditing(true)}
         onChange={e => {
           const raw = e.target.value.replace(/[^0-9]/g, '');
           setLocalValue(raw);
+          const liveValue = Math.max(0, parseInt(raw || '0', 10) || 0);
+          onChange?.(liveValue);
         }}
-        onBlur={() => {
-          const num = Math.max(0, parseInt(localValue) || 0);
-          setLocalValue(String(num));
-          onChange?.(num);
-        }}
+        onBlur={commit}
         onKeyDown={e => {
           if (e.key === 'Enter') {
-            (e.target as HTMLInputElement).blur();
+            e.preventDefault();
+            (e.currentTarget as HTMLInputElement).blur();
           }
         }}
         className="w-28 h-7 text-sm font-bold tabular-nums text-right p-1"
@@ -69,6 +91,7 @@ export function ProfitMetricsTable({
   overheadOverride,
   bhagTarget = 1_000_000,
   onBhagChange,
+  onBhagCommit,
 }: ProfitMetricsTableProps) {
   const qtrMultiplier = 3;
   const annualMultiplier = 12;
@@ -193,7 +216,7 @@ export function ProfitMetricsTable({
                   if (p.label === 'Annual (FY)') {
                     return (
                       <TableCell key={p.label} className="text-right">
-                        <BhagInput value={bhagTarget} onChange={onBhagChange} />
+                        <BhagInput value={bhagTarget} onChange={onBhagChange} onCommit={onBhagCommit} />
                       </TableCell>
                     );
                   }
