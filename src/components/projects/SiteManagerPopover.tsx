@@ -126,7 +126,7 @@ export function SiteManagerPopover({ siteManagerName, children }: SiteManagerPop
                 >
                   <TableCell className="pl-4">
                     <div className="space-y-0.5">
-                      <p className="font-semibold text-foreground text-xs">{activity.project!.jobName}</p>
+                      <p className="font-semibold text-foreground text-xs">{activity.project!.address || activity.project!.jobName}</p>
                       <p className="text-[10px] text-muted-foreground">{activity.project!.currentStage}</p>
                     </div>
                   </TableCell>
