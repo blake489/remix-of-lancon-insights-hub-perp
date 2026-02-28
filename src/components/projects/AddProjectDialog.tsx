@@ -171,9 +171,9 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
           />
 
-          {/* Dates & Value */}
+          {/* Contract Value */}
           <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract & Dates</legend>
+            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contract_ex">Contract Value (ex GST)</Label>
@@ -182,14 +182,6 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
               <div className="space-y-2">
                 <Label htmlFor="contract_inc">Contract Value (inc GST)</Label>
                 <Input id="contract_inc" type="number" step="0.01" value={form.contract_value_inc_gst} onChange={e => updateField('contract_value_inc_gst', e.target.value)} placeholder="Auto-calculated" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="start_date">Start Date</Label>
-                <Input id="start_date" type="date" value={form.start_date} onChange={e => updateField('start_date', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pc_date">PC Date</Label>
-                <Input id="pc_date" type="date" value={form.pc_date} onChange={e => updateField('pc_date', e.target.value)} />
               </div>
             </div>
           </fieldset>
