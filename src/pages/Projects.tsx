@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -21,6 +22,11 @@ const categoryOrder: { key: ProjectCategory; label: string }[] = [
 ];
 
 export default function Projects() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const prefillName = searchParams.get('prefill_name') || undefined;
+  const prefillValue = searchParams.get('prefill_value') || undefined;
+  const hasPrefill = !!prefillName;
+
   const { projects, isLoading, addProject, updateProject } = useProjects();
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
@@ -73,8 +79,15 @@ export default function Projects() {
               </SelectContent>
             </Select>
             <AddProjectDialog
-              onSubmit={(data) => addProject.mutate(data)}
+              onSubmit={(data) => {
+                addProject.mutate(data);
+                // Clear prefill params after submission
+                if (hasPrefill) setSearchParams({});
+              }}
               isSubmitting={addProject.isPending}
+              defaultOpen={hasPrefill}
+              prefillClientName={prefillName}
+              prefillContractValue={prefillValue}
             />
           </div>
         </header>

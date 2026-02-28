@@ -16,22 +16,25 @@ import { deriveCategory } from '@/lib/deriveCategory';
 interface AddProjectDialogProps {
   onSubmit: (project: ProjectInsert) => void;
   isSubmitting?: boolean;
+  defaultOpen?: boolean;
+  prefillClientName?: string;
+  prefillContractValue?: string;
 }
 
-export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogProps) {
+export function AddProjectDialog({ onSubmit, isSubmitting, defaultOpen = false, prefillClientName, prefillContractValue }: AddProjectDialogProps) {
   const { siteManagers } = useSiteManagers();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [customTimeframes, setCustomTimeframes] = useState<Record<string, number>>({});
   const [form, setForm] = useState({
-    job_name: '',
-    client_name: '',
+    job_name: prefillClientName || '',
+    client_name: prefillClientName || '',
     client_mobile: '',
     client_email: '',
     address: '',
     site_manager: '',
     category: 'pre_construction' as ProjectCategory, // auto-derived on save
     schedule_type: 'standard' as ClaimScheduleType,
-    contract_value_ex_gst: '',
+    contract_value_ex_gst: prefillContractValue || '',
     contract_value_inc_gst: '',
     start_date: '',
     site_start_date: '',
