@@ -33,7 +33,8 @@ export const defaultSchedules: Record<ClaimScheduleType, StageRow[]> = {
     { stage: 'Frame Stage', percent: 20, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Enclosed Stage', percent: 25, timeValue: 8, timeUnit: 'weeks' },
     { stage: 'Fixing Stage', percent: 20, timeValue: 8, timeUnit: 'weeks' },
-    { stage: 'PC', percent: 15, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'PC', percent: 10, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'Handover', percent: 5, timeValue: 2, timeUnit: 'weeks' },
   ],
   retaining_wall: [
     { stage: 'Contract Sign', percent: 0, timeValue: 0, timeUnit: 'days' },
@@ -42,8 +43,9 @@ export const defaultSchedules: Record<ClaimScheduleType, StageRow[]> = {
     { stage: 'Slab/Base Stage', percent: 15, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Frame Stage', percent: 22.5, timeValue: 5, timeUnit: 'weeks' },
     { stage: 'Enclosed Stage', percent: 25, timeValue: 8, timeUnit: 'weeks' },
-    { stage: 'Fixing Stage', percent: 15, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'Fixing Stage', percent: 10, timeValue: 8, timeUnit: 'weeks' },
     { stage: 'PC', percent: 10, timeValue: 8, timeUnit: 'weeks' },
+    { stage: 'Handover', percent: 5, timeValue: 2, timeUnit: 'weeks' },
   ],
 };
 
