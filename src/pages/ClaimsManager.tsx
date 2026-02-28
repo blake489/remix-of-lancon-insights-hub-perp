@@ -113,6 +113,9 @@ export default function ClaimsManager() {
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
   const [inlineEditAmount, setInlineEditAmount] = useState('');
 
+  // Celebration animation for claimed status
+  const [celebratingClaimId, setCelebratingClaimId] = useState<string | null>(null);
+
   // Drag state
   const [dragClaim, setDragClaim] = useState<{ id: string; projectId: string } | null>(null);
   const [dragOverCell, setDragOverCell] = useState<string | null>(null);
@@ -302,6 +305,11 @@ export default function ClaimsManager() {
     try {
       if (editingClaim) {
         await updateClaim.mutateAsync({ id: editingClaim.id, ...payload });
+        // Trigger celebration if status changed to claimed
+        if (payload.status === 'claimed' && editingClaim.status !== 'claimed') {
+          setCelebratingClaimId(editingClaim.id);
+          setTimeout(() => setCelebratingClaimId(null), 2000);
+        }
         toast({ title: 'Claim updated' });
       } else {
         await addClaim.mutateAsync(payload);
@@ -689,12 +697,30 @@ export default function ClaimsManager() {
                                           onDragEnd={() => { setDragClaim(null); setDragOverCell(null); }}
                                           onClick={() => openEditClaim(claim)}
                                           className={cn(
-                                            "group/tile w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
+                                            "group/tile w-full rounded px-1.5 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border relative overflow-visible",
                                             claim.status === 'claimed'
                                               ? 'bg-emerald-100 border-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-600'
                                               : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder)
                                           )}
                                         >
+                                          {/* Celebration emoji animation */}
+                                          {celebratingClaimId === claim.id && (
+                                            <div className="absolute inset-0 pointer-events-none z-20 overflow-visible">
+                                              {['🎉', '🥳', '🎊', '✨', '🎉', '🥳'].map((emoji, idx) => (
+                                                <span
+                                                  key={idx}
+                                                  className="absolute text-base"
+                                                  style={{
+                                                    left: `${10 + idx * 15}%`,
+                                                    bottom: '0%',
+                                                    animation: `celebrate-float 1.8s ease-out ${idx * 0.15}s forwards`,
+                                                  }}
+                                                >
+                                                  {emoji}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
                                           <div className="flex items-center justify-between gap-0.5">
                                             <span
                                               className={cn("font-medium truncate cursor-pointer text-[10px]", sc.text)}

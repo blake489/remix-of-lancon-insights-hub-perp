@@ -286,3 +286,23 @@
   .stagger-5 { animation-delay: 0.25s; }
   .stagger-6 { animation-delay: 0.3s; }
 }
+
+/* Celebration emoji animation */
+@keyframes celebrate-float {
+  0% {
+    transform: translateY(0) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.2) rotate(-10deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-40px) scale(1) rotate(15deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(0.6) rotate(-5deg);
+  }
+}
