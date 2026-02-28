@@ -22,7 +22,8 @@ import { format, addMonths, parse, startOfMonth } from 'date-fns';
 import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 // Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; darkBg: string; darkBorder: string }> = {
   'Deposit':        { bg: 'bg-amber-50',   border: 'border-amber-300',   text: 'text-amber-700',   darkBg: 'dark:bg-amber-950/30',   darkBorder: 'dark:border-amber-700' },
@@ -661,20 +662,23 @@ export default function ClaimsManager() {
               const projTotal = activeProjects.length || 1;
               const onTimePct = (onTimeCount / projTotal) * 100;
 
+              const activePct = (projectsWithClaims / projTotal) * 100;
+              const convPct = Math.min(conversionRate, 100);
+
               const cards = [
-                { label: 'Planned', value: formatCurrency(plannedTotal), sub: `${plannedCount} claims`, icon: Circle, color: 'text-amber-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${plannedPct}%` }} /></div> },
-                { label: 'Confirmed', value: formatCurrency(confirmedTotal), sub: `${confirmedCount} claims`, icon: CheckCircle2, color: 'text-sky-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-sky-400 transition-all" style={{ width: `${confirmedPct}%` }} /></div> },
-                { label: 'Claimed', value: formatCurrency(claimedTotal), sub: `${claimedCount} claims`, icon: CheckCheck, color: 'text-emerald-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-emerald-400 transition-all" style={{ width: `${claimedPct}%` }} /></div> },
-                { label: 'Total Pipeline', value: formatCurrency(totalPipeline), sub: `${months.length} months`, icon: DollarSign, color: 'text-primary', bar: (
+                { label: 'Planned', value: formatCurrency(plannedTotal), sub: `${plannedCount} claims`, icon: Circle, color: 'text-amber-500', tooltip: `${plannedPct.toFixed(1)}% of pipeline`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${plannedPct}%` }} /></div> },
+                { label: 'Confirmed', value: formatCurrency(confirmedTotal), sub: `${confirmedCount} claims`, icon: CheckCircle2, color: 'text-sky-500', tooltip: `${confirmedPct.toFixed(1)}% of pipeline`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-sky-400 transition-all" style={{ width: `${confirmedPct}%` }} /></div> },
+                { label: 'Claimed', value: formatCurrency(claimedTotal), sub: `${claimedCount} claims`, icon: CheckCheck, color: 'text-emerald-500', tooltip: `${claimedPct.toFixed(1)}% of pipeline`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-emerald-400 transition-all" style={{ width: `${claimedPct}%` }} /></div> },
+                { label: 'Total Pipeline', value: formatCurrency(totalPipeline), sub: `${months.length} months`, icon: DollarSign, color: 'text-primary', tooltip: `Claimed ${claimedPct.toFixed(1)}% · Confirmed ${confirmedPct.toFixed(1)}% · Planned ${plannedPct.toFixed(1)}%`, bar: (
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5 flex">
                     <div className="h-full bg-emerald-400 transition-all" style={{ width: `${claimedPct}%` }} />
                     <div className="h-full bg-sky-400 transition-all" style={{ width: `${confirmedPct}%` }} />
                     <div className="h-full bg-amber-400 transition-all" style={{ width: `${plannedPct}%` }} />
                   </div>
                 )},
-                { label: 'Active Projects', value: String(projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${(projectsWithClaims / projTotal) * 100}%` }} /></div> },
-                { label: 'On Time', value: `${onTimeCount}/${activeProjects.length}`, sub: avgDaysBehind > 0 ? `avg ${avgDaysBehind}d behind` : 'all on track', icon: Clock, color: avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", onTimePct >= 80 ? "bg-emerald-400" : onTimePct >= 50 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${onTimePct}%` }} /></div> },
-                { label: 'Conversion', value: `${conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500', bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", conversionRate >= 50 ? "bg-emerald-400" : "bg-amber-400")} style={{ width: `${Math.min(conversionRate, 100)}%` }} /></div> },
+                { label: 'Active Projects', value: String(projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary', tooltip: `${activePct.toFixed(0)}% of projects active`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${activePct}%` }} /></div> },
+                { label: 'On Time', value: `${onTimeCount}/${activeProjects.length}`, sub: avgDaysBehind > 0 ? `avg ${avgDaysBehind}d behind` : 'all on track', icon: Clock, color: avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500', tooltip: `${onTimePct.toFixed(0)}% on time`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", onTimePct >= 80 ? "bg-emerald-400" : onTimePct >= 50 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${onTimePct}%` }} /></div> },
+                { label: 'Conversion', value: `${conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500', tooltip: `${convPct.toFixed(1)}% claimed vs total`, bar: <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1.5"><div className={cn("h-full rounded-full transition-all", conversionRate >= 50 ? "bg-emerald-400" : "bg-amber-400")} style={{ width: `${convPct}%` }} /></div> },
               ];
 
               return cards.map(m => (
@@ -687,7 +691,16 @@ export default function ClaimsManager() {
                       <p className="text-[10px] text-muted-foreground">{m.sub}</p>
                     </div>
                   </div>
-                  {m.bar}
+                  <TooltipProvider delayDuration={150}>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-default">{m.bar}</div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {m.tooltip}
+                      </TooltipContent>
+                    </UITooltip>
+                  </TooltipProvider>
                 </div>
               ));
             })()}
@@ -716,7 +729,7 @@ export default function ClaimsManager() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
                   <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis hide domain={[0, 'auto']} />
-                  <Tooltip
+                  <RechartsTooltip
                     contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
                     formatter={(value: number) => [`$${(value / 1000).toFixed(0)}K`, undefined]}
                     labelStyle={{ fontSize: 10, fontWeight: 600 }}
