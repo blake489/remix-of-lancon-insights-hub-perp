@@ -3,6 +3,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
@@ -29,6 +30,17 @@ export default function Projects() {
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
   const expandedProjectId = editingProject?.id ?? null;
   const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
+  const [filterManager, setFilterManager] = useState<string>('all');
+
+  const siteManagerList = useMemo(() => {
+    const set = new Set(projects.map(p => p.site_manager).filter(Boolean) as string[]);
+    return Array.from(set).sort();
+  }, [projects]);
+
+  const filteredProjects = useMemo(() => {
+    if (filterManager === 'all') return projects;
+    return projects.filter(p => p.site_manager === filterManager);
+  }, [projects, filterManager]);
 
   const handleToggleEdit = (project: ProjectRow) => {
     setEditingProject(prev => prev?.id === project.id ? null : project);
@@ -37,9 +49,9 @@ export default function Projects() {
   const grouped = useMemo(() => {
     return categoryOrder.map(cat => ({
       ...cat,
-      projects: projects.filter(p => p.category === cat.key),
+      projects: filteredProjects.filter(p => p.category === cat.key),
     }));
-  }, [projects]);
+  }, [filteredProjects]);
 
   return (
     <SidebarProvider>
@@ -52,10 +64,19 @@ export default function Projects() {
             <FileText className="h-5 w-5 text-primary" />
             <h1 className="text-lg font-semibold">Building Contracts</h1>
           </div>
-          <AddProjectDialog
-            onSubmit={(data) => addProject.mutate(data)}
-            isSubmitting={addProject.isPending}
-          />
+          <div className="flex items-center gap-3">
+            <Select value={filterManager} onValueChange={setFilterManager}>
+              <SelectTrigger className="w-44 h-9 text-sm"><SelectValue placeholder="All Site Managers" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Site Managers</SelectItem>
+                {siteManagerList.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <AddProjectDialog
+              onSubmit={(data) => addProject.mutate(data)}
+              isSubmitting={addProject.isPending}
+            />
+          </div>
         </header>
 
         <main className="mx-auto max-w-7xl w-full px-6 py-8 space-y-8">
