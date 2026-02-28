@@ -10,6 +10,7 @@ import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects'
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
 import { ForecastAuditTrail } from './ForecastAuditTrail';
+import { VariationsSection, Variation } from './VariationsSection';
 import { supabase } from '@/integrations/supabase/client';
 
 const categories: { value: ProjectCategory; label: string }[] = [
@@ -31,9 +32,19 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
   const [forecastReason, setForecastReason] = useState('');
+  const [variations, setVariations] = useState<Variation[]>([]);
 
-  // Reset form when project changes
+  // Initialize variations from project when it changes
   const currentProject = project;
+  const currentVariations = (() => {
+    if (variations.length > 0 || Object.keys(form).length > 0) return variations;
+    if (!currentProject) return [];
+    try {
+      const raw = (currentProject as any).variations;
+      return Array.isArray(raw) ? raw as Variation[] : [];
+    } catch { return []; }
+  })();
+
   const getVal = (field: string, fallback: string = '') => {
     if (field in form) return form[field];
     if (!currentProject) return fallback;
@@ -43,25 +54,39 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
 
   const updateField = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
-  const handleExGstChange = (val: string) => {
-    updateField('contract_value_ex_gst', val);
-    const num = parseFloat(val);
-    if (!isNaN(num)) updateField('contract_value_inc_gst', (num * 1.1).toFixed(2));
-    // Recalc forecast
-    const contract = parseFloat(val) || 0;
+  const variationsTotal = currentVariations.reduce((s, v) => s + (v.amount || 0), 0);
+  const effectiveContract = (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) + variationsTotal;
+
+  const recalcForecasts = (contract: number) => {
+    updateField('contract_value_inc_gst', (contract * 1.1).toFixed(2));
     const cost = parseFloat(getVal('forecast_cost', '0')) || 0;
     const profit = contract - cost;
     updateField('forecast_gross_profit', profit.toFixed(2));
     if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
   };
 
+  const handleExGstChange = (val: string) => {
+    updateField('contract_value_ex_gst', val);
+    const base = parseFloat(val) || 0;
+    const total = base + variationsTotal;
+    recalcForecasts(total);
+  };
+
   const handleForecastCostChange = (val: string) => {
     updateField('forecast_cost', val);
-    const contract = parseFloat(getVal('contract_value_ex_gst', '0')) || 0;
+    const contract = (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) + variationsTotal;
     const cost = parseFloat(val) || 0;
     const profit = contract - cost;
     updateField('forecast_gross_profit', profit.toFixed(2));
     if (contract > 0) updateField('forecast_gp_percent', ((profit / contract) * 100).toFixed(2));
+  };
+
+  const handleVariationsChange = (newVars: Variation[]) => {
+    setVariations(newVars);
+    const newTotal = newVars.reduce((s, v) => s + (v.amount || 0), 0);
+    const base = parseFloat(getVal('contract_value_ex_gst', '0')) || 0;
+    const total = base + newTotal;
+    recalcForecasts(total);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -87,12 +112,13 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
       updates[f] = parseFloat(getVal(f, '0')) || 0;
     });
 
-    // Parse and save custom_timeframes as JSON
+    // Parse and save custom_timeframes and variations as JSON
     try {
       updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
     } catch {
       updates.custom_timeframes = {};
     }
+    updates.variations = currentVariations;
 
     // Log forecast audit if cost or contract changed
     const newCost = parseFloat(getVal('forecast_cost', '0')) || 0;
@@ -131,6 +157,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
 
     onSubmit(updates);
     setForm({});
+    setVariations([]);
     setForecastReason('');
     onOpenChange(false);
   };
@@ -138,7 +165,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
   if (!currentProject) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) { setForm({}); setForecastReason(''); } onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { setForm({}); setVariations([]); setForecastReason(''); } onOpenChange(v); }}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
@@ -202,10 +229,18 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             </div>
           </fieldset>
 
+          <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
+
+          {variationsTotal !== 0 && (
+            <div className="text-sm text-muted-foreground px-1">
+              Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+            </div>
+          )}
+
           <ClaimsScheduleTable
             scheduleType={(getVal('schedule_type', 'standard') as ClaimScheduleType)}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
-            contractValueExGst={parseFloat(getVal('contract_value_ex_gst', '0')) || 0}
+            contractValueExGst={effectiveContract}
             contractSignDate={getVal('start_date')}
             onContractSignDateChange={v => updateField('start_date', v)}
             siteStartDate={getVal('site_start_date')}
