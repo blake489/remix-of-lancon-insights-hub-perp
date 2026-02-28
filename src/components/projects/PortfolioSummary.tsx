@@ -324,7 +324,20 @@ export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: 
             <BarChart3 className="h-3.5 w-3.5" /> Contract Value by Category
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-primary opacity-85" />
+              <span>Contract value <span className="text-[10px]">(what the client pays)</span></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-primary opacity-30" />
+              <span>Forecast cost <span className="text-[10px]">(what it costs to build)</span></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-medium">Gap = Gross Profit</span>
+            </div>
+          </div>
           <CategoryChart
             data={[
               { name: 'Pre Construction', key: 'pre_construction', contract: metrics.preCon.contract, cost: metrics.preCon.contract - metrics.preCon.gp, gp: metrics.preCon.gp, gpPct: metrics.preCon.weightedGp, count: metrics.preCon.count },
