@@ -55,6 +55,15 @@ const Magic = () => {
   const { data: kpi } = useKPISettings();
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
 
+  // Weighted average GP% of active projects (excluding own jobs)
+  const OWN_JOBS = ['28 durimbil st', '117a tranters ave'];
+  const activeGpPercent = useMemo(() => {
+    const active = projects.filter(p => p.status === 'Active' && !OWN_JOBS.includes(p.job_name.toLowerCase()));
+    const totalContract = active.reduce((s, p) => s + (p.contract_value_ex_gst || 0), 0);
+    const totalProfit = active.reduce((s, p) => s + (p.forecast_gross_profit || 0), 0);
+    return totalContract > 0 ? (totalProfit / totalContract) * 100 : 0;
+  }, [projects]);
+
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -119,6 +128,7 @@ const Magic = () => {
             selectedFortnight={selectedFortnight}
             overheadOverride={overheadOverride}
             onOverheadChange={setOverheadOverride}
+            activeGpPercent={activeGpPercent}
           />
 
           {/* Project Breakdown Table */}
