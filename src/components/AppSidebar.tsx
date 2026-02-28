@@ -52,7 +52,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const topItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Magic', url: '/', icon: LayoutDashboard },
 ];
 
 const buildingItems = [
