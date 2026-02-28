@@ -46,6 +46,42 @@ function ProfitTrend({ status, delta }: { status: string; delta: number }) {
   return <TrendingDown className="h-4 w-4 text-red-500" />;
 }
 
+const OWN_JOBS = ['28 Durimbil St', '117A Tranters Ave'];
+
+function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
+  const totalContract = projects.reduce((s, p) => s + p.contract_value_ex_gst, 0);
+  const totalCost = projects.reduce((s, p) => s + p.forecast_cost, 0);
+  const totalGP = projects.reduce((s, p) => s + p.forecast_gross_profit, 0);
+
+  // Weighted GP% excludes own jobs
+  const external = projects.filter(p => !OWN_JOBS.some(name => p.job_name.includes(name)));
+  const extContract = external.reduce((s, p) => s + p.contract_value_ex_gst, 0);
+  const extGP = external.reduce((s, p) => s + p.forecast_gross_profit, 0);
+  const weightedGp = extContract > 0 ? (extGP / extContract) * 100 : 0;
+
+  return (
+    <TableRow className="border-t-2 border-border bg-muted/40 font-semibold">
+      <TableCell className="text-xs uppercase tracking-wide text-muted-foreground">Totals</TableCell>
+      <TableCell />
+      <TableCell className="text-right tabular-nums">{formatCurrency(totalContract)}</TableCell>
+      <TableCell className="text-right tabular-nums">{formatCurrency(totalCost)}</TableCell>
+      <TableCell className="text-right tabular-nums">{formatCurrency(totalGP)}</TableCell>
+      <TableCell className={cn('text-right font-bold tabular-nums', getGpColor(weightedGp))}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{weightedGp.toFixed(1)}%</span>
+          </TooltipTrigger>
+          <TooltipContent>Weighted avg GP% (excl. own jobs)</TooltipContent>
+        </Tooltip>
+      </TableCell>
+      <TableCell />
+      <TableCell />
+      <TableCell />
+      <TableCell />
+    </TableRow>
+  );
+}
+
 export function ProjectCategorySection({ label, projects, onEdit, trends }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
@@ -154,6 +190,7 @@ export function ProjectCategorySection({ label, projects, onEdit, trends }: Proj
                 </TableRow>
               );
             })}
+            <CategorySummaryRow projects={projects} />
           </TableBody>
         </Table>
       </div>
