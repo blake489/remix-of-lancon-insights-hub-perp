@@ -105,10 +105,9 @@ export default function ClaimsManager() {
 
   // Month range
   const now = new Date();
+  const [monthSpan, setMonthSpan] = useState<number>(3);
   const [startMonth, setStartMonth] = useState(format(now, 'yyyy-MM'));
   const [endMonth, setEndMonth] = useState(format(addMonths(now, 2), 'yyyy-MM'));
-  const [tempStart, setTempStart] = useState(startMonth);
-  const [tempEnd, setTempEnd] = useState(endMonth);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -522,9 +521,11 @@ export default function ClaimsManager() {
     setMoveDateDialog(null);
   };
 
-  const applyRange = () => {
-    setStartMonth(tempStart);
-    setEndMonth(tempEnd);
+  const handleMonthSpan = (span: number) => {
+    setMonthSpan(span);
+    const start = format(now, 'yyyy-MM');
+    setStartMonth(start);
+    setEndMonth(format(addMonths(now, span - 1), 'yyyy-MM'));
   };
 
   const isLoading = projectsLoading || claimsLoading;
@@ -549,16 +550,18 @@ export default function ClaimsManager() {
 
           {/* Controls Row */}
           <div className="flex flex-wrap items-end gap-3">
-            <div className="flex items-end gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">Start</Label>
-                <Input type="month" value={tempStart} onChange={e => setTempStart(e.target.value)} className="w-36 h-9 text-sm" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">End</Label>
-                <Input type="month" value={tempEnd} onChange={e => setTempEnd(e.target.value)} className="w-36 h-9 text-sm" />
-              </div>
-              <Button size="sm" variant="secondary" onClick={applyRange}>Apply</Button>
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+              {[3, 6, 9].map(span => (
+                <Button
+                  key={span}
+                  size="sm"
+                  variant={monthSpan === span ? 'default' : 'ghost'}
+                  className="h-8 px-3 text-xs font-semibold"
+                  onClick={() => handleMonthSpan(span)}
+                >
+                  {span}M
+                </Button>
+              ))}
             </div>
 
             <div className="h-8 w-px bg-border" />
