@@ -1,4 +1,5 @@
-import { ProjectRow } from '@/hooks/useProjects';
+import React from 'react';
+import { ProjectRow, ProjectUpdate } from '@/hooks/useProjects';
 import { ClaimStageInfo } from '@/hooks/useProjectClaimStages';
 import {
   Table,
@@ -12,15 +13,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { SiteManagerPopover } from './SiteManagerPopover';
 import { gpSemanticColor } from '@/lib/gpThresholds';
+import { EditProjectDialog } from './EditProjectDialog';
 
 interface ProjectCategorySectionProps {
   label: string;
   projects: ProjectRow[];
   onEdit?: (project: ProjectRow) => void;
+  onSubmitEdit?: (data: ProjectUpdate) => void;
+  isSubmittingEdit?: boolean;
+  expandedProjectId?: string | null;
   trends?: Record<string, { schedule: string; profit: string; scheduleDays: number; profitDelta: number }>;
   claimStages?: Record<string, ClaimStageInfo>;
   highlighted?: boolean;
@@ -86,7 +91,7 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
   );
 }
 
-export function ProjectCategorySection({ label, projects, onEdit, trends, claimStages, highlighted = true }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, isSubmittingEdit, expandedProjectId, trends, claimStages, highlighted = true }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -126,118 +131,134 @@ export function ProjectCategorySection({ label, projects, onEdit, trends, claimS
           <TableBody>
             {projects.map((project) => {
               const trend = trends?.[project.id];
+              const isExpanded = expandedProjectId === project.id;
               return (
-                <TableRow key={project.id} className="group cursor-pointer hover:bg-accent/50" onClick={() => onEdit?.(project)}>
-                  <TableCell>
-                    <div className="space-y-0.5">
-                      <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {project.job_name}
-                      </p>
-                      {project.client_name && (
-                        <p className="text-xs text-muted-foreground">{project.client_name}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-medium">
-                    {project.site_manager ? (
-                      <SiteManagerPopover siteManagerName={project.site_manager}>
-                        <button
-                          type="button"
-                          className="text-left underline decoration-dotted underline-offset-4 hover:text-primary transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {project.site_manager}
-                        </button>
-                      </SiteManagerPopover>
-                    ) : '—'}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold tabular-nums">
-                    {project.contract_value_ex_gst > 0 ? formatCurrency(project.contract_value_ex_gst) : '—'}
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground tabular-nums">
-                    {project.forecast_cost > 0 ? formatCurrency(project.forecast_cost) : '—'}
-                  </TableCell>
-                  <TableCell className="text-right text-muted-foreground tabular-nums">
-                    {project.forecast_gross_profit > 0 ? formatCurrency(project.forecast_gross_profit) : '—'}
-                  </TableCell>
-                  <TableCell className={cn('text-right font-bold tabular-nums', gpSemanticColor(project.forecast_gp_percent))}>
-                    {project.forecast_gp_percent > 0 ? `${project.forecast_gp_percent.toFixed(1)}%` : '—'}
-                  </TableCell>
-                  {(() => {
-                    const stage = claimStages?.[project.id];
-                    return (
-                      <>
-                        <TableCell className="text-xs">
-                          {stage?.currentStage ? (
-                            <Badge variant="outline" className="text-[11px] font-medium">{stage.currentStage}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          {stage?.nextStage ? (
-                            <div className="space-y-0.5">
-                              <Badge variant="secondary" className="text-[11px] font-medium">{stage.nextStage}</Badge>
-                              {stage.nextDate && (
-                                <p className="text-[10px] text-muted-foreground tabular-nums">
-                                  {format(new Date(stage.nextDate), 'dd MMM yy')}
-                                  {(() => {
-                                    const days = differenceInDays(new Date(stage.nextDate), new Date());
-                                    if (days === 0) return <span className="ml-1 text-warning font-medium">(today)</span>;
-                                    if (days < 0) return <span className="ml-1 text-danger font-medium">({Math.abs(days)}d ago)</span>;
-                                    return <span className="ml-1 font-medium">(in {days}d)</span>;
-                                  })()}
-                                </p>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                      </>
-                    );
-                  })()}
-                  <TableCell className="text-center">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex items-center justify-center">
-                          <ScheduleTrend status={trend?.schedule || 'unknown'} days={trend?.scheduleDays || 0} />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {!trend || trend.schedule === 'unknown' ? 'No schedule data' :
-                          trend.schedule === 'on_time' ? 'On time — no claim movements' :
-                          trend.schedule === 'ahead' ? `Ahead by ${Math.abs(trend.scheduleDays)} days` :
-                          `Behind by ${trend.scheduleDays} days`}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex items-center justify-center">
-                          <ProfitTrend status={trend?.profit || 'unknown'} delta={trend?.profitDelta || 0} />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {!trend || trend.profit === 'unknown' ? 'No forecast changes' :
-                          trend.profit === 'same' ? 'GP% unchanged from original' :
-                          trend.profit === 'up' ? `GP% up ${trend.profitDelta.toFixed(1)}% from original` :
-                          `GP% down ${Math.abs(trend.profitDelta).toFixed(1)}% from original`}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
-                      {project.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); onEdit?.(project); }}>
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <React.Fragment key={project.id}>
+                  <TableRow className={cn("group cursor-pointer hover:bg-accent/50", isExpanded && "bg-accent/30")} onClick={() => onEdit?.(project)}>
+                    <TableCell>
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {project.job_name}
+                        </p>
+                        {project.client_name && (
+                          <p className="text-xs text-muted-foreground">{project.client_name}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-medium">
+                      {project.site_manager ? (
+                        <SiteManagerPopover siteManagerName={project.site_manager}>
+                          <button
+                            type="button"
+                            className="text-left underline decoration-dotted underline-offset-4 hover:text-primary transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {project.site_manager}
+                          </button>
+                        </SiteManagerPopover>
+                      ) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold tabular-nums">
+                      {project.contract_value_ex_gst > 0 ? formatCurrency(project.contract_value_ex_gst) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {project.forecast_cost > 0 ? formatCurrency(project.forecast_cost) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {project.forecast_gross_profit > 0 ? formatCurrency(project.forecast_gross_profit) : '—'}
+                    </TableCell>
+                    <TableCell className={cn('text-right font-bold tabular-nums', gpSemanticColor(project.forecast_gp_percent))}>
+                      {project.forecast_gp_percent > 0 ? `${project.forecast_gp_percent.toFixed(1)}%` : '—'}
+                    </TableCell>
+                    {(() => {
+                      const stage = claimStages?.[project.id];
+                      return (
+                        <>
+                          <TableCell className="text-xs">
+                            {stage?.currentStage ? (
+                              <Badge variant="outline" className="text-[11px] font-medium">{stage.currentStage}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {stage?.nextStage ? (
+                              <div className="space-y-0.5">
+                                <Badge variant="secondary" className="text-[11px] font-medium">{stage.nextStage}</Badge>
+                                {stage.nextDate && (
+                                  <p className="text-[10px] text-muted-foreground tabular-nums">
+                                    {format(new Date(stage.nextDate), 'dd MMM yy')}
+                                    {(() => {
+                                      const days = differenceInDays(new Date(stage.nextDate), new Date());
+                                      if (days === 0) return <span className="ml-1 text-warning font-medium">(today)</span>;
+                                      if (days < 0) return <span className="ml-1 text-danger font-medium">({Math.abs(days)}d ago)</span>;
+                                      return <span className="ml-1 font-medium">(in {days}d)</span>;
+                                    })()}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                        </>
+                      );
+                    })()}
+                    <TableCell className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center justify-center">
+                            <ScheduleTrend status={trend?.schedule || 'unknown'} days={trend?.scheduleDays || 0} />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {!trend || trend.schedule === 'unknown' ? 'No schedule data' :
+                            trend.schedule === 'on_time' ? 'On time — no claim movements' :
+                            trend.schedule === 'ahead' ? `Ahead by ${Math.abs(trend.scheduleDays)} days` :
+                            `Behind by ${trend.scheduleDays} days`}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center justify-center">
+                            <ProfitTrend status={trend?.profit || 'unknown'} delta={trend?.profitDelta || 0} />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {!trend || trend.profit === 'unknown' ? 'No forecast changes' :
+                            trend.profit === 'same' ? 'GP% unchanged from original' :
+                            trend.profit === 'up' ? `GP% up ${trend.profitDelta.toFixed(1)}% from original` :
+                            `GP% down ${Math.abs(trend.profitDelta).toFixed(1)}% from original`}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={project.status === 'Active' ? 'default' : 'secondary'} className="text-xs">
+                        {project.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); onEdit?.(project); }}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {isExpanded && onSubmitEdit && (
+                    <tr>
+                      <td colSpan={12} className="p-0">
+                        <EditProjectDialog
+                          project={project}
+                          open={true}
+                          onOpenChange={(open) => { if (!open) onEdit?.(null as any); }}
+                          onSubmit={onSubmitEdit}
+                          isSubmitting={isSubmittingEdit}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
             <CategorySummaryRow projects={projects} />

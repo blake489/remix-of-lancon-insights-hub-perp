@@ -9,7 +9,6 @@ import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
-import { EditProjectDialog } from '@/components/projects/EditProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
 import { PortfolioSummary } from '@/components/projects/PortfolioSummary';
 import { WeatherEOTTally } from '@/components/projects/WeatherEOTTally';
@@ -28,7 +27,12 @@ export default function Projects() {
   const { data: kpiSettings } = useKPISettings();
   const gpThresholds = kpiSettings ? { green: kpiSettings.gp_threshold_green, orange: kpiSettings.gp_threshold_orange } : undefined;
   const [editingProject, setEditingProject] = useState<ProjectRow | null>(null);
+  const expandedProjectId = editingProject?.id ?? null;
   const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
+
+  const handleToggleEdit = (project: ProjectRow) => {
+    setEditingProject(prev => prev?.id === project.id ? null : project);
+  };
 
   const grouped = useMemo(() => {
     return categoryOrder.map(cat => ({
@@ -69,7 +73,10 @@ export default function Projects() {
                   key={group.key}
                   label={group.label}
                   projects={group.projects}
-                  onEdit={setEditingProject}
+                  onEdit={handleToggleEdit}
+                  onSubmitEdit={(data) => updateProject.mutate(data)}
+                  isSubmittingEdit={updateProject.isPending}
+                  expandedProjectId={expandedProjectId}
                   trends={trends}
                   claimStages={claimStages}
                   highlighted={highlightCategory === null || highlightCategory === group.key}
@@ -86,13 +93,6 @@ export default function Projects() {
           )}
         </main>
 
-        <EditProjectDialog
-          project={editingProject}
-          open={!!editingProject}
-          onOpenChange={(open) => { if (!open) setEditingProject(null); }}
-          onSubmit={(data) => updateProject.mutate(data)}
-          isSubmitting={updateProject.isPending}
-        />
       </SidebarInset>
     </SidebarProvider>
   );
