@@ -59,7 +59,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     
     const fields = [
       'job_name', 'client_name', 'client_mobile', 'client_email', 'address', 'site_manager', 'category',
-      'status', 'start_date', 'pc_date',
+      'status', 'start_date', 'pc_date', 'schedule_type',
     ];
     const numFields = [
       'contract_value_ex_gst', 'contract_value_inc_gst',
@@ -73,6 +73,13 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     numFields.forEach(f => {
       updates[f] = parseFloat(getVal(f, '0')) || 0;
     });
+
+    // Parse and save custom_timeframes as JSON
+    try {
+      updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
+    } catch {
+      updates.custom_timeframes = {};
+    }
 
     onSubmit(updates);
     setForm({});

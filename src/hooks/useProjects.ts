@@ -22,6 +22,8 @@ export interface ProjectRow {
   forecast_cost: number;
   forecast_gross_profit: number;
   forecast_gp_percent: number;
+  schedule_type: string;
+  custom_timeframes: Record<string, number>;
   created_by: string | null;
   created_at: string;
   updated_at: string;

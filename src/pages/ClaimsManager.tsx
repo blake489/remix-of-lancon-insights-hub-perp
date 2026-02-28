@@ -3,7 +3,6 @@ import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,8 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
 import { useClaims, Claim, ClaimInsert } from '@/hooks/useClaims';
-import { format, addMonths, subMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtils';
+import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
+import { format, addMonths, parse, startOfMonth } from 'date-fns';
+import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CLAIM_TYPES = ['Deposit', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover', 'Retaining Wall', 'Variation', 'Other'];
@@ -73,6 +74,13 @@ export default function ClaimsManager() {
     notes: '',
   });
 
+  // Inline editing
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineEditAmount, setInlineEditAmount] = useState('');
+
+  // Drag state
+  const [dragClaim, setDragClaim] = useState<{ id: string; projectId: string } | null>(null);
+
   const months = useMemo(() => getMonthRange(startMonth, endMonth), [startMonth, endMonth]);
 
   // Active projects only, filtered
@@ -102,6 +110,32 @@ export default function ClaimsManager() {
       map.get(key)!.push(c);
     });
     return map;
+  }, [claims]);
+
+  // Projected claims from schedule
+  const projectedClaimMap = useMemo(() => {
+    const map = new Map<string, ProjectedClaim[]>();
+    (projects || []).forEach((p: ProjectRow) => {
+      if (!p.start_date || p.contract_value_ex_gst <= 0) return;
+      const projected = computeProjectedClaims(
+        p.id,
+        p.start_date,
+        (p.schedule_type || 'standard') as ClaimScheduleType,
+        (p.custom_timeframes || {}) as Record<string, number>,
+        p.contract_value_ex_gst,
+      );
+      projected.forEach(pc => {
+        const key = `${pc.projectId}__${pc.monthKey}`;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(pc);
+      });
+    });
+    return map;
+  }, [projects]);
+
+  // Check if a projected claim has a matching actual claim (same project + stage)
+  const hasActualClaim = useCallback((projectId: string, stage: string) => {
+    return claims.some(c => c.project_id === projectId && c.claim_type === stage);
   }, [claims]);
 
   // Summary totals for visible range
@@ -153,6 +187,21 @@ export default function ClaimsManager() {
     setClaimDialogOpen(true);
   };
 
+  // Open dialog pre-filled from a projected claim
+  const openFromProjected = (pc: ProjectedClaim) => {
+    resetClaimForm();
+    setClaimForm({
+      project_id: pc.projectId,
+      claim_date: format(pc.projectedDate, 'yyyy-MM-dd'),
+      claim_type: pc.stage,
+      direction: 'Up',
+      amount: pc.amountExGst.toFixed(2),
+      reference: '',
+      notes: `Scheduled ${pc.stage} claim`,
+    });
+    setClaimDialogOpen(true);
+  };
+
   const handleSaveClaim = async () => {
     if (!claimForm.project_id || !claimForm.claim_date || !claimForm.amount) {
       toast({ title: 'Please fill all required fields', variant: 'destructive' });
@@ -194,6 +243,74 @@ export default function ClaimsManager() {
     }
   };
 
+  // Inline amount save
+  const handleInlineSave = async (claim: Claim) => {
+    const newAmount = parseFloat(inlineEditAmount);
+    if (isNaN(newAmount) || newAmount === 0) {
+      setInlineEditId(null);
+      return;
+    }
+    try {
+      await updateClaim.mutateAsync({
+        id: claim.id,
+        project_id: claim.project_id,
+        claim_date: claim.claim_date,
+        claim_type: claim.claim_type,
+        direction: claim.direction,
+        amount: newAmount,
+        reference: claim.reference,
+        notes: claim.notes,
+      });
+      toast({ title: 'Amount updated' });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+    setInlineEditId(null);
+  };
+
+  // Drag handlers
+  const handleDragStart = (e: React.DragEvent, claimId: string, projectId: string) => {
+    setDragClaim({ id: claimId, projectId });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, projectId: string) => {
+    if (dragClaim && dragClaim.projectId === projectId) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent, projectId: string, monthKey: string) => {
+    e.preventDefault();
+    if (!dragClaim || dragClaim.projectId !== projectId) return;
+
+    const claim = claims.find(c => c.id === dragClaim.id);
+    if (!claim || claim.month_key === monthKey) {
+      setDragClaim(null);
+      return;
+    }
+
+    // Move claim to new month (set date to 1st of that month)
+    const newDate = monthKey + '-01';
+    try {
+      await updateClaim.mutateAsync({
+        id: claim.id,
+        project_id: claim.project_id,
+        claim_date: newDate,
+        claim_type: claim.claim_type,
+        direction: claim.direction,
+        amount: Math.abs(claim.amount),
+        reference: claim.reference,
+        notes: claim.notes,
+      });
+      toast({ title: `Moved to ${monthLabel(monthKey)}` });
+    } catch (e: any) {
+      toast({ title: 'Error moving claim', description: e.message, variant: 'destructive' });
+    }
+    setDragClaim(null);
+  };
+
   const applyRange = () => {
     setStartMonth(tempStart);
     setEndMonth(tempEnd);
@@ -201,7 +318,6 @@ export default function ClaimsManager() {
 
   const isLoading = projectsLoading || claimsLoading;
 
-  // Find project name for supervisor display in claim form
   const selectedProject = (projects || []).find((p: ProjectRow) => p.id === claimForm.project_id);
 
   return (
@@ -222,7 +338,6 @@ export default function ClaimsManager() {
 
           {/* Controls Row */}
           <div className="flex flex-wrap items-end gap-3">
-            {/* Month Range */}
             <div className="flex items-end gap-2">
               <div className="space-y-1">
                 <Label className="text-xs">Start</Label>
@@ -237,33 +352,21 @@ export default function ClaimsManager() {
 
             <div className="h-8 w-px bg-border" />
 
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 w-48 h-9 text-sm"
-              />
+              <Input placeholder="Search projects..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 w-48 h-9 text-sm" />
             </div>
 
-            {/* Supervisor Filter */}
             <Select value={filterSupervisor} onValueChange={setFilterSupervisor}>
-              <SelectTrigger className="w-40 h-9 text-sm">
-                <SelectValue placeholder="Supervisor" />
-              </SelectTrigger>
+              <SelectTrigger className="w-40 h-9 text-sm"><SelectValue placeholder="Supervisor" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Supervisors</SelectItem>
                 {supervisors.map(s => <SelectItem key={s} value={s!}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
 
-            {/* Status Filter */}
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-32 h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="w-32 h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
@@ -274,7 +377,6 @@ export default function ClaimsManager() {
 
             <div className="h-8 w-px bg-border" />
 
-            {/* Summary Strip */}
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
@@ -290,6 +392,22 @@ export default function ClaimsManager() {
               </div>
             </div>
           </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded border-2 border-dashed border-blue-400 bg-blue-50 dark:bg-blue-950/30" />
+              <span>Scheduled</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/30" />
+              <span>Claimed (Up)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-red-50 border border-red-200 dark:bg-red-950/30" />
+              <span>Claimed (Down)</span>
+            </div>
+          </div>
         </div>
 
         {/* Spreadsheet Grid */}
@@ -300,11 +418,9 @@ export default function ClaimsManager() {
             <div className="flex h-full">
               {/* Left Fixed Project Index Pane */}
               <div className="w-[280px] shrink-0 border-r bg-muted/20 flex flex-col">
-                {/* Header */}
                 <div className="h-12 border-b bg-muted/40 flex items-center px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Project / Supervisor
                 </div>
-                {/* Project Rows */}
                 <div className="flex-1 overflow-y-auto">
                   {activeProjects.length === 0 ? (
                     <div className="p-6 text-center text-sm text-muted-foreground">
@@ -324,9 +440,9 @@ export default function ClaimsManager() {
                         {p.site_manager && (
                           <p className="text-xs text-muted-foreground truncate">{p.site_manager}</p>
                         )}
-                        {(p.client_name || p.address) && (
-                          <p className="text-xs text-muted-foreground/70 truncate">
-                            {[p.client_name, p.address].filter(Boolean).join(' · ')}
+                        {p.start_date && (
+                          <p className="text-[10px] text-muted-foreground/60 truncate">
+                            Contract: {format(new Date(p.start_date + 'T00:00:00'), 'dd MMM yyyy')}
                           </p>
                         )}
                       </div>
@@ -372,43 +488,95 @@ export default function ClaimsManager() {
                         >
                           {months.map(mk => {
                             const cellClaims = claimMap.get(`${p.id}__${mk}`) || [];
+                            const cellProjected = (projectedClaimMap.get(`${p.id}__${mk}`) || [])
+                              .filter(pc => !hasActualClaim(p.id, pc.stage));
+
                             return (
                               <div
                                 key={mk}
-                                className="w-[180px] shrink-0 border-r p-1.5 flex flex-col gap-1"
+                                className={cn(
+                                  "w-[180px] shrink-0 border-r p-1.5 flex flex-col gap-1 transition-colors",
+                                  dragClaim?.projectId === p.id && "bg-accent/20"
+                                )}
+                                onDragOver={e => handleDragOver(e, p.id)}
+                                onDrop={e => handleDrop(e, p.id, mk)}
                               >
+                                {/* Actual Claims */}
                                 {cellClaims.map(claim => (
-                                  <button
+                                  <div
                                     key={claim.id}
-                                    onClick={() => openEditClaim(claim)}
+                                    draggable
+                                    onDragStart={e => handleDragStart(e, claim.id, p.id)}
+                                    onDragEnd={() => setDragClaim(null)}
                                     className={cn(
-                                      "w-full rounded px-2 py-1 text-left text-xs transition-all hover:shadow-md cursor-pointer border",
+                                      "w-full rounded px-2 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
                                       claim.direction === 'Up'
                                         ? "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-800"
                                         : "bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:border-red-800"
                                     )}
                                   >
                                     <div className="flex items-center justify-between gap-1">
-                                      <span className="font-semibold truncate">{claim.claim_type}</span>
+                                      <span
+                                        className="font-semibold truncate cursor-pointer"
+                                        onClick={() => openEditClaim(claim)}
+                                      >
+                                        {claim.claim_type}
+                                      </span>
                                       {claim.direction === 'Up'
                                         ? <ArrowUp className="h-3 w-3 text-emerald-600 shrink-0" />
                                         : <ArrowDown className="h-3 w-3 text-red-600 shrink-0" />
                                       }
                                     </div>
-                                    <div className={cn(
-                                      "font-bold tabular-nums",
-                                      claim.direction === 'Up' ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-                                    )}>
-                                      {formatCurrency(claim.amount)}
-                                    </div>
+                                    {/* Inline editable amount */}
+                                    {inlineEditId === claim.id ? (
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        autoFocus
+                                        className="h-5 text-[10px] p-0.5 mt-0.5 w-full"
+                                        value={inlineEditAmount}
+                                        onChange={e => setInlineEditAmount(e.target.value)}
+                                        onBlur={() => handleInlineSave(claim)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') handleInlineSave(claim);
+                                          if (e.key === 'Escape') setInlineEditId(null);
+                                        }}
+                                      />
+                                    ) : (
+                                      <div
+                                        className={cn(
+                                          "font-bold tabular-nums cursor-pointer hover:underline",
+                                          claim.direction === 'Up' ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
+                                        )}
+                                        onClick={() => {
+                                          setInlineEditId(claim.id);
+                                          setInlineEditAmount(Math.abs(claim.amount).toString());
+                                        }}
+                                      >
+                                        {formatCurrency(claim.amount)}
+                                      </div>
+                                    )}
                                     {claim.reference && (
                                       <span className="text-muted-foreground text-[10px] truncate block">{claim.reference}</span>
                                     )}
-                                    {(claim.claim_type === 'Variation' || claim.claim_type === 'PC') && (
-                                      <Badge variant="outline" className="text-[9px] px-1 py-0 mt-0.5">
-                                        {claim.claim_type === 'Variation' ? 'VAR' : 'PC'}
-                                      </Badge>
-                                    )}
+                                  </div>
+                                ))}
+
+                                {/* Projected (Scheduled) Claims */}
+                                {cellProjected.map(pc => (
+                                  <button
+                                    key={`projected-${pc.stage}`}
+                                    onClick={() => openFromProjected(pc)}
+                                    className="w-full rounded px-2 py-1 text-left text-xs border-2 border-dashed border-blue-300 bg-blue-50/60 hover:bg-blue-100 dark:bg-blue-950/20 dark:border-blue-700 hover:shadow-sm transition-all cursor-pointer"
+                                  >
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="font-medium truncate text-blue-700 dark:text-blue-300">{pc.stage}</span>
+                                      <CalendarClock className="h-3 w-3 text-blue-400 shrink-0" />
+                                    </div>
+                                    <div className="font-semibold tabular-nums text-blue-600 dark:text-blue-400">
+                                      {formatCurrency(pc.amountExGst)}
+                                    </div>
+                                    <span className="text-[10px] text-blue-400">{pc.percent}% · Click to claim</span>
                                   </button>
                                 ))}
                               </div>
@@ -434,7 +602,6 @@ export default function ClaimsManager() {
             <DialogTitle>{editingClaim ? 'Edit Claim' : 'Add Claim'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Project */}
             <div className="space-y-2">
               <Label>Project *</Label>
               <Select value={claimForm.project_id} onValueChange={v => setClaimForm(f => ({ ...f, project_id: v }))}>
@@ -447,7 +614,6 @@ export default function ClaimsManager() {
               </Select>
             </div>
 
-            {/* Supervisor (display only) */}
             {selectedProject?.site_manager && (
               <div className="space-y-1">
                 <Label className="text-muted-foreground text-xs">Site Supervisor</Label>
@@ -455,13 +621,11 @@ export default function ClaimsManager() {
               </div>
             )}
 
-            {/* Claim Date */}
             <div className="space-y-2">
               <Label>Claim Date *</Label>
               <Input type="date" value={claimForm.claim_date} onChange={e => setClaimForm(f => ({ ...f, claim_date: e.target.value }))} />
             </div>
 
-            {/* Claim Type + Direction */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Claim Type *</Label>
@@ -488,7 +652,6 @@ export default function ClaimsManager() {
               </div>
             </div>
 
-            {/* Amount */}
             <div className="space-y-2">
               <Label>Amount *</Label>
               <div className="relative">
@@ -505,19 +668,16 @@ export default function ClaimsManager() {
               </div>
             </div>
 
-            {/* Reference */}
             <div className="space-y-2">
               <Label>Reference</Label>
               <Input placeholder="e.g. 15.16 VAR" value={claimForm.reference} onChange={e => setClaimForm(f => ({ ...f, reference: e.target.value }))} />
             </div>
 
-            {/* Notes */}
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea rows={2} value={claimForm.notes} onChange={e => setClaimForm(f => ({ ...f, notes: e.target.value }))} />
             </div>
 
-            {/* Actions */}
             <div className="flex items-center justify-between pt-2">
               {editingClaim ? (
                 <AlertDialog>
