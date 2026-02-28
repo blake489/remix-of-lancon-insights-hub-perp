@@ -5,7 +5,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { FileText, Search } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
@@ -37,6 +38,7 @@ export default function Projects() {
   const expandedProjectId = editingProject?.id ?? null;
   const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
   const [filterManager, setFilterManager] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const siteManagerList = useMemo(() => {
     const set = new Set(projects.map(p => p.site_manager).filter(Boolean) as string[]);
@@ -44,9 +46,18 @@ export default function Projects() {
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
-    if (filterManager === 'all') return projects;
-    return projects.filter(p => p.site_manager === filterManager);
-  }, [projects, filterManager]);
+    return projects.filter(p => {
+      if (filterManager !== 'all' && p.site_manager !== filterManager) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchAddress = p.address?.toLowerCase().includes(q);
+        const matchClient = p.client_name?.toLowerCase().includes(q);
+        const matchJob = p.job_name?.toLowerCase().includes(q);
+        if (!matchAddress && !matchClient && !matchJob) return false;
+      }
+      return true;
+    });
+  }, [projects, filterManager, searchQuery]);
 
   const handleToggleEdit = (project: ProjectRow) => {
     setEditingProject(prev => prev?.id === project.id ? null : project);
@@ -71,6 +82,15 @@ export default function Projects() {
             <h1 className="text-lg font-semibold">Building Contracts</h1>
           </div>
           <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search address or client..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9 w-52 h-9 text-sm"
+              />
+            </div>
             <Select value={filterManager} onValueChange={setFilterManager}>
               <SelectTrigger className="w-44 h-9 text-sm"><SelectValue placeholder="All Site Managers" /></SelectTrigger>
               <SelectContent>
