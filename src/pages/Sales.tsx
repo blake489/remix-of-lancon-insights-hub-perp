@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useSalesLeads, SalesLead } from '@/hooks/useSalesLeads';
 import { Button } from '@/components/ui/button';
@@ -15,10 +16,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Plus, Search, Trash2, Pencil, TrendingUp, DollarSign, Target, Users, CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, Trash2, Pencil, TrendingUp, DollarSign, Target, Users, CalendarIcon, CheckCircle2, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, startOfQuarter, addQuarters, addMonths, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
+
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New', color: 'bg-sky-100 text-sky-700 border-sky-200' },
@@ -65,6 +67,8 @@ export default function Sales() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<SalesLead | null>(null);
+  const [wonAlert, setWonAlert] = useState<SalesLead | null>(null);
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     client_name: '',
     estimated_value: '',
@@ -184,13 +188,34 @@ export default function Sales() {
       notes: form.notes || null,
       target_start_date: form.target_start_date || null,
     };
+
+    const isNewlyWon = form.status === 'won' && editing && editing.status !== 'won';
+
     if (editing) {
       await updateLead.mutateAsync({ id: editing.id, ...payload });
     } else {
       await addLead.mutateAsync(payload);
     }
+
     setDialogOpen(false);
+
+    // If status just changed to Won, prompt to create Building Contract
+    if (isNewlyWon && editing) {
+      setWonAlert({ ...editing, ...payload, status: 'won' });
+    }
+
     resetForm();
+  };
+
+  const handleCreateContract = () => {
+    if (!wonAlert) return;
+    // Navigate to Building Contracts with pre-fill params
+    const params = new URLSearchParams({
+      prefill_name: wonAlert.client_name,
+      prefill_value: wonAlert.estimated_value.toString(),
+    });
+    setWonAlert(null);
+    navigate(`/projects?${params.toString()}`);
   };
 
   return (
@@ -527,6 +552,29 @@ export default function Sales() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Won → Create Building Contract Alert */}
+      <AlertDialog open={!!wonAlert} onOpenChange={(open) => { if (!open) setWonAlert(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              Contract Signed — Create Building Contract?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{wonAlert?.client_name}</strong> has been marked as Won ({formatCurrency(wonAlert?.estimated_value || 0)}).
+              Would you like to create a new Building Contract now?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Later</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateContract} className="gap-2">
+              Create Building Contract
+              <ArrowRight className="h-4 w-4" />
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
