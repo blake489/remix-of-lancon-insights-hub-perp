@@ -48,13 +48,13 @@ export function MagicEquationHeader({
       {/* Primary KPI Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Revenue"
+          title="Monthly Revenue"
           value={formatCurrency(monthlyKPI.revenue, true)}
           subtitle={`of ${formatCurrency(monthlyKPI.revenueTarget, true)}`}
           status={monthlyKPI.revenueStatus}
         />
         <KPICard
-          title="Gross Profit"
+          title="Monthly Gross Profit"
           value={formatPercent(monthlyKPI.gpPercent)}
           subtitle="Target: 18%"
           status={monthlyKPI.gpStatus}
@@ -64,7 +64,7 @@ export function MagicEquationHeader({
         <div className="glass-card p-5 transition-all duration-300 hover:shadow-lg">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Overheads</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Overheads</p>
               <p className="text-2xl font-bold text-foreground">{formatCurrency(overheadValue, true)}</p>
               <p className="text-xs text-muted-foreground">Fixed monthly</p>
             </div>
@@ -90,7 +90,7 @@ export function MagicEquationHeader({
         </div>
 
         <KPICard
-          title="Pure Profit"
+          title="Monthly Pure Profit"
           value={formatCurrency(pureProfit, true)}
           status={pureProfitStatus}
         />
