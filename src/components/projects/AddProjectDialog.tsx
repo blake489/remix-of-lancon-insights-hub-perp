@@ -73,6 +73,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       forecast_cost: parseFloat(form.forecast_cost) || 0,
       forecast_gross_profit: parseFloat(form.forecast_gross_profit) || 0,
       forecast_gp_percent: parseFloat(form.forecast_gp_percent) || 0,
+      schedule_type: form.schedule_type,
+      custom_timeframes: customTimeframes,
       created_by: null,
     });
     reset();

@@ -407,12 +407,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_stage: string | null
+          custom_timeframes: Json
           forecast_cost: number
           forecast_gp_percent: number
           forecast_gross_profit: number
           id: string
           job_name: string
           pc_date: string | null
+          schedule_type: string
           site_manager: string | null
           start_date: string | null
           status: string
@@ -429,12 +431,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_stage?: string | null
+          custom_timeframes?: Json
           forecast_cost?: number
           forecast_gp_percent?: number
           forecast_gross_profit?: number
           id?: string
           job_name: string
           pc_date?: string | null
+          schedule_type?: string
           site_manager?: string | null
           start_date?: string | null
           status?: string
@@ -451,12 +455,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_stage?: string | null
+          custom_timeframes?: Json
           forecast_cost?: number
           forecast_gp_percent?: number
           forecast_gross_profit?: number
           id?: string
           job_name?: string
           pc_date?: string | null
+          schedule_type?: string
           site_manager?: string | null
           start_date?: string | null
           status?: string
