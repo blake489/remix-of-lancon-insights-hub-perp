@@ -564,7 +564,7 @@ export default function ClaimsManager() {
                       <div
                         key={p.id}
                         className={cn(
-                          "min-h-[90px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
+                          "h-[100px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
                           selectedProjectId === p.id && "bg-primary/5 border-l-2 border-l-primary"
                         )}
                         onClick={() => setSelectedProjectId(selectedProjectId === p.id ? null : p.id)}
@@ -654,7 +654,7 @@ export default function ClaimsManager() {
                         <div
                           key={p.id}
                           className={cn(
-                            "flex min-h-[90px] border-b transition-colors",
+                            "flex h-[100px] border-b transition-colors",
                             selectedProjectId === p.id && "bg-primary/5"
                           )}
                         >
@@ -669,7 +669,7 @@ export default function ClaimsManager() {
                                   <div
                                     key={half}
                                     className={cn(
-                                      "w-1/2 p-1 flex flex-col gap-1 transition-all duration-200 ease-in-out ring-0 ring-transparent",
+                                      "w-1/2 p-1 flex flex-col gap-1 overflow-hidden transition-all duration-200 ease-in-out ring-0 ring-transparent",
                                       half === 1 && "border-r",
                                       dragClaim?.projectId === p.id && "bg-accent/20",
                                       dragOverCell === `${p.id}__${mk}__${half}` && "bg-primary/15 ring-2 ring-primary/40 ring-inset"
