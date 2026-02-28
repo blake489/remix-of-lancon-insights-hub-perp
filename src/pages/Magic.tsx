@@ -49,6 +49,7 @@ const Magic = () => {
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
+  const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
 
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
@@ -123,6 +124,8 @@ const Magic = () => {
             previousFortnightKPI={previousFortnightKPI}
             selectedMonth={selectedMonth}
             selectedFortnight={selectedFortnight}
+            overheadOverride={overheadOverride}
+            onOverheadChange={setOverheadOverride}
           />
 
           {/* Project Breakdown Table */}
