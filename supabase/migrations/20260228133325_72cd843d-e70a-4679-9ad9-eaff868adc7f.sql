@@ -1,0 +1,1 @@
+ALTER TABLE public.sales_leads ADD COLUMN IF NOT EXISTS target_start_date date DEFAULT NULL;
