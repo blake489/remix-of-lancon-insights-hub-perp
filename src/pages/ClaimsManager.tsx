@@ -114,6 +114,14 @@ export default function ClaimsManager() {
   // Drag state
   const [dragClaim, setDragClaim] = useState<{ id: string; projectId: string } | null>(null);
 
+  // Move-date dialog state (shown after drop)
+  const [moveDateDialog, setMoveDateDialog] = useState<{
+    claim: Claim;
+    targetMonth: string;
+    targetHalf: 1 | 2;
+    date: string;
+  } | null>(null);
+
   const months = useMemo(() => getMonthRange(startMonth, endMonth), [startMonth, endMonth]);
 
   // Active projects only, filtered
@@ -363,34 +371,48 @@ export default function ClaimsManager() {
     }
   };
 
-  const handleDrop = async (e: React.DragEvent, projectId: string, monthKey: string) => {
+  const handleDrop = (e: React.DragEvent, projectId: string, monthKey: string, half: 1 | 2) => {
     e.preventDefault();
     if (!dragClaim || dragClaim.projectId !== projectId) return;
 
     const claim = claims.find(c => c.id === dragClaim.id);
-    if (!claim || claim.month_key === monthKey) {
+    if (!claim) {
       setDragClaim(null);
       return;
     }
 
-    // Move claim to new month (set date to 1st of that month)
-    const newDate = monthKey + '-01';
+    // Default date: 1st or 16th of the target month
+    const defaultDay = half === 1 ? '01' : '16';
+    const defaultDate = `${monthKey}-${defaultDay}`;
+
+    setMoveDateDialog({
+      claim,
+      targetMonth: monthKey,
+      targetHalf: half,
+      date: defaultDate,
+    });
+    setDragClaim(null);
+  };
+
+  const handleMoveConfirm = async () => {
+    if (!moveDateDialog) return;
+    const { claim, date } = moveDateDialog;
     try {
       await updateClaim.mutateAsync({
         id: claim.id,
         project_id: claim.project_id,
-        claim_date: newDate,
+        claim_date: date,
         claim_type: claim.claim_type,
         direction: claim.direction,
         amount: Math.abs(claim.amount),
         reference: claim.reference,
         notes: claim.notes,
       });
-      toast({ title: `Moved to ${monthLabel(monthKey)}` });
+      toast({ title: `Moved to ${format(new Date(date + 'T00:00:00'), 'dd MMM yyyy')}` });
     } catch (e: any) {
       toast({ title: 'Error moving claim', description: e.message, variant: 'destructive' });
     }
-    setDragClaim(null);
+    setMoveDateDialog(null);
   };
 
   const applyRange = () => {
@@ -636,7 +658,7 @@ export default function ClaimsManager() {
                                       dragClaim?.projectId === p.id && "bg-accent/20"
                                     )}
                                     onDragOver={e => handleDragOver(e, p.id)}
-                                    onDrop={e => handleDrop(e, p.id, mk)}
+                                    onDrop={e => handleDrop(e, p.id, mk, half)}
                                   >
                                     {/* Actual Claims */}
                                     {cellClaims.map(claim => {
@@ -874,6 +896,34 @@ export default function ClaimsManager() {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Date Dialog */}
+      <Dialog open={!!moveDateDialog} onOpenChange={v => { if (!v) setMoveDateDialog(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Move Claim — Pick a Date</DialogTitle>
+          </DialogHeader>
+          {moveDateDialog && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Moving <span className="font-semibold text-foreground">{moveDateDialog.claim.claim_type}</span> ({formatCurrency(moveDateDialog.claim.amount)}) to {monthLabel(moveDateDialog.targetMonth)}.
+              </p>
+              <div className="space-y-2">
+                <Label>New Date</Label>
+                <Input
+                  type="date"
+                  value={moveDateDialog.date}
+                  onChange={e => setMoveDateDialog(prev => prev ? { ...prev, date: e.target.value } : null)}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setMoveDateDialog(null)}>Cancel</Button>
+                <Button onClick={handleMoveConfirm}>Confirm Move</Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </DashboardLayout>
