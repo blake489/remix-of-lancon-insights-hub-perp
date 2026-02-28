@@ -95,15 +95,22 @@ export default function ClaimsLedger() {
     return Array.from(set).sort();
   }, [claims, currentMonth]);
 
-  // Totals
+  // Totals — Gross Profit from claims & fixed overheads from Magic
   const totals = useMemo(() => {
-    const up = monthClaims.filter(c => c.direction === 'Up').reduce((s, c) => s + c.amount, 0);
+    // Calculate gross profit per claim using project's forecast GP%
+    const grossProfit = monthClaims
+      .filter(c => c.direction === 'Up')
+      .reduce((s, c) => {
+        const project = projectMap.get(c.project_id);
+        const gpRate = (project?.forecast_gp_percent ?? 0) / 100;
+        return s + (c.amount * gpRate);
+      }, 0);
     // Monthly overheads from KPI settings (same as Magic dashboard)
     const revenueTarget = kpiSettings?.monthly_revenue_target ?? 1650000;
     const overheadPercent = kpiSettings?.overhead_percent ?? 10.5;
     const monthlyOverhead = revenueTarget * (overheadPercent / 100);
-    return { up, down: monthlyOverhead, net: up - monthlyOverhead, count: monthClaims.length };
-  }, [monthClaims, kpiSettings]);
+    return { grossProfit, overhead: monthlyOverhead, net: grossProfit - monthlyOverhead, count: monthClaims.length };
+  }, [monthClaims, kpiSettings, projectMap]);
 
   const navigateMonth = (dir: 'prev' | 'next') => {
     const d = parse(currentMonth + '-01', 'yyyy-MM-dd', new Date());
@@ -180,21 +187,21 @@ export default function ClaimsLedger() {
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
                 <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />
-                <p className="text-xs text-muted-foreground font-medium">Income (Up)</p>
+                <p className="text-xs text-muted-foreground font-medium">Gross Profit</p>
               </div>
-              <p className="text-xl font-bold tabular-nums text-emerald-600">{formatCurrency(totals.up)}</p>
+              <p className="text-xl font-bold tabular-nums text-emerald-600">{formatCurrency(totals.grossProfit)}</p>
             </div>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
                 <ArrowDown className="h-3.5 w-3.5 text-red-500" />
-                <p className="text-xs text-muted-foreground font-medium">Monthly Overheads</p>
+                <p className="text-xs text-muted-foreground font-medium">Fixed Costs</p>
               </div>
-              <p className="text-xl font-bold tabular-nums text-red-600">{formatCurrency(totals.down)}</p>
+              <p className="text-xl font-bold tabular-nums text-red-600">{formatCurrency(totals.overhead)}</p>
             </div>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
                 <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground font-medium">Net</p>
+                <p className="text-xs text-muted-foreground font-medium">Pure Profit</p>
               </div>
               <p className={cn("text-xl font-bold tabular-nums", totals.net >= 0 ? "text-emerald-600" : "text-red-600")}>
                 {formatCurrency(totals.net)}
