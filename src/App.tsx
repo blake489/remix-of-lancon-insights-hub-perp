@@ -22,6 +22,7 @@ import DevelopmentDashboard from "./pages/DevelopmentDashboard";
 import DevelopmentImport from "./pages/DevelopmentImport";
 import SiteManagers from "./pages/SiteManagers";
 import ClaimsManager from "./pages/ClaimsManager";
+import ClaimsLedger from "./pages/ClaimsLedger";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
             />
             <Route path="/site-managers" element={<ProtectedRoute><SiteManagers /></ProtectedRoute>} />
             <Route path="/claims" element={<ProtectedRoute><ClaimsManager /></ProtectedRoute>} />
+            <Route path="/claims/ledger" element={<ProtectedRoute><ClaimsLedger /></ProtectedRoute>} />
             <Route path="/development" element={<ProtectedRoute><DevelopmentDashboard /></ProtectedRoute>} />
             <Route path="/development/import" element={<ProtectedRoute><DevelopmentImport /></ProtectedRoute>} />
             <Route path="/source-data" element={<ProtectedRoute><SourceDataHome /></ProtectedRoute>} />

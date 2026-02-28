@@ -40,6 +40,7 @@ import {
   Database,
   Landmark,
   Receipt,
+  BookOpen,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -56,6 +57,7 @@ const topItems = [
 const buildingItems = [
   { title: 'Projects', url: '/projects', icon: FileText },
   { title: 'Claims Manager', url: '/claims', icon: Receipt },
+  { title: 'Claims Ledger', url: '/claims/ledger', icon: BookOpen },
   { title: 'Site Managers', url: '/site-managers', icon: HardHat },
 ];
 
