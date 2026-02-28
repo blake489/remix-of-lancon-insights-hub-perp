@@ -872,22 +872,16 @@ export default function ClaimsManager() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={claimForm.status} onValueChange={v => setClaimForm(f => ({ ...f, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planned">Planned</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="claimed">Claimed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Reference</Label>
-                <Input placeholder="e.g. 15.16 VAR" value={claimForm.reference} onChange={e => setClaimForm(f => ({ ...f, reference: e.target.value }))} />
-              </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={claimForm.status} onValueChange={v => setClaimForm(f => ({ ...f, status: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="claimed">Claimed</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
