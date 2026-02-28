@@ -138,7 +138,7 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                     <TableCell>
                       <div className="space-y-0.5">
                         <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {project.job_name}
+                          {project.address || project.job_name}
                         </p>
                         {project.client_name && (
                           <p className="text-xs text-muted-foreground">{project.client_name}</p>
