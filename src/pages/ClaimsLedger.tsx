@@ -97,19 +97,18 @@ export default function ClaimsLedger() {
 
   // Totals — Gross Profit from claims & fixed overheads from Magic
   const totals = useMemo(() => {
-    // Calculate gross profit per claim using project's forecast GP%
-    const grossProfit = monthClaims
-      .filter(c => c.direction === 'Up')
-      .reduce((s, c) => {
-        const project = projectMap.get(c.project_id);
-        const gpRate = (project?.forecast_gp_percent ?? 0) / 100;
-        return s + (c.amount * gpRate);
-      }, 0);
-    // Monthly overheads from KPI settings (same as Magic dashboard)
+    const upClaims = monthClaims.filter(c => c.direction === 'Up');
+    const revenue = upClaims.reduce((s, c) => s + c.amount, 0);
+    const grossProfit = upClaims.reduce((s, c) => {
+      const project = projectMap.get(c.project_id);
+      const gpRate = (project?.forecast_gp_percent ?? 0) / 100;
+      return s + (c.amount * gpRate);
+    }, 0);
+    const weightedGpPct = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
     const revenueTarget = kpiSettings?.monthly_revenue_target ?? 1650000;
     const overheadPercent = kpiSettings?.overhead_percent ?? 10.5;
     const monthlyOverhead = revenueTarget * (overheadPercent / 100);
-    return { grossProfit, overhead: monthlyOverhead, net: grossProfit - monthlyOverhead, count: monthClaims.length };
+    return { grossProfit, revenue, weightedGpPct, overhead: monthlyOverhead, net: grossProfit - monthlyOverhead, count: monthClaims.length };
   }, [monthClaims, kpiSettings, projectMap]);
 
   const navigateMonth = (dir: 'prev' | 'next') => {
@@ -190,6 +189,9 @@ export default function ClaimsLedger() {
                 <p className="text-xs text-muted-foreground font-medium">Gross Profit</p>
               </div>
               <p className="text-xl font-bold tabular-nums text-emerald-600">{formatCurrency(totals.grossProfit)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {formatCurrency(totals.revenue)} rev × {totals.weightedGpPct.toFixed(1)}% wGP
+              </p>
             </div>
             <div className="rounded-lg border bg-card p-3">
               <div className="flex items-center gap-1.5">
