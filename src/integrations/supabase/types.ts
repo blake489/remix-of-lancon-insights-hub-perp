@@ -299,6 +299,7 @@ export type Database = {
       }
       kpi_settings: {
         Row: {
+          bhag_target: number
           created_at: string
           gp_percent_target: number
           gp_threshold_green: number
@@ -313,6 +314,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          bhag_target?: number
           created_at?: string
           gp_percent_target?: number
           gp_threshold_green?: number
@@ -327,6 +329,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          bhag_target?: number
           created_at?: string
           gp_percent_target?: number
           gp_threshold_green?: number

@@ -1,0 +1,1 @@
+ALTER TABLE public.kpi_settings ADD COLUMN bhag_target numeric NOT NULL DEFAULT 1000000;
