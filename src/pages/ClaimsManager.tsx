@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
 import { useClaims, Claim, ClaimInsert, ClaimStatus } from '@/hooks/useClaims';
 import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtils';
+import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
 import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck } from 'lucide-react';
@@ -397,6 +398,7 @@ export default function ClaimsManager() {
   const handleMoveConfirm = async () => {
     if (!moveDateDialog) return;
     const { claim, date } = moveDateDialog;
+    const oldDate = claim.claim_date;
     try {
       await updateClaim.mutateAsync({
         id: claim.id,
@@ -407,6 +409,14 @@ export default function ClaimsManager() {
         amount: Math.abs(claim.amount),
         reference: claim.reference,
         notes: claim.notes,
+      });
+      // Log the move
+      await supabase.from('claim_moves').insert({
+        claim_id: claim.id,
+        project_id: claim.project_id,
+        claim_type: claim.claim_type,
+        old_date: oldDate,
+        new_date: date,
       });
       toast({ title: `Moved to ${format(new Date(date + 'T00:00:00'), 'dd MMM yyyy')}` });
     } catch (e: any) {

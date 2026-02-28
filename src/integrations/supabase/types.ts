@@ -74,6 +74,54 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_moves: {
+        Row: {
+          claim_id: string
+          claim_type: string
+          id: string
+          moved_at: string
+          moved_by: string | null
+          new_date: string
+          old_date: string
+          project_id: string
+        }
+        Insert: {
+          claim_id: string
+          claim_type: string
+          id?: string
+          moved_at?: string
+          moved_by?: string | null
+          new_date: string
+          old_date: string
+          project_id: string
+        }
+        Update: {
+          claim_id?: string
+          claim_type?: string
+          id?: string
+          moved_at?: string
+          moved_by?: string | null
+          new_date?: string
+          old_date?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_moves_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_moves_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims: {
         Row: {
           amount: number
