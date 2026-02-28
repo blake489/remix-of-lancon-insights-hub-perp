@@ -126,6 +126,11 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
     } catch {
       updates.claim_stage_statuses = {};
     }
+    try {
+      updates.claim_stage_claimed_dates = JSON.parse(getVal('claim_stage_claimed_dates', '{}'));
+    } catch {
+      updates.claim_stage_claimed_dates = {};
+    }
     updates.variations = currentVariations;
     updates.plans_pdf_path = getVal('plans_pdf_path') || null;
     updates.specs_pdf_path = getVal('specs_pdf_path') || null;
@@ -350,6 +355,15 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
             try { current = JSON.parse(getVal('claim_stage_statuses', '{}')); } catch {}
             current[stage] = status;
             updateField('claim_stage_statuses', JSON.stringify(current));
+          }}
+          stageClaimedDates={(() => {
+            try { return JSON.parse(getVal('claim_stage_claimed_dates', '{}')); } catch { return {}; }
+          })()}
+          onStageClaimedDateChange={(stage, date) => {
+            let current: Record<string, string> = {};
+            try { current = JSON.parse(getVal('claim_stage_claimed_dates', '{}')); } catch {}
+            current[stage] = date;
+            updateField('claim_stage_claimed_dates', JSON.stringify(current));
           }}
         />
 

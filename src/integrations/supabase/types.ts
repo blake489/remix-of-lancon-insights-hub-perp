@@ -518,6 +518,7 @@ export type Database = {
         Row: {
           address: string | null
           category: Database["public"]["Enums"]["project_category"]
+          claim_stage_claimed_dates: Json
           claim_stage_statuses: Json
           client_email: string | null
           client_mobile: string | null
@@ -547,6 +548,7 @@ export type Database = {
         Insert: {
           address?: string | null
           category?: Database["public"]["Enums"]["project_category"]
+          claim_stage_claimed_dates?: Json
           claim_stage_statuses?: Json
           client_email?: string | null
           client_mobile?: string | null
@@ -576,6 +578,7 @@ export type Database = {
         Update: {
           address?: string | null
           category?: Database["public"]["Enums"]["project_category"]
+          claim_stage_claimed_dates?: Json
           claim_stage_statuses?: Json
           client_email?: string | null
           client_mobile?: string | null
