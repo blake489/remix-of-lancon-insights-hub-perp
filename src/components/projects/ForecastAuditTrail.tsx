@@ -84,6 +84,10 @@ export function ForecastAuditTrail({ projectId }: { projectId: string }) {
                     {row.new_gp_percent.toFixed(1)}%
                   </span>
                 </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Value:</span>
+                  <span className="font-semibold">{fmt(row.new_contract_value)}</span>
+                </span>
               </div>
               {row.reason && (
                 <span className="text-muted-foreground italic ml-1">— {row.reason}</span>
