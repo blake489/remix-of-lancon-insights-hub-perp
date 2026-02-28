@@ -221,28 +221,32 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           </div>
         </fieldset>
 
-        {/* Contract Value */}
-        <fieldset className="space-y-1.5">
-          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Contract Value</legend>
+        {/* Contract Value — highlighted as key tracking area */}
+        <fieldset className="space-y-1.5 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-3 py-3 ring-1 ring-blue-400/10 transition-all duration-300">
+          <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">💰 Contract Value</legend>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-0.5">
               <Label className="text-[11px]">Ex GST</Label>
-              <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} className="h-8 text-sm" />
+              <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} className="h-8 text-sm font-semibold" />
             </div>
             <div className="space-y-0.5">
-              <Label className="text-[11px]">Inc GST</Label>
-              <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} className="h-8 text-sm" />
+              <Label className="text-[11px]">Inc GST <span className="text-muted-foreground">(auto)</span></Label>
+              <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} readOnly className="h-8 text-sm bg-muted/50 tabular-nums" />
             </div>
           </div>
         </fieldset>
 
-        <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
-
-        {variationsTotal !== 0 && (
-          <div className="text-xs text-muted-foreground">
-            Effective contract: <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+        <fieldset className="space-y-1.5 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-3 py-3 ring-1 ring-blue-400/10 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">📋 Variations</legend>
+            {variationsTotal !== 0 && (
+              <span className="text-xs text-muted-foreground">
+                Effective contract: <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+              </span>
+            )}
           </div>
-        )}
+          <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
+        </fieldset>
 
         {/* Forecast Financials — highlighted as primary tracking area */}
         <fieldset className="space-y-1.5 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-3 py-3 ring-1 ring-primary/10">
