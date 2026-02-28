@@ -1,4 +1,5 @@
 import { ProjectRow } from '@/hooks/useProjects';
+import { ClaimStageInfo } from '@/hooks/useProjectClaimStages';
 import {
   Table,
   TableBody,
@@ -12,12 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface ProjectCategorySectionProps {
   label: string;
   projects: ProjectRow[];
   onEdit?: (project: ProjectRow) => void;
   trends?: Record<string, { schedule: string; profit: string; scheduleDays: number; profitDelta: number }>;
+  claimStages?: Record<string, ClaimStageInfo>;
 }
 
 const formatCurrency = (val: number) => {
@@ -78,11 +81,13 @@ function CategorySummaryRow({ projects }: { projects: ProjectRow[] }) {
       <TableCell />
       <TableCell />
       <TableCell />
+      <TableCell />
+      <TableCell />
     </TableRow>
   );
 }
 
-export function ProjectCategorySection({ label, projects, onEdit, trends }: ProjectCategorySectionProps) {
+export function ProjectCategorySection({ label, projects, onEdit, trends, claimStages }: ProjectCategorySectionProps) {
   if (projects.length === 0) return null;
 
   return (
@@ -101,6 +106,8 @@ export function ProjectCategorySection({ label, projects, onEdit, trends }: Proj
               <TableHead className="text-right">Forecast Cost</TableHead>
               <TableHead className="text-right">Forecast GP</TableHead>
               <TableHead className="text-right">GP%</TableHead>
+              <TableHead className="min-w-[100px]">Current Stage</TableHead>
+              <TableHead className="min-w-[120px]">Next Claim</TableHead>
               <TableHead className="text-center w-[60px]">
                 <Tooltip>
                   <TooltipTrigger asChild><span className="flex items-center justify-center"><Clock className="h-3.5 w-3.5" /></span></TooltipTrigger>
@@ -147,6 +154,34 @@ export function ProjectCategorySection({ label, projects, onEdit, trends }: Proj
                   <TableCell className={cn('text-right font-bold tabular-nums', getGpColor(project.forecast_gp_percent))}>
                     {project.forecast_gp_percent > 0 ? `${project.forecast_gp_percent.toFixed(1)}%` : '—'}
                   </TableCell>
+                  {(() => {
+                    const stage = claimStages?.[project.id];
+                    return (
+                      <>
+                        <TableCell className="text-xs">
+                          {stage?.currentStage ? (
+                            <Badge variant="outline" className="text-[11px] font-medium">{stage.currentStage}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {stage?.nextStage ? (
+                            <div className="space-y-0.5">
+                              <Badge variant="secondary" className="text-[11px] font-medium">{stage.nextStage}</Badge>
+                              {stage.nextDate && (
+                                <p className="text-[10px] text-muted-foreground tabular-nums">
+                                  {format(new Date(stage.nextDate), 'dd MMM yy')}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </>
+                    );
+                  })()}
                   <TableCell className="text-center">
                     <Tooltip>
                       <TooltipTrigger asChild>
