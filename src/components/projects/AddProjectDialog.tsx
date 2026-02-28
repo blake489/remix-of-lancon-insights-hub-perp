@@ -125,7 +125,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Project
+          Add a New Contract
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
@@ -236,7 +236,7 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Add Project'}
+              {isSubmitting ? 'Saving...' : 'Add Contract'}
             </Button>
           </div>
         </form>
