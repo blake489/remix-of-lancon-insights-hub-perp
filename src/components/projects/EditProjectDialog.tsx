@@ -168,51 +168,51 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
   if (!currentProject) return null;
 
   return (
-    <div className="border-t border-border bg-muted/20 px-6 py-6 animate-in slide-in-from-top-2 duration-200">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-foreground">Edit — {currentProject.job_name}</h3>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setForm({}); setVariations([]); setForecastReason(''); onOpenChange(false); }}>
-          <X className="h-4 w-4" />
+    <div className="border-t border-border bg-muted/20 px-4 py-3 animate-in slide-in-from-top-2 duration-200">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold text-foreground">Edit — {currentProject.job_name}</h3>
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setForm({}); setVariations([]); setForecastReason(''); onOpenChange(false); }}>
+          <X className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Project Details — at the top */}
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Project Details</legend>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-2">
-              <Label>Job Name *</Label>
-              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} />
+      <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Project Details */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Project Details</legend>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="col-span-2 space-y-0.5">
+              <Label className="text-[11px]">Job Name *</Label>
+              <Input required value={getVal('job_name')} onChange={e => updateField('job_name', e.target.value)} className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Client Name</Label>
-              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Client Name</Label>
+              <Input value={getVal('client_name')} onChange={e => updateField('client_name', e.target.value)} className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Address</Label>
-              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Address</Label>
+              <Input value={getVal('address')} onChange={e => updateField('address', e.target.value)} className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Client Mobile</Label>
-              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="e.g. 0412 345 678" />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Client Mobile</Label>
+              <Input type="tel" value={getVal('client_mobile')} onChange={e => updateField('client_mobile', e.target.value)} placeholder="0412 345 678" className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Client Email</Label>
-              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="e.g. client@email.com" />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Client Email</Label>
+              <Input type="email" value={getVal('client_email')} onChange={e => updateField('client_email', e.target.value)} placeholder="client@email.com" className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Site Manager</Label>
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Site Manager</Label>
               <Select value={getVal('site_manager')} onValueChange={v => updateField('site_manager', v)}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {siteManagers.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Category *</Label>
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Category *</Label>
               <Select value={getVal('category', 'construction')} onValueChange={v => updateField('category', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
@@ -221,17 +221,17 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           </div>
         </fieldset>
 
-        {/* Contract Value + Variations + Forecast */}
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Contract Value (ex GST)</Label>
-              <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} />
+        {/* Contract Value */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Contract Value</legend>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Ex GST</Label>
+              <Input type="number" step="0.01" value={getVal('contract_value_ex_gst')} onChange={e => handleExGstChange(e.target.value)} className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Contract Value (inc GST)</Label>
-              <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Inc GST</Label>
+              <Input type="number" step="0.01" value={getVal('contract_value_inc_gst')} onChange={e => updateField('contract_value_inc_gst', e.target.value)} className="h-8 text-sm" />
             </div>
           </div>
         </fieldset>
@@ -239,41 +239,42 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
         <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
 
         {variationsTotal !== 0 && (
-          <div className="text-sm text-muted-foreground px-1">
-            Effective contract (base + variations): <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
+          <div className="text-xs text-muted-foreground">
+            Effective contract: <span className="font-semibold text-foreground">${effectiveContract.toLocaleString()}</span> ex GST
           </div>
         )}
 
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forecast Financials</legend>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Forecast Cost</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} />
+        {/* Forecast Financials */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Forecast Financials</legend>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Forecast Cost</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} className="h-8 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label>Forecast Gross Profit</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="bg-muted" />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Gross Profit</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="h-8 text-sm bg-muted" />
             </div>
-            <div className="space-y-2">
-              <Label>Forecast GP%</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">GP%</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="h-8 text-sm bg-muted" />
             </div>
           </div>
           {currentProject && (
             (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
             (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
           ) && (
-            <div className="space-y-2 border rounded-md p-3 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-              <Label htmlFor="forecast-reason" className="text-sm font-medium">
+            <div className="space-y-1 border rounded p-2 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+              <Label htmlFor="forecast-reason" className="text-[11px] font-medium">
                 Reason for change <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="forecast-reason"
                 value={forecastReason}
                 onChange={e => setForecastReason(e.target.value)}
-                placeholder="e.g. Updated after subcontractor requote, material price increase..."
-                className="min-h-[60px] text-sm"
+                placeholder="e.g. Subcontractor requote, material price increase..."
+                className="min-h-[40px] text-xs"
                 required
               />
             </div>
@@ -281,10 +282,10 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           <ForecastAuditTrail projectId={currentProject.id} />
         </fieldset>
 
-        {/* Document Uploads */}
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Approved Documents</legend>
-          <div className="grid grid-cols-2 gap-4">
+        {/* Documents */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documents</legend>
+          <div className="grid grid-cols-2 gap-2">
             <PdfUploadField
               label="Approved Plans"
               value={getVal('plans_pdf_path') || null}
@@ -319,9 +320,9 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
           }}
         />
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="outline" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="outline" size="sm" onClick={() => { setForm({}); onOpenChange(false); }}>Cancel</Button>
+          <Button type="submit" size="sm" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
