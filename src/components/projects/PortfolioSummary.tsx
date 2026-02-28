@@ -45,6 +45,7 @@ const CAT_COLORS = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(35, 80%, 50
 
 interface ChartRow {
   name: string;
+  key: string;
   contract: number;
   cost: number;
   gp: number;
@@ -52,7 +53,7 @@ interface ChartRow {
   count: number;
 }
 
-function CategoryChart({ data, total }: { data: ChartRow[]; total: number }) {
+function CategoryChart({ data, total, onBarClick, activeKey }: { data: ChartRow[]; total: number; onBarClick?: (key: string) => void; activeKey?: string | null }) {
   const fmtTooltip = (val: number) => `$${(val / 1_000_000).toFixed(2)}M`;
 
   return (
@@ -66,14 +67,14 @@ function CategoryChart({ data, total }: { data: ChartRow[]; total: number }) {
             labelStyle={{ fontWeight: 600 }}
             contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
           />
-          <Bar dataKey="contract" name="Contract" radius={[0, 4, 4, 0]} barSize={28}>
-            {data.map((_, i) => (
-              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={0.85} />
+          <Bar dataKey="contract" name="Contract" radius={[0, 4, 4, 0]} barSize={28} cursor="pointer" onClick={(_: any, idx: number) => onBarClick?.(data[idx].key)}>
+            {data.map((d, i) => (
+              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={activeKey && activeKey !== d.key ? 0.25 : 0.85} />
             ))}
           </Bar>
-          <Bar dataKey="cost" name="Cost" radius={[0, 4, 4, 0]} barSize={28}>
-            {data.map((_, i) => (
-              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={0.35} />
+          <Bar dataKey="cost" name="Cost" radius={[0, 4, 4, 0]} barSize={28} cursor="pointer" onClick={(_: any, idx: number) => onBarClick?.(data[idx].key)}>
+            {data.map((d, i) => (
+              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={activeKey && activeKey !== d.key ? 0.1 : 0.35} />
             ))}
           </Bar>
         </BarChart>
@@ -82,8 +83,9 @@ function CategoryChart({ data, total }: { data: ChartRow[]; total: number }) {
       <div className="space-y-3">
         {data.map((d, i) => {
           const pct = total > 0 ? (d.contract / total) * 100 : 0;
+          const dimmed = activeKey && activeKey !== d.key;
           return (
-            <div key={d.name} className="space-y-1">
+            <div key={d.name} className={cn("space-y-1 cursor-pointer transition-opacity", dimmed && "opacity-30")} onClick={() => onBarClick?.(d.key)}>
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CAT_COLORS[i] }} />
@@ -153,7 +155,7 @@ function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
   );
 }
 
-export function PortfolioSummary({ projects }: { projects: ProjectRow[] }) {
+export function PortfolioSummary({ projects, onCategoryClick, activeCategory }: { projects: ProjectRow[]; onCategoryClick?: (cat: string) => void; activeCategory?: string | null }) {
   const metrics = useMemo(() => {
     const all = projects;
     const external = all.filter(p => !OWN_JOBS.some(name => p.job_name.includes(name)));
@@ -328,11 +330,13 @@ export function PortfolioSummary({ projects }: { projects: ProjectRow[] }) {
         <CardContent>
           <CategoryChart
             data={[
-              { name: 'Pre Construction', contract: metrics.preCon.contract, cost: metrics.preCon.contract - metrics.preCon.gp, gp: metrics.preCon.gp, gpPct: metrics.preCon.weightedGp, count: metrics.preCon.count },
-              { name: 'Construction', contract: metrics.construction.contract, cost: metrics.construction.contract - metrics.construction.gp, gp: metrics.construction.gp, gpPct: metrics.construction.weightedGp, count: metrics.construction.count },
-              { name: 'Handover', contract: metrics.handover.contract, cost: metrics.handover.contract - metrics.handover.gp, gp: metrics.handover.gp, gpPct: metrics.handover.weightedGp, count: metrics.handover.count },
+              { name: 'Pre Construction', key: 'pre_construction', contract: metrics.preCon.contract, cost: metrics.preCon.contract - metrics.preCon.gp, gp: metrics.preCon.gp, gpPct: metrics.preCon.weightedGp, count: metrics.preCon.count },
+              { name: 'Construction', key: 'construction', contract: metrics.construction.contract, cost: metrics.construction.contract - metrics.construction.gp, gp: metrics.construction.gp, gpPct: metrics.construction.weightedGp, count: metrics.construction.count },
+              { name: 'Handover', key: 'handover', contract: metrics.handover.contract, cost: metrics.handover.contract - metrics.handover.gp, gp: metrics.handover.gp, gpPct: metrics.handover.weightedGp, count: metrics.handover.count },
             ]}
             total={metrics.totalContract}
+            onBarClick={onCategoryClick}
+            activeKey={activeCategory}
           />
         </CardContent>
       </Card>
