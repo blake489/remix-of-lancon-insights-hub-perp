@@ -67,7 +67,7 @@ export function MagicEquationHeader({
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Revenue</p>
                 <p className="text-2xl font-bold text-foreground">{formatCurrency(claimsRevenue.total, true)}</p>
-                <p className="text-xs text-muted-foreground">of {formatCurrency(claimsRevenue.target, true)}</p>
+                <p className="text-xs text-muted-foreground">Goal: {formatCurrency(claimsRevenue.target, true)}</p>
               </div>
               <TrafficLight
                 status={
