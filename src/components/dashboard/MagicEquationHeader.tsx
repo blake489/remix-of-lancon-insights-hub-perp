@@ -5,6 +5,7 @@ import { KPIData, TrafficLightStatus } from '@/types/dashboard';
 import { formatCurrency, formatPercent } from '@/lib/formatters';
 import { DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface ClaimsRevenueSummary {
   total: number;
@@ -12,6 +13,11 @@ export interface ClaimsRevenueSummary {
   confirmed: number;
   claimed: number;
   target: number;
+}
+
+export interface MonthProfitSummary {
+  label: string;
+  pureProfit: number;
 }
 
 interface MagicEquationHeaderProps {
@@ -24,6 +30,7 @@ interface MagicEquationHeaderProps {
   onOverheadChange?: (value: number) => void;
   activeGpPercent?: number;
   claimsRevenue?: ClaimsRevenueSummary;
+  adjacentMonthProfits?: { lastMonth: MonthProfitSummary; nextMonth: MonthProfitSummary };
 }
 
 const OVERHEAD_STEP = 5000;
@@ -51,10 +58,12 @@ export function MagicEquationHeader({
   onOverheadChange,
   activeGpPercent,
   claimsRevenue,
+  adjacentMonthProfits,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const pureProfit = monthlyKPI.grossProfit - overheadValue;
-  const pureProfitStatus: 'success' | 'warning' | 'danger' = pureProfit >= 0 ? 'success' : 'danger';
+  const pureProfitStatus: 'success' | 'warning' | 'danger' = pureProfit >= 100000 ? 'success' : 'danger';
+  
 
   return (
     <div className="space-y-6">
@@ -137,11 +146,38 @@ export function MagicEquationHeader({
           </div>
         </div>
 
-        <KPICard
-          title="Monthly Pure Profit"
-          value={formatCurrency(pureProfit, true)}
-          status={pureProfitStatus}
-        />
+        {/* Pure Profit with adjacent months */}
+        <div className="glass-card p-5 transition-all duration-300 hover:shadow-lg">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly Pure Profit</p>
+              <p className="text-2xl font-bold text-foreground">{formatCurrency(pureProfit, true)}</p>
+            </div>
+            <TrafficLight status={pureProfitStatus} size="md" />
+          </div>
+          {adjacentMonthProfits && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-md border border-border/50 bg-muted/30 px-2.5 py-1.5">
+                <p className="text-[10px] text-muted-foreground font-medium">{adjacentMonthProfits.lastMonth.label}</p>
+                <p className={cn(
+                  "text-sm font-bold tabular-nums",
+                  adjacentMonthProfits.lastMonth.pureProfit >= 100000 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(adjacentMonthProfits.lastMonth.pureProfit, true)}
+                </p>
+              </div>
+              <div className="rounded-md border border-border/50 bg-muted/30 px-2.5 py-1.5">
+                <p className="text-[10px] text-muted-foreground font-medium">{adjacentMonthProfits.nextMonth.label}</p>
+                <p className={cn(
+                  "text-sm font-bold tabular-nums",
+                  adjacentMonthProfits.nextMonth.pureProfit >= 100000 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(adjacentMonthProfits.nextMonth.pureProfit, true)}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Profit Metrics Table replaces fortnight cards */}
