@@ -161,6 +161,8 @@ export function AddProjectDialog({ onSubmit, isSubmitting }: AddProjectDialogPro
             scheduleType={form.schedule_type}
             onScheduleTypeChange={v => updateField('schedule_type', v)}
             contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
+            contractSignDate={form.start_date}
+            onContractSignDateChange={v => updateField('start_date', v)}
             customTimeframes={customTimeframes}
             onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
           />
