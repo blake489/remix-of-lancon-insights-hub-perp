@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert, WeatherAlert } from '@/types/alerts';
+import { supabase } from '@/integrations/supabase/client';
 
 const OFFICE_LOCATION = { lat: -27.4527, lon: 153.0964 };
 const RAIN_THRESHOLD = 25; // Percentage for EOT consideration
@@ -7,6 +8,35 @@ const RAIN_THRESHOLD = 25; // Percentage for EOT consideration
 export function useAlerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const logEOTForActiveProjects = useCallback(async (weatherAlerts: WeatherAlert[]) => {
+    if (!weatherAlerts.length) return;
+    try {
+      // Get active project IDs
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('status', 'Active');
+      if (!projects?.length) return;
+
+      // Build entries for each project × each alert date
+      const entries = projects.flatMap(p =>
+        weatherAlerts.map(a => ({
+          project_id: p.id,
+          log_date: a.metadata.date,
+          rain_chance: a.metadata.rainChance,
+          rain_amount: a.metadata.rainAmount,
+          severity: a.severity,
+        }))
+      );
+
+      await supabase
+        .from('weather_eot_logs')
+        .upsert(entries, { onConflict: 'project_id,log_date', ignoreDuplicates: true });
+    } catch (err) {
+      console.error('Failed to log weather EOTs:', err);
+    }
+  }, []);
 
   const fetchWeatherAlerts = useCallback(async (): Promise<WeatherAlert[]> => {
     try {
@@ -19,7 +49,6 @@ export function useAlerts() {
       const data = await response.json();
       const weatherAlerts: WeatherAlert[] = [];
       
-      // Check each day for rain > threshold
       data.daily.time.forEach((date: string, index: number) => {
         const rainChance = data.daily.precipitation_probability_max[index] || 0;
         const rainAmount = data.daily.precipitation_sum[index] || 0;
@@ -63,16 +92,16 @@ export function useAlerts() {
     setLoading(true);
     try {
       const weatherAlerts = await fetchWeatherAlerts();
-      // Future: Add other alert sources here
       setAlerts(weatherAlerts);
+      // Auto-log EOT entries for all active projects
+      await logEOTForActiveProjects(weatherAlerts);
     } finally {
       setLoading(false);
     }
-  }, [fetchWeatherAlerts]);
+  }, [fetchWeatherAlerts, logEOTForActiveProjects]);
 
   useEffect(() => {
     refreshAlerts();
-    // Refresh alerts every 30 minutes
     const interval = setInterval(refreshAlerts, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [refreshAlerts]);

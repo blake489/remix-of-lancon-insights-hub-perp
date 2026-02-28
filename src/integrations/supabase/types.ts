@@ -838,6 +838,44 @@ export type Database = {
         }
         Relationships: []
       }
+      weather_eot_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          project_id: string | null
+          rain_amount: number
+          rain_chance: number
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date: string
+          project_id?: string | null
+          rain_amount?: number
+          rain_chance?: number
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          project_id?: string | null
+          rain_amount?: number
+          rain_chance?: number
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weather_eot_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
