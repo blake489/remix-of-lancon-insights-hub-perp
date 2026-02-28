@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { ClaimMoveAuditPanel } from '@/components/claims/ClaimMoveAuditPanel';
@@ -18,7 +19,7 @@ import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtil
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 // Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
 
@@ -82,6 +83,25 @@ export default function ClaimsManager() {
   const { toast } = useToast();
   const { projects, isLoading: projectsLoading } = useProjects();
   const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim } = useClaims();
+
+  // Cumulative days behind schedule per project (from claim_moves)
+  const projectIds = useMemo(() => (projects || []).map((p: ProjectRow) => p.id), [projects]);
+  const { data: daysBehindMap } = useQuery({
+    queryKey: ['claim-moves-days', projectIds],
+    enabled: projectIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('claim_moves')
+        .select('project_id, days_delta')
+        .in('project_id', projectIds);
+      if (error) throw error;
+      const result: Record<string, number> = {};
+      (data || []).forEach(m => {
+        result[m.project_id] = (result[m.project_id] || 0) + (m.days_delta || 0);
+      });
+      return result;
+    },
+  });
 
   // Month range
   const now = new Date();
@@ -632,6 +652,24 @@ export default function ClaimsManager() {
                                 Contract: {format(new Date(p.start_date + 'T00:00:00'), 'dd MMM yyyy')}
                               </p>
                             )}
+                            {(() => {
+                              const days = daysBehindMap?.[p.id] || 0;
+                              if (days === 0) return (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Clock className="h-3 w-3 text-success" />
+                                  <span className="text-[10px] font-semibold text-success">On time</span>
+                                </div>
+                              );
+                              const behind = days > 0;
+                              return (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Clock className={cn("h-3 w-3", behind ? "text-danger" : "text-success")} />
+                                  <span className={cn("text-[10px] font-semibold tabular-nums", behind ? "text-danger" : "text-success")}>
+                                    {Math.abs(days)}d {behind ? 'behind' : 'ahead'}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </PopoverTrigger>
                         <PopoverContent side="right" align="start" className="w-[600px] p-0" sideOffset={8}>
