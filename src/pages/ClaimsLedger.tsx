@@ -18,8 +18,9 @@ import { useProjects, ProjectRow } from '@/hooks/useProjects';
 import { useClaims } from '@/hooks/useClaims';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { format, parse, addMonths, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown, DollarSign, Home, LogIn, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 
 function formatCurrency(val: number) {
@@ -128,6 +129,31 @@ export default function ClaimsLedger() {
     });
   }, [monthClaims, projectMap]);
 
+  // Flow rate: IN (site starts this month) and OUT (handover claims this month)
+  const flowRate = useMemo(() => {
+    const monthDate = parse(currentMonth + '-01', 'yyyy-MM-dd', new Date());
+    const mStart = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+    const mEnd = format(endOfMonth(monthDate), 'yyyy-MM-dd');
+
+    // IN: projects whose site_start_date falls in the selected month
+    const startsIn = (projects || []).filter(p => {
+      if (!p.site_start_date) return false;
+      return p.site_start_date >= mStart && p.site_start_date <= mEnd;
+    });
+
+    // OUT: unique projects that have a Handover-type claim this month
+    const handoverClaimProjectIds = new Set(
+      claims
+        .filter(c => c.month_key === currentMonth && c.claim_type.includes('Handover'))
+        .map(c => c.project_id)
+    );
+    const finishedProjects = Array.from(handoverClaimProjectIds)
+      .map(id => projectMap.get(id))
+      .filter(Boolean) as ProjectRow[];
+
+    return { startsIn, finishedProjects, inCount: startsIn.length, outCount: finishedProjects.length, target: 4 };
+  }, [projects, claims, currentMonth, projectMap]);
+
   const navigateMonth = (dir: 'prev' | 'next') => {
     const d = parse(currentMonth + '-01', 'yyyy-MM-dd', new Date());
     const newMonth = format(dir === 'next' ? addMonths(d, 1) : subMonths(d, 1), 'yyyy-MM');
@@ -195,7 +221,7 @@ export default function ClaimsLedger() {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-6 gap-3">
             <div className="rounded-lg border bg-card p-3">
               <p className="text-xs text-muted-foreground font-medium">Total Claims</p>
               <p className="text-xl font-bold tabular-nums">{totals.count}</p>
@@ -228,6 +254,44 @@ export default function ClaimsLedger() {
               <p className={cn("text-xl font-bold tabular-nums", totals.net >= 0 ? "text-emerald-600" : "text-red-600")}>
                 {formatCurrency(totals.net)}
               </p>
+            </div>
+            {/* Flow Rate: IN */}
+            <div className={cn(
+              "rounded-lg border p-3",
+              flowRate.inCount >= flowRate.target ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800" : "bg-card"
+            )}>
+              <div className="flex items-center gap-1.5">
+                <LogIn className="h-3.5 w-3.5 text-sky-500" />
+                <p className="text-xs text-muted-foreground font-medium">Starts (IN)</p>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-xl font-bold tabular-nums">{flowRate.inCount}</p>
+                <p className="text-sm text-muted-foreground">/ {flowRate.target}</p>
+              </div>
+              {flowRate.startsIn.length > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                  {flowRate.startsIn.map(p => p.job_name).join(', ')}
+                </p>
+              )}
+            </div>
+            {/* Flow Rate: OUT */}
+            <div className={cn(
+              "rounded-lg border p-3",
+              flowRate.outCount >= flowRate.target ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800" : "bg-card"
+            )}>
+              <div className="flex items-center gap-1.5">
+                <LogOut className="h-3.5 w-3.5 text-teal-500" />
+                <p className="text-xs text-muted-foreground font-medium">Finishes (OUT)</p>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-xl font-bold tabular-nums">{flowRate.outCount}</p>
+                <p className="text-sm text-muted-foreground">/ {flowRate.target}</p>
+              </div>
+              {flowRate.finishedProjects.length > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                  {flowRate.finishedProjects.map(p => p.job_name).join(', ')}
+                </p>
+              )}
             </div>
           </div>
         </div>
