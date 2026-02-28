@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ProjectRow, ProjectCategory, ProjectUpdate } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
+import { ForecastAuditTrail } from './ForecastAuditTrail';
+import { supabase } from '@/integrations/supabase/client';
 
 const categories: { value: ProjectCategory; label: string }[] = [
   { value: 'pre_construction', label: 'Pre Construction' },
@@ -24,6 +27,7 @@ interface EditProjectDialogProps {
 
 export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSubmitting }: EditProjectDialogProps) {
   const { siteManagers } = useSiteManagers();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
 
   // Reset form when project changes
@@ -86,6 +90,33 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
       updates.custom_timeframes = JSON.parse(getVal('custom_timeframes', '{}'));
     } catch {
       updates.custom_timeframes = {};
+    }
+
+    // Log forecast audit if cost or contract changed
+    const newCost = parseFloat(getVal('forecast_cost', '0')) || 0;
+    const newContract = parseFloat(getVal('contract_value_ex_gst', '0')) || 0;
+    const oldCost = currentProject.forecast_cost;
+    const oldContract = currentProject.contract_value_ex_gst;
+
+    if (newCost !== oldCost || newContract !== oldContract) {
+      const oldProfit = currentProject.forecast_gross_profit;
+      const oldGp = currentProject.forecast_gp_percent;
+      const newProfit = newContract - newCost;
+      const newGp = newContract > 0 ? (newProfit / newContract) * 100 : 0;
+
+      supabase.from('project_forecast_audit').insert({
+        project_id: currentProject.id,
+        old_forecast_cost: oldCost,
+        new_forecast_cost: newCost,
+        old_contract_value: oldContract,
+        new_contract_value: newContract,
+        old_gross_profit: oldProfit,
+        new_gross_profit: newProfit,
+        old_gp_percent: oldGp,
+        new_gp_percent: newGp,
+      }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['forecast-audit', currentProject.id] });
+      });
     }
 
     onSubmit(updates);
@@ -196,6 +227,7 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, isSub
                 <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="bg-muted" />
               </div>
             </div>
+            <ForecastAuditTrail projectId={currentProject.id} />
           </fieldset>
 
           <div className="flex justify-end gap-3 pt-2">

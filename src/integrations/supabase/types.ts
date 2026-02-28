@@ -458,6 +458,62 @@ export type Database = {
         }
         Relationships: []
       }
+      project_forecast_audit: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_contract_value: number
+          new_forecast_cost: number
+          new_gp_percent: number
+          new_gross_profit: number
+          old_contract_value: number
+          old_forecast_cost: number
+          old_gp_percent: number
+          old_gross_profit: number
+          project_id: string
+          reason: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_contract_value?: number
+          new_forecast_cost?: number
+          new_gp_percent?: number
+          new_gross_profit?: number
+          old_contract_value?: number
+          old_forecast_cost?: number
+          old_gp_percent?: number
+          old_gross_profit?: number
+          project_id: string
+          reason?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_contract_value?: number
+          new_forecast_cost?: number
+          new_gp_percent?: number
+          new_gross_profit?: number
+          old_contract_value?: number
+          old_forecast_cost?: number
+          old_gp_percent?: number
+          old_gross_profit?: number
+          project_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_forecast_audit_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           address: string | null
