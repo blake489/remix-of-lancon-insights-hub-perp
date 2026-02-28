@@ -261,6 +261,37 @@ export default function ClaimsManager() {
     return map;
   }, [claims]);
 
+  // Enhanced metrics for the visible range
+  const pipelineMetrics = useMemo(() => {
+    const visible = claims.filter(c => months.includes(c.month_key));
+    const planned = visible.filter(c => c.status === 'planned');
+    const confirmed = visible.filter(c => c.status === 'confirmed');
+    const claimed = visible.filter(c => c.status === 'claimed');
+    
+    const plannedTotal = planned.reduce((s, c) => s + Math.abs(c.amount), 0);
+    const confirmedTotal = confirmed.reduce((s, c) => s + Math.abs(c.amount), 0);
+    const claimedTotal = claimed.reduce((s, c) => s + Math.abs(c.amount), 0);
+    const totalPipeline = plannedTotal + confirmedTotal + claimedTotal;
+    
+    // Projects with claims in range
+    const projectsWithClaims = new Set(visible.map(c => c.project_id)).size;
+    
+    // Average days behind across all projects
+    const allDays = Object.values(daysBehindMap || {});
+    const behindProjects = allDays.filter(d => d > 0);
+    const avgDaysBehind = behindProjects.length > 0 ? Math.round(behindProjects.reduce((a, b) => a + b, 0) / behindProjects.length) : 0;
+    const onTimeCount = activeProjects.filter(p => (daysBehindMap?.[p.id] || 0) <= 0).length;
+
+    // Claim conversion rate
+    const conversionRate = totalPipeline > 0 ? (claimedTotal / totalPipeline) * 100 : 0;
+    
+    return {
+      plannedTotal, confirmedTotal, claimedTotal, totalPipeline,
+      plannedCount: planned.length, confirmedCount: confirmed.length, claimedCount: claimed.length,
+      projectsWithClaims, avgDaysBehind, onTimeCount, conversionRate,
+    };
+  }, [claims, months, daysBehindMap, activeProjects]);
+
 
   const resetClaimForm = useCallback(() => {
     setClaimForm({
@@ -605,8 +636,30 @@ export default function ClaimsManager() {
                 <span className="font-bold">{formatCurrency(summaryTotals.net)}</span>
               </div>
             </div>
+            </div>
           </div>
-        </div>
+
+          {/* Pipeline Metrics Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {[
+              { label: 'Planned', value: formatCurrency(pipelineMetrics.plannedTotal), sub: `${pipelineMetrics.plannedCount} claims`, icon: Circle, color: 'text-amber-500' },
+              { label: 'Confirmed', value: formatCurrency(pipelineMetrics.confirmedTotal), sub: `${pipelineMetrics.confirmedCount} claims`, icon: CheckCircle2, color: 'text-sky-500' },
+              { label: 'Claimed', value: formatCurrency(pipelineMetrics.claimedTotal), sub: `${pipelineMetrics.claimedCount} claims`, icon: CheckCheck, color: 'text-emerald-500' },
+              { label: 'Total Pipeline', value: formatCurrency(pipelineMetrics.totalPipeline), sub: `${months.length} months`, icon: DollarSign, color: 'text-primary' },
+              { label: 'Active Projects', value: String(pipelineMetrics.projectsWithClaims), sub: `of ${activeProjects.length} total`, icon: CalendarClock, color: 'text-primary' },
+              { label: 'On Time', value: `${pipelineMetrics.onTimeCount}/${activeProjects.length}`, sub: pipelineMetrics.avgDaysBehind > 0 ? `avg ${pipelineMetrics.avgDaysBehind}d behind` : 'all on track', icon: Clock, color: pipelineMetrics.avgDaysBehind > 0 ? 'text-amber-500' : 'text-emerald-500' },
+              { label: 'Conversion', value: `${pipelineMetrics.conversionRate.toFixed(0)}%`, sub: 'claimed / total', icon: TrendingUp, color: pipelineMetrics.conversionRate >= 50 ? 'text-emerald-500' : 'text-amber-500' },
+            ].map(m => (
+              <div key={m.label} className="border rounded-lg bg-card px-3 py-2.5 flex items-start gap-2.5">
+                <m.icon className={cn("h-4 w-4 mt-0.5 shrink-0", m.color)} />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{m.label}</p>
+                  <p className="text-sm font-bold tabular-nums leading-tight">{m.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
 
         {/* Spreadsheet Grid */}
         <div className="flex-1 border rounded-lg overflow-hidden bg-card">
