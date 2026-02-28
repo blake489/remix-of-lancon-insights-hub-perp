@@ -745,6 +745,14 @@ export default function ClaimsManager() {
                                               {formatCurrency(claim.amount)}
                                             </div>
                                           )}
+                                          {(() => {
+                                            const proj = (projects || []).find((pr: ProjectRow) => pr.id === claim.project_id);
+                                            if (proj && proj.contract_value_ex_gst > 0) {
+                                              const pct = (Math.abs(claim.amount) / proj.contract_value_ex_gst * 100).toFixed(0);
+                                              return <span className="text-[9px] text-muted-foreground">{pct}%</span>;
+                                            }
+                                            return null;
+                                          })()}
                                           {/* Status checkbox */}
                                           <div
                                             className="flex items-center gap-1 mt-0.5 cursor-pointer"
