@@ -15,7 +15,7 @@ const fmt = (v: number) => {
 };
 
 const gpColor = (gp: number) => {
-  if (gp >= 16) return 'text-emerald-600';
+  if (gp >= 17) return 'text-emerald-600';
   if (gp >= 12) return 'text-amber-600';
   return 'text-red-600';
 };
@@ -111,7 +111,7 @@ function CategoryChart({ data, total, onBarClick, activeKey }: { data: ChartRow[
   );
 }
 
-const GP_THRESHOLD_GREEN = 16;
+const GP_THRESHOLD_GREEN = 17;
 const GP_THRESHOLD_AMBER = 12;
 
 function ProjectGpChart({ projects }: { projects: ProjectRow[] }) {
