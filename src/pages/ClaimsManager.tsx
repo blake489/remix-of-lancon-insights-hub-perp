@@ -791,7 +791,7 @@ export default function ClaimsManager() {
                                           className={cn(
                                             "group/tile w-full rounded-lg px-2 py-1.5 text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-grab active:cursor-grabbing border relative overflow-visible",
                                             claim.status === 'claimed'
-                                              ? 'bg-emerald-50 border-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-600 shadow-sm shadow-emerald-200/50'
+                                              ? 'bg-gradient-to-br from-emerald-50 via-emerald-100/60 to-teal-50 border-emerald-400 dark:from-emerald-950/50 dark:via-emerald-900/30 dark:to-teal-950/40 dark:border-emerald-600 shadow-md shadow-emerald-200/40 ring-1 ring-emerald-300/30'
                                               : cn(sc.bg, sc.border, sc.darkBg, sc.darkBorder, 'shadow-sm')
                                           )}
                                         >
