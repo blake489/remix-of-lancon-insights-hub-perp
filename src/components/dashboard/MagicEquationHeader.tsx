@@ -37,6 +37,7 @@ interface MagicEquationHeaderProps {
   onNextMonthOverheadChange?: (value: number) => void;
   bhagTarget?: number;
   onBhagChange?: (value: number) => void;
+  onBhagCommit?: (value: number) => void;
 }
 
 const OVERHEAD_STEP = 5000;
@@ -71,6 +72,7 @@ export function MagicEquationHeader({
   onNextMonthOverheadChange,
   bhagTarget,
   onBhagChange,
+  onBhagCommit,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const pureProfit = monthlyKPI.grossProfit - overheadValue;
@@ -230,6 +232,7 @@ export function MagicEquationHeader({
         overheadOverride={overheadValue}
         bhagTarget={bhagTarget}
         onBhagChange={onBhagChange}
+        onBhagCommit={onBhagCommit}
       />
     </div>
   );
