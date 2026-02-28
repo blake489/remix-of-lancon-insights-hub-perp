@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -31,6 +32,35 @@ const fmt = (v: number) => {
 };
 
 const pct = (v: number) => `${v.toFixed(1)}%`;
+function BhagInput({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
+  const [localValue, setLocalValue] = useState(String(value));
+  useEffect(() => { setLocalValue(String(value)); }, [value]);
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <span className="text-xs text-muted-foreground">$</span>
+      <Input
+        type="text"
+        inputMode="numeric"
+        value={localValue}
+        onChange={e => {
+          const raw = e.target.value.replace(/[^0-9]/g, '');
+          setLocalValue(raw);
+        }}
+        onBlur={() => {
+          const num = Math.max(0, parseInt(localValue) || 0);
+          setLocalValue(String(num));
+          onChange?.(num);
+        }}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        className="w-28 h-7 text-sm font-bold tabular-nums text-right p-1"
+      />
+    </div>
+  );
+}
 
 export function ProfitMetricsTable({
   currentFortnightKPI,
@@ -163,15 +193,7 @@ export function ProfitMetricsTable({
                   if (p.label === 'Annual (FY)') {
                     return (
                       <TableCell key={p.label} className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <span className="text-xs text-muted-foreground">$</span>
-                          <Input
-                            type="number"
-                            value={bhagTarget}
-                            onChange={e => onBhagChange?.(Math.max(0, parseInt(e.target.value) || 0))}
-                            className="w-24 h-7 text-sm font-bold tabular-nums text-right p-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                        </div>
+                        <BhagInput value={bhagTarget} onChange={onBhagChange} />
                       </TableCell>
                     );
                   }
