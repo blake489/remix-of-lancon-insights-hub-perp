@@ -40,7 +40,7 @@ function getStageColor(claimType: string) {
   return STAGE_COLORS['Other'];
 }
 
-const CLAIM_TYPES = ['Deposit', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover', 'Retaining Wall', 'Variation', 'Other'];
+const CLAIM_TYPES = ['Deposit', 'Base', 'Slab/Base Stage', 'Frame Stage', 'Enclosed Stage', 'Fixing Stage', 'PC', 'Handover', 'Retaining Wall', 'Variation', 'Other'];
 
 function formatCurrency(val: number) {
   const abs = Math.abs(val);
