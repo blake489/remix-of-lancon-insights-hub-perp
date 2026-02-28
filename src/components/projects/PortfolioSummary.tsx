@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { BarChart3, DollarSign, Percent, Hash, ArrowUpDown } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const OWN_JOBS = ['28 Durimbil St', '117A Tranters Ave'];
 
@@ -36,6 +37,74 @@ function Metric({ label, value, sub, className, icon }: MetricProps) {
       </div>
       <p className={cn('text-xl font-bold tabular-nums', className)}>{value}</p>
       {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+const CAT_COLORS = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(35, 80%, 50%)'];
+
+interface ChartRow {
+  name: string;
+  contract: number;
+  cost: number;
+  gp: number;
+  gpPct: number;
+  count: number;
+}
+
+function CategoryChart({ data, total }: { data: ChartRow[]; total: number }) {
+  const fmtTooltip = (val: number) => `$${(val / 1_000_000).toFixed(2)}M`;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 items-center">
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={data} layout="vertical" margin={{ left: 10, right: 30, top: 5, bottom: 5 }}>
+          <XAxis type="number" tickFormatter={(v: number) => `$${(v / 1_000_000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
+          <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12, fontWeight: 600 }} />
+          <RechartsTooltip
+            formatter={(value: number, name: string) => [fmtTooltip(value), name === 'contract' ? 'Contract' : name === 'cost' ? 'Cost' : 'GP']}
+            labelStyle={{ fontWeight: 600 }}
+            contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+          />
+          <Bar dataKey="contract" name="Contract" radius={[0, 4, 4, 0]} barSize={28}>
+            {data.map((_, i) => (
+              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={0.85} />
+            ))}
+          </Bar>
+          <Bar dataKey="cost" name="Cost" radius={[0, 4, 4, 0]} barSize={28}>
+            {data.map((_, i) => (
+              <Cell key={i} fill={CAT_COLORS[i]} fillOpacity={0.35} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+
+      <div className="space-y-3">
+        {data.map((d, i) => {
+          const pct = total > 0 ? (d.contract / total) * 100 : 0;
+          return (
+            <div key={d.name} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ background: CAT_COLORS[i] }} />
+                  <span className="font-medium">{d.name}</span>
+                </div>
+                <span className="tabular-nums font-semibold">{pct.toFixed(0)}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, background: CAT_COLORS[i] }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-muted-foreground">
+                <span>{d.count} jobs</span>
+                <span className={cn('font-semibold', gpColor(d.gpPct))}>{d.gpPct.toFixed(1)}% GP</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -204,6 +273,25 @@ export function PortfolioSummary({ projects }: { projects: ProjectRow[] }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Category Distribution Chart */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" /> Contract Value by Category
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CategoryChart
+            data={[
+              { name: 'Pre Construction', contract: metrics.preCon.contract, cost: metrics.preCon.contract - metrics.preCon.gp, gp: metrics.preCon.gp, gpPct: metrics.preCon.weightedGp, count: metrics.preCon.count },
+              { name: 'Construction', contract: metrics.construction.contract, cost: metrics.construction.contract - metrics.construction.gp, gp: metrics.construction.gp, gpPct: metrics.construction.weightedGp, count: metrics.construction.count },
+              { name: 'Handover', contract: metrics.handover.contract, cost: metrics.handover.contract - metrics.handover.gp, gp: metrics.handover.gp, gpPct: metrics.handover.weightedGp, count: metrics.handover.count },
+            ]}
+            total={metrics.totalContract}
+          />
+        </CardContent>
+      </Card>
     </section>
   );
 }
