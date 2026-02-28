@@ -506,35 +506,6 @@ export default function ClaimsManager() {
               </div>
             </div>
           </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded border-2 border-dashed border-blue-400 bg-blue-50 dark:bg-blue-950/30" />
-              <span>Scheduled</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/30" />
-              <span>Claimed (Up)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-red-50 border border-red-200 dark:bg-red-950/30" />
-              <span>Claimed (Down)</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-1.5">
-              <Circle className="h-3 w-3 text-muted-foreground" />
-              <span>Planned</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-amber-500" />
-              <span>Confirmed</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCheck className="h-3 w-3 text-emerald-500" />
-              <span>Claimed</span>
-            </div>
-          </div>
         </div>
 
         {/* Spreadsheet Grid */}
