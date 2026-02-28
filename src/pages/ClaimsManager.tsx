@@ -548,6 +548,8 @@ export default function ClaimsManager() {
         amount: Math.abs(claim.amount),
         reference: claim.reference,
         notes: claim.notes,
+        status: claim.status || 'planned',
+        claimed_date: (claim as any).claimed_date || null,
       });
       // Log the move with reason and days delta
       await supabase.from('claim_moves').insert({
