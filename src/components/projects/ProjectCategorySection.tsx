@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { Pencil, Clock, TrendingUp, TrendingDown, Minus, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { SiteManagerPopover } from './SiteManagerPopover';
 
 interface ProjectCategorySectionProps {
   label: string;
@@ -140,7 +141,17 @@ export function ProjectCategorySection({ label, projects, onEdit, trends, claimS
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-medium">
-                    {project.site_manager || '—'}
+                    {project.site_manager ? (
+                      <SiteManagerPopover siteManagerName={project.site_manager}>
+                        <button
+                          type="button"
+                          className="text-left underline decoration-dotted underline-offset-4 hover:text-primary transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {project.site_manager}
+                        </button>
+                      </SiteManagerPopover>
+                    ) : '—'}
                   </TableCell>
                   <TableCell className="text-right font-semibold tabular-nums">
                     {project.contract_value_ex_gst > 0 ? formatCurrency(project.contract_value_ex_gst) : '—'}
