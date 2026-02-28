@@ -17,6 +17,27 @@ import { format, addMonths, parse, startOfMonth } from 'date-fns';
 import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const STAGE_COLORS: Record<string, { bg: string; border: string; text: string; darkBg: string; darkBorder: string }> = {
+  'Deposit':        { bg: 'bg-amber-50',   border: 'border-amber-300',   text: 'text-amber-700',   darkBg: 'dark:bg-amber-950/30',   darkBorder: 'dark:border-amber-700' },
+  'Slab/Base':      { bg: 'bg-orange-50',  border: 'border-orange-300',  text: 'text-orange-700',  darkBg: 'dark:bg-orange-950/30',  darkBorder: 'dark:border-orange-700' },
+  'Retaining Wall': { bg: 'bg-stone-50',   border: 'border-stone-300',   text: 'text-stone-700',   darkBg: 'dark:bg-stone-950/30',   darkBorder: 'dark:border-stone-700' },
+  'Frame':          { bg: 'bg-sky-50',     border: 'border-sky-300',     text: 'text-sky-700',     darkBg: 'dark:bg-sky-950/30',     darkBorder: 'dark:border-sky-700' },
+  'Enclosed':       { bg: 'bg-indigo-50',  border: 'border-indigo-300',  text: 'text-indigo-700',  darkBg: 'dark:bg-indigo-950/30',  darkBorder: 'dark:border-indigo-700' },
+  'Fixing':         { bg: 'bg-violet-50',  border: 'border-violet-300',  text: 'text-violet-700',  darkBg: 'dark:bg-violet-950/30',  darkBorder: 'dark:border-violet-700' },
+  'PC':             { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700', darkBg: 'dark:bg-emerald-950/30', darkBorder: 'dark:border-emerald-700' },
+  'Handover':       { bg: 'bg-teal-50',    border: 'border-teal-300',    text: 'text-teal-700',    darkBg: 'dark:bg-teal-950/30',    darkBorder: 'dark:border-teal-700' },
+  'Variation':      { bg: 'bg-rose-50',    border: 'border-rose-300',    text: 'text-rose-700',    darkBg: 'dark:bg-rose-950/30',    darkBorder: 'dark:border-rose-700' },
+  'Other':          { bg: 'bg-gray-50',    border: 'border-gray-300',    text: 'text-gray-700',    darkBg: 'dark:bg-gray-950/30',    darkBorder: 'dark:border-gray-700' },
+};
+
+function getStageColor(claimType: string) {
+  // Match by partial key (e.g. "Slab/Base Stage" matches "Slab/Base")
+  for (const [key, val] of Object.entries(STAGE_COLORS)) {
+    if (claimType.includes(key)) return val;
+  }
+  return STAGE_COLORS['Other'];
+}
+
 const CLAIM_TYPES = ['Deposit', 'Base', 'Slab/Base', 'Frame', 'Enclosed', 'Fixing', 'PC', 'Handover', 'Retaining Wall', 'Variation', 'Other'];
 
 function formatCurrency(val: number) {
@@ -502,7 +523,9 @@ export default function ClaimsManager() {
                                 onDrop={e => handleDrop(e, p.id, mk)}
                               >
                                 {/* Actual Claims */}
-                                {cellClaims.map(claim => (
+                                {cellClaims.map(claim => {
+                                  const sc = getStageColor(claim.claim_type);
+                                  return (
                                   <div
                                     key={claim.id}
                                     draggable
@@ -510,14 +533,12 @@ export default function ClaimsManager() {
                                     onDragEnd={() => setDragClaim(null)}
                                     className={cn(
                                       "w-full rounded px-2 py-1 text-left text-xs transition-all hover:shadow-md cursor-grab active:cursor-grabbing border",
-                                      claim.direction === 'Up'
-                                        ? "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-800"
-                                        : "bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:border-red-800"
+                                      sc.bg, sc.border, sc.darkBg, sc.darkBorder
                                     )}
                                   >
                                     <div className="flex items-center justify-between gap-1">
                                       <span
-                                        className="font-semibold truncate cursor-pointer"
+                                        className={cn("font-semibold truncate cursor-pointer", sc.text)}
                                         onClick={() => openEditClaim(claim)}
                                       >
                                         {claim.claim_type}
@@ -527,6 +548,9 @@ export default function ClaimsManager() {
                                         : <ArrowDown className="h-3 w-3 text-red-600 shrink-0" />
                                       }
                                     </div>
+                                    <span className="text-[10px] text-muted-foreground block">
+                                      {format(new Date(claim.claim_date + 'T00:00:00'), 'dd MMM yyyy')}
+                                    </span>
                                     {/* Inline editable amount */}
                                     {inlineEditId === claim.id ? (
                                       <Input
@@ -545,8 +569,7 @@ export default function ClaimsManager() {
                                     ) : (
                                       <div
                                         className={cn(
-                                          "font-bold tabular-nums cursor-pointer hover:underline",
-                                          claim.direction === 'Up' ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
+                                          "font-bold tabular-nums cursor-pointer hover:underline", sc.text
                                         )}
                                         onClick={() => {
                                           setInlineEditId(claim.id);
@@ -560,25 +583,37 @@ export default function ClaimsManager() {
                                       <span className="text-muted-foreground text-[10px] truncate block">{claim.reference}</span>
                                     )}
                                   </div>
-                                ))}
+                                  );
+                                })}
 
                                 {/* Projected (Scheduled) Claims */}
-                                {cellProjected.map(pc => (
+                                {cellProjected.map(pc => {
+                                  const sc = getStageColor(pc.stage);
+                                  return (
                                   <button
                                     key={`projected-${pc.stage}`}
                                     onClick={() => openFromProjected(pc)}
-                                    className="w-full rounded px-2 py-1 text-left text-xs border-2 border-dashed border-blue-300 bg-blue-50/60 hover:bg-blue-100 dark:bg-blue-950/20 dark:border-blue-700 hover:shadow-sm transition-all cursor-pointer"
+                                    className={cn(
+                                      "w-full rounded px-2 py-1 text-left text-xs border-2 border-dashed hover:shadow-sm transition-all cursor-pointer",
+                                      sc.bg, sc.darkBg,
+                                      sc.border.replace('border-', 'border-dashed border-')
+                                    )}
+                                    style={{ borderStyle: 'dashed' }}
                                   >
                                     <div className="flex items-center justify-between gap-1">
-                                      <span className="font-medium truncate text-blue-700 dark:text-blue-300">{pc.stage}</span>
-                                      <CalendarClock className="h-3 w-3 text-blue-400 shrink-0" />
+                                      <span className={cn("font-medium truncate", sc.text)}>{pc.stage}</span>
+                                      <CalendarClock className="h-3 w-3 text-muted-foreground shrink-0" />
                                     </div>
-                                    <div className="font-semibold tabular-nums text-blue-600 dark:text-blue-400">
+                                    <span className="text-[10px] text-muted-foreground block">
+                                      {format(pc.projectedDate, 'dd MMM yyyy')}
+                                    </span>
+                                    <div className={cn("font-semibold tabular-nums", sc.text)}>
                                       {formatCurrency(pc.amountExGst)}
                                     </div>
-                                    <span className="text-[10px] text-blue-400">{pc.percent}% · Click to claim</span>
+                                    <span className="text-[10px] text-muted-foreground">{pc.percent}% · Click to claim</span>
                                   </button>
-                                ))}
+                                  );
+                                })}
                               </div>
                             );
                           })}
