@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
+export type ClaimStatus = 'planned' | 'confirmed' | 'claimed';
+
 export interface Claim {
   id: string;
   project_id: string;
@@ -12,6 +14,7 @@ export interface Claim {
   claim_type: string;
   reference: string | null;
   notes: string | null;
+  status: ClaimStatus;
   created_at: string;
   updated_at: string;
 }
@@ -92,5 +95,13 @@ export function useClaims() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['claims'] }),
   });
 
-  return { claims, isLoading, addClaim, updateClaim, deleteClaim };
+  const updateClaimStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: ClaimStatus }) => {
+      const { error } = await supabase.from('claims').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['claims'] }),
+  });
+
+  return { claims, isLoading, addClaim, updateClaim, deleteClaim, updateClaimStatus };
 }

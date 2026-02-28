@@ -86,6 +86,7 @@ export type Database = {
           notes: string | null
           project_id: string
           reference: string | null
+          status: string
           updated_at: string
         }
         Insert: {
@@ -99,6 +100,7 @@ export type Database = {
           notes?: string | null
           project_id: string
           reference?: string | null
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -112,6 +114,7 @@ export type Database = {
           notes?: string | null
           project_id?: string
           reference?: string | null
+          status?: string
           updated_at?: string
         }
         Relationships: [

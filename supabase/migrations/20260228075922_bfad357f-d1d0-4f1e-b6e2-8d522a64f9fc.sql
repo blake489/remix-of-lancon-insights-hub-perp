@@ -1,0 +1,1 @@
+ALTER TABLE public.claims ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'confirmed', 'claimed'));
