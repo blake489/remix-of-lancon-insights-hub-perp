@@ -601,6 +601,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_leads: {
+        Row: {
+          client_name: string
+          created_at: string
+          created_by: string | null
+          estimated_value: number
+          id: string
+          notes: string | null
+          revenue_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          estimated_value?: number
+          id?: string
+          notes?: string | null
+          revenue_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          estimated_value?: number
+          id?: string
+          notes?: string | null
+          revenue_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       source_form_fields: {
         Row: {
           created_at: string
