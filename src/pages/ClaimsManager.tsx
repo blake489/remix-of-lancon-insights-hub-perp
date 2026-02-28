@@ -15,7 +15,7 @@ import { computeProjectedClaims, ProjectedClaim } from '@/lib/claimsScheduleUtil
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
 import { format, addMonths, parse, startOfMonth } from 'date-fns';
-import { Plus, Search, ArrowUp, ArrowDown, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Trash2, DollarSign, TrendingUp, TrendingDown, Minus, CalendarClock, CheckCircle2, Circle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 // Checkbox removed - status managed in edit dialog
 import { cn } from '@/lib/utils';
 
@@ -846,30 +846,14 @@ export default function ClaimsManager() {
               <Input type="date" value={claimForm.claim_date} onChange={e => setClaimForm(f => ({ ...f, claim_date: e.target.value }))} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Claim Type *</Label>
-                <Select value={claimForm.claim_type} onValueChange={v => setClaimForm(f => ({ ...f, claim_type: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CLAIM_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Direction *</Label>
-                <Select value={claimForm.direction} onValueChange={v => setClaimForm(f => ({ ...f, direction: v as 'Up' | 'Down' }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Up">
-                      <span className="flex items-center gap-2"><ArrowUp className="h-3 w-3 text-emerald-600" /> Up</span>
-                    </SelectItem>
-                    <SelectItem value="Down">
-                      <span className="flex items-center gap-2"><ArrowDown className="h-3 w-3 text-red-600" /> Down</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Claim Type *</Label>
+              <Select value={claimForm.claim_type} onValueChange={v => setClaimForm(f => ({ ...f, claim_type: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CLAIM_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
