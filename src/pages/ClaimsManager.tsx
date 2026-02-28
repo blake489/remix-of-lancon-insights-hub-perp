@@ -199,6 +199,7 @@ export default function ClaimsManager() {
         (p.custom_timeframes || {}) as Record<string, number>,
         p.contract_value_ex_gst,
         p.site_start_date,
+        (p.claim_stage_statuses || {}) as Record<string, string>,
       );
       projected.forEach(pc => {
         const half = getHalf(format(pc.projectedDate, 'yyyy-MM-dd'));
@@ -243,12 +244,14 @@ export default function ClaimsManager() {
         (p.custom_timeframes || {}) as Record<string, number>,
         p.contract_value_ex_gst,
         p.site_start_date,
+        (p.claim_stage_statuses || {}) as Record<string, string>,
       );
       projected.forEach(pc => {
         if (!months.includes(pc.monthKey)) return;
         if (claims.some(c => c.project_id === pc.projectId && c.claim_type === pc.stage)) return;
         if (!map.has(pc.monthKey)) map.set(pc.monthKey, { planned: 0, confirmed: 0, claimed: 0 });
-        map.get(pc.monthKey)!.planned += pc.amountExGst;
+        const statusKey = (pc.status || 'planned') as 'planned' | 'confirmed' | 'claimed';
+        map.get(pc.monthKey)![statusKey] += pc.amountExGst;
       });
     });
     return map;
@@ -352,7 +355,7 @@ export default function ClaimsManager() {
       amount: pc.amountExGst.toFixed(2),
       reference: '',
       notes: `Scheduled ${pc.stage} claim`,
-      status: 'planned',
+      status: pc.status || 'planned',
       claimed_date: '',
     });
     setClaimDialogOpen(true);

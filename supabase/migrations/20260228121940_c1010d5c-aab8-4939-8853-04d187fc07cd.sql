@@ -1,0 +1,1 @@
+ALTER TABLE public.projects ADD COLUMN claim_stage_statuses JSONB NOT NULL DEFAULT '{}'::jsonb;

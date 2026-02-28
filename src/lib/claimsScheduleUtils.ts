@@ -9,6 +9,7 @@ export interface ProjectedClaim {
   amountIncGst: number;
   monthKey: string;
   projectedDate: Date;
+  status: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export function computeProjectedClaims(
   customTimeframes: Record<string, number>,
   contractValueExGst: number,
   siteStartDate?: string | null,
+  stageStatuses?: Record<string, string>,
 ): ProjectedClaim[] {
   if (!startDate || contractValueExGst <= 0) return [];
 
@@ -80,6 +82,7 @@ export function computeProjectedClaims(
       amountIncGst: amountExGst * 1.1,
       monthKey: format(projectedDate, 'yyyy-MM'),
       projectedDate,
+      status: stageStatuses?.[row.stage] || 'planned',
     });
   }
 
