@@ -573,7 +573,7 @@ export default function ClaimsManager() {
                       <div
                         key={p.id}
                         className={cn(
-                          "min-h-[72px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
+                          "h-[120px] border-b px-3 py-2 cursor-pointer transition-colors hover:bg-muted/30 flex flex-col justify-center",
                           selectedProjectId === p.id && "bg-primary/5 border-l-2 border-l-primary"
                         )}
                         onClick={() => setSelectedProjectId(selectedProjectId === p.id ? null : p.id)}
@@ -663,7 +663,7 @@ export default function ClaimsManager() {
                         <div
                           key={p.id}
                           className={cn(
-                            "flex min-h-[72px] border-b transition-colors",
+                            "flex h-[120px] border-b transition-colors",
                             selectedProjectId === p.id && "bg-primary/5"
                           )}
                         >
