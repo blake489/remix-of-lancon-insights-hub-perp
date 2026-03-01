@@ -23,7 +23,7 @@ import { ForecastAuditTrail } from './ForecastAuditTrail';
 import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { supabase } from '@/integrations/supabase/client';
-import { X, Trash2 } from 'lucide-react';
+import { X, Archive } from 'lucide-react';
 import { deriveCategory } from '@/lib/deriveCategory';
 
 // Category is auto-derived — no manual selection needed
@@ -380,26 +380,26 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, onDel
           {onDelete ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5">
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete Project
+                <Button type="button" variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 gap-1.5">
+                  <Archive className="h-3.5 w-3.5" />
+                  Archive Project
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete "{currentProject.job_name}"?</AlertDialogTitle>
+                  <AlertDialogTitle>Archive "{currentProject.job_name}"?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently remove the project, its claims, forecast history, and all related data. This action cannot be undone.
+                    This will hide the project from your active list. You can restore it at any time from the archived projects section.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-amber-600 text-white hover:bg-amber-700"
                     disabled={isDeleting}
                     onClick={() => onDelete(currentProject.id)}
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete Project'}
+                    {isDeleting ? 'Archiving...' : 'Archive Project'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

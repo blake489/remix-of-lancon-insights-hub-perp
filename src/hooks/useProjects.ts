@@ -44,7 +44,21 @@ export function useProjects() {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
+        .eq('is_archived', false)
         .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as ProjectRow[];
+    },
+  });
+
+  const { data: archivedProjects = [], isLoading: isLoadingArchived } = useQuery({
+    queryKey: ['projects-archived'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('is_archived', true)
+        .order('updated_at', { ascending: false });
       if (error) throw error;
       return data as ProjectRow[];
     },
@@ -89,22 +103,41 @@ export function useProjects() {
     },
   });
 
-  const deleteProject = useMutation({
+  const archiveProject = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('projects')
-        .delete()
+        .update({ is_archived: true } as any)
         .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast({ title: 'Project deleted', description: 'The project has been removed.' });
+      queryClient.invalidateQueries({ queryKey: ['projects-archived'] });
+      toast({ title: 'Project archived', description: 'The project has been archived and can be restored later.' });
     },
     onError: (error) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
   });
 
-  return { projects, isLoading, addProject, updateProject, deleteProject };
+  const restoreProject = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('projects')
+        .update({ is_archived: false } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-archived'] });
+      toast({ title: 'Project restored', description: 'The project has been restored.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  return { projects, archivedProjects, isLoading, isLoadingArchived, addProject, updateProject, archiveProject, restoreProject };
 }
