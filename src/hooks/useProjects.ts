@@ -139,5 +139,23 @@ export function useProjects() {
     },
   });
 
-  return { projects, archivedProjects, isLoading, isLoadingArchived, addProject, updateProject, archiveProject, restoreProject };
+  const deleteProject = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-archived'] });
+      toast({ title: 'Project deleted', description: 'The project has been permanently deleted.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  return { projects, archivedProjects, isLoading, isLoadingArchived, addProject, updateProject, archiveProject, restoreProject, deleteProject };
 }
