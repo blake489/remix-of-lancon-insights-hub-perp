@@ -8,7 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Search, Archive, RotateCcw } from 'lucide-react';
+import { FileText, Search, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
@@ -17,6 +28,7 @@ import { useWeatherEOTLogs } from '@/hooks/useWeatherEOTLogs';
 import { AddProjectDialog } from '@/components/projects/AddProjectDialog';
 import { ProjectCategorySection } from '@/components/projects/ProjectCategorySection';
 import { PortfolioSummary } from '@/components/projects/PortfolioSummary';
+import { useUserRole } from '@/hooks/useKPISettings';
 
 const categoryOrder: { key: ProjectCategory; label: string }[] = [
   { key: 'pre_construction', label: 'Pre Construction' },
@@ -30,7 +42,9 @@ export default function Projects() {
   const prefillValue = searchParams.get('prefill_value') || undefined;
   const hasPrefill = !!prefillName;
 
-  const { projects, archivedProjects, isLoading, addProject, updateProject, archiveProject, restoreProject } = useProjects();
+  const { projects, archivedProjects, isLoading, addProject, updateProject, archiveProject, restoreProject, deleteProject } = useProjects();
+  const { data: userRole } = useUserRole();
+  const isAdmin = userRole?.isAdmin ?? false;
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
@@ -174,16 +188,50 @@ export default function Projects() {
                           <p className="text-sm font-medium text-foreground">{p.address || p.job_name}</p>
                           {p.client_name && <p className="text-xs text-muted-foreground">{p.client_name}</p>}
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5"
-                          onClick={() => restoreProject.mutate(p.id)}
-                          disabled={restoreProject.isPending}
-                        >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                          Restore
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => restoreProject.mutate(p.id)}
+                            disabled={restoreProject.isPending}
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            Restore
+                          </Button>
+                          {isAdmin && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Permanently delete "{p.address || p.job_name}"?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. The project and all associated data will be permanently removed.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    disabled={deleteProject.isPending}
+                                    onClick={() => deleteProject.mutate(p.id)}
+                                  >
+                                    {deleteProject.isPending ? 'Deleting...' : 'Delete Permanently'}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
