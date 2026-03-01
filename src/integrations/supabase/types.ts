@@ -536,6 +536,7 @@ export type Database = {
           forecast_gp_percent: number
           forecast_gross_profit: number
           id: string
+          is_archived: boolean
           job_name: string
           pc_date: string | null
           plans_pdf_path: string | null
@@ -566,6 +567,7 @@ export type Database = {
           forecast_gp_percent?: number
           forecast_gross_profit?: number
           id?: string
+          is_archived?: boolean
           job_name: string
           pc_date?: string | null
           plans_pdf_path?: string | null
@@ -596,6 +598,7 @@ export type Database = {
           forecast_gp_percent?: number
           forecast_gross_profit?: number
           id?: string
+          is_archived?: boolean
           job_name?: string
           pc_date?: string | null
           plans_pdf_path?: string | null

@@ -6,7 +6,9 @@ import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { FileText, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Search, Archive, RotateCcw } from 'lucide-react';
 import { useProjects, ProjectRow, ProjectCategory } from '@/hooks/useProjects';
 import { useProjectTrends } from '@/hooks/useProjectTrends';
 import { useProjectClaimStages } from '@/hooks/useProjectClaimStages';
@@ -28,7 +30,7 @@ export default function Projects() {
   const prefillValue = searchParams.get('prefill_value') || undefined;
   const hasPrefill = !!prefillName;
 
-  const { projects, isLoading, addProject, updateProject, deleteProject } = useProjects();
+  const { projects, archivedProjects, isLoading, addProject, updateProject, archiveProject, restoreProject } = useProjects();
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: trends } = useProjectTrends(projectIds);
   const { data: claimStages } = useProjectClaimStages(projectIds);
@@ -40,6 +42,7 @@ export default function Projects() {
   const [highlightCategory, setHighlightCategory] = useState<string | null>(null);
   const [filterManager, setFilterManager] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
 
   const siteManagerList = useMemo(() => {
     const set = new Set(projects.map(p => p.site_manager).filter(Boolean) as string[]);
@@ -132,11 +135,11 @@ export default function Projects() {
                   onEdit={handleToggleEdit}
                   onSubmitEdit={(data) => updateProject.mutate(data)}
                   onDeleteProject={(id) => {
-                    deleteProject.mutate(id);
+                    archiveProject.mutate(id);
                     setEditingProject(null);
                   }}
                   isSubmittingEdit={updateProject.isPending}
-                  isDeletingProject={deleteProject.isPending}
+                  isDeletingProject={archiveProject.isPending}
                   expandedProjectId={expandedProjectId}
                   trends={trends}
                   claimStages={claimStages}
@@ -150,6 +153,45 @@ export default function Projects() {
                 activeCategory={highlightCategory}
                 gpThresholds={gpThresholds}
               />
+
+              {/* Archived Projects Section */}
+              <div className="pt-4 border-t border-border">
+                <button
+                  onClick={() => setShowArchived(prev => !prev)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Archive className="h-4 w-4" />
+                  Archived Projects
+                  {archivedProjects.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">{archivedProjects.length}</Badge>
+                  )}
+                </button>
+                {showArchived && archivedProjects.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {archivedProjects.map(p => (
+                      <div key={p.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{p.address || p.job_name}</p>
+                          {p.client_name && <p className="text-xs text-muted-foreground">{p.client_name}</p>}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => restoreProject.mutate(p.id)}
+                          disabled={restoreProject.isPending}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Restore
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showArchived && archivedProjects.length === 0 && (
+                  <p className="mt-2 text-xs text-muted-foreground">No archived projects.</p>
+                )}
+              </div>
             </>
           )}
         </main>
