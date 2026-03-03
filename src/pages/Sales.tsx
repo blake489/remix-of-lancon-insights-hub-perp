@@ -31,8 +31,9 @@ const STATUS_OPTIONS = [
   { value: 'won', label: 'Won', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
 ];
 
-const QUARTERLY_TARGET = 5_000_000;
-const SLOTS_PER_MONTH = 4;
+const MONTHLY_TARGET = 1_800_000;
+const QUARTERLY_TARGET = MONTHLY_TARGET * 3;
+const SLOTS_PER_MONTH = 2;
 
 function getStatusStyle(status: string) {
   return STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0];
@@ -284,7 +285,7 @@ export default function Sales() {
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Quarterly Pipeline</h2>
-            <span className="text-xs text-muted-foreground ml-1">Target: {formatCurrency(QUARTERLY_TARGET)}/qtr · {SLOTS_PER_MONTH} slots/month</span>
+            <span className="text-xs text-muted-foreground ml-1">Target: {formatCurrency(MONTHLY_TARGET)}/mo · {SLOTS_PER_MONTH} deals/month</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             {quarterlyPipeline.map(q => (
