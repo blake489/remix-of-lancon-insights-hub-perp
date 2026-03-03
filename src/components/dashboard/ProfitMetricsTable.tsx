@@ -58,8 +58,8 @@ function BhagInput({
   };
 
   return (
-    <div className="flex items-center justify-end gap-1">
-      <span className="text-xs text-muted-foreground">$</span>
+    <div className="flex items-center justify-end gap-1.5">
+      <span className="text-xs text-muted-foreground font-medium">$</span>
       <Input
         type="text"
         inputMode="numeric"
@@ -78,7 +78,7 @@ function BhagInput({
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
-        className="w-28 h-7 text-sm font-bold tabular-nums text-right p-1"
+        className="w-32 h-8 text-sm font-bold tabular-nums text-right px-2 border-primary/30 focus:border-primary cursor-text"
       />
     </div>
   );
