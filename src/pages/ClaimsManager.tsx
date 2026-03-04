@@ -84,6 +84,7 @@ function getLastDay(monthKey: string): number {
 
 export default function ClaimsManager() {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { projects, isLoading: projectsLoading } = useProjects();
   const { claims, isLoading: claimsLoading, addClaim, updateClaim, deleteClaim } = useClaims();
 
@@ -117,8 +118,23 @@ export default function ClaimsManager() {
   const [filterSupervisor, setFilterSupervisor] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  // Selected project row
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  // Selected project row — pre-select from URL ?project=<id>
+  const projectParam = searchParams.get('project');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectParam);
+
+  // Auto-select project from URL param once projects load
+  useEffect(() => {
+    if (projectParam && projects.length > 0) {
+      const match = projects.find(p => p.id === projectParam);
+      if (match) {
+        setSelectedProjectId(projectParam);
+        setSearchQuery(match.job_name);
+      }
+      // Clear param after applying
+      searchParams.delete('project');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [projectParam, projects]);
 
   // Claim modal
   const [claimDialogOpen, setClaimDialogOpen] = useState(false);
