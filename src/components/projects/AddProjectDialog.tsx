@@ -182,18 +182,6 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
             </div>
           </fieldset>
 
-          <ClaimsScheduleTable
-            scheduleType={form.schedule_type}
-            onScheduleTypeChange={v => updateField('schedule_type', v)}
-            contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
-            contractSignDate={form.start_date}
-            onContractSignDateChange={v => updateField('start_date', v)}
-            siteStartDate={form.site_start_date}
-            onSiteStartDateChange={v => updateField('site_start_date', v)}
-            customTimeframes={customTimeframes}
-            onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
-          />
-
           {/* Contract Value — highlighted as key tracking area */}
           <fieldset className="space-y-4 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-4 py-4 ring-1 ring-blue-400/10 transition-all duration-300">
             <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">💰 Contract Value</legend>
@@ -214,6 +202,18 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
             <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">📋 Variations</legend>
             <VariationsSection variations={variations} onChange={setVariations} />
           </fieldset>
+
+          <ClaimsScheduleTable
+            scheduleType={form.schedule_type}
+            onScheduleTypeChange={v => updateField('schedule_type', v)}
+            contractValueExGst={parseFloat(form.contract_value_ex_gst) || 0}
+            contractSignDate={form.start_date}
+            onContractSignDateChange={v => updateField('start_date', v)}
+            siteStartDate={form.site_start_date}
+            onSiteStartDateChange={v => updateField('site_start_date', v)}
+            customTimeframes={customTimeframes}
+            onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
+          />
 
           {/* Financials — highlighted as primary tracking area */}
           <fieldset className="space-y-4 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-4 py-4 ring-1 ring-primary/10">
