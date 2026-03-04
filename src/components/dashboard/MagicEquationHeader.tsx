@@ -172,8 +172,8 @@ export function MagicEquationHeader({
                   <span className="text-[10px] text-muted-foreground">$</span>
                   <input
                     type="number"
-                    value={lastMonthOverhead ?? overheadValue}
-                    onChange={e => onLastMonthOverheadChange?.(Math.max(0, parseInt(e.target.value) || 0))}
+                    value={Math.round(lastMonthOverhead ?? overheadValue)}
+                    onChange={e => onLastMonthOverheadChange?.(Math.max(0, Math.round(parseInt(e.target.value) || 0)))}
                     className="w-full text-sm font-bold tabular-nums bg-transparent border-none outline-none text-foreground p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
@@ -184,8 +184,8 @@ export function MagicEquationHeader({
                   <span className="text-[10px] text-muted-foreground">$</span>
                   <input
                     type="number"
-                    value={nextMonthOverhead ?? overheadValue}
-                    onChange={e => onNextMonthOverheadChange?.(Math.max(0, parseInt(e.target.value) || 0))}
+                    value={Math.round(nextMonthOverhead ?? overheadValue)}
+                    onChange={e => onNextMonthOverheadChange?.(Math.max(0, Math.round(parseInt(e.target.value) || 0)))}
                     className="w-full text-sm font-bold tabular-nums bg-transparent border-none outline-none text-foreground p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
