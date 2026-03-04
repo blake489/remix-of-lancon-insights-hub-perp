@@ -59,8 +59,8 @@ const topItems = [
 
 const buildingItems = [
   { title: 'Building Contracts', url: '/projects', icon: FileText },
-  { title: 'Client Communication', url: '/site-entry', icon: ClipboardCheck },
   { title: 'Claims Papi', url: '/claims', icon: Receipt },
+  { title: 'Client Communication', url: '/site-entry', icon: ClipboardCheck },
   { title: 'Claims Ledger', url: '/claims/ledger', icon: BookOpen },
   { title: 'New Business', url: '/sales', icon: Handshake },
 ];
