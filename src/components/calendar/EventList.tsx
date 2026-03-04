@@ -19,6 +19,7 @@ import { CalendarEventDB, CalendarEventCategory } from '@/hooks/useCalendarEvent
 import { CalendarEvent } from '@/types/calendar';
 import { cn } from '@/lib/utils';
 import { mockProjects } from '@/data/mockData';
+import { useNavigate } from 'react-router-dom';
 
 interface EventListProps {
   selectedDate: Date;
@@ -44,6 +45,9 @@ export function EventList({
   onCreateEvent,
   onEditEvent,
 }: EventListProps) {
+  const navigate = useNavigate();
+  const claimEventTypes = new Set(['claim-projected', 'claim-confirmed', 'claim-claimed', 'variation-due']);
+
   // Filter events for selected date
   const dayDbEvents = dbEvents.filter((e) =>
     isSameDay(new Date(e.start_time), selectedDate)
@@ -58,6 +62,12 @@ export function EventList({
     if (!projectId) return null;
     const project = mockProjects.find((p) => p.id === projectId);
     return project?.jobName || null;
+  };
+
+  const handleSystemEventClick = (event: CalendarEvent) => {
+    if (claimEventTypes.has(event.type) && event.projectId) {
+      navigate(`/claims?project=${event.projectId}`);
+    }
   };
 
   return (
@@ -97,10 +107,17 @@ export function EventList({
           ) : (
             <div className="space-y-3">
               {/* System events (fortnights, milestones) */}
-              {daySystemEvents.map((event) => (
+              {daySystemEvents.map((event) => {
+                const isClickable = claimEventTypes.has(event.type) && !!event.projectId;
+                return (
                 <div
                   key={event.id}
-                  className="p-3 rounded-lg border border-primary/30 bg-primary/5"
+                  className={cn(
+                    'p-3 rounded-lg border border-primary/30 bg-primary/5',
+                    isClickable && 'cursor-pointer hover:shadow-md hover:border-primary/50 transition-all'
+                  )}
+                  onClick={isClickable ? () => handleSystemEventClick(event) : undefined}
+                  title={isClickable ? `${event.title} — Click to open in Claims Papi` : undefined}
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
@@ -125,7 +142,8 @@ export function EventList({
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {/* User events */}
               {dayDbEvents.map((event) => {
