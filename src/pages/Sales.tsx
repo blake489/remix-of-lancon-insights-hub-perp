@@ -290,7 +290,7 @@ export default function Sales() {
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Quarterly Pipeline</h2>
             <span className="text-xs text-muted-foreground ml-1">Target: {formatCurrency(MONTHLY_TARGET)}/mo · {SLOTS_PER_MONTH} deals/month</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {quarterlyPipeline.map(q => (
               <Card key={q.label} className={cn(
                 "border-border/60 transition-all",
