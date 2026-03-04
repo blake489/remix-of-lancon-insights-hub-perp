@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Plus, Search, Trash2, Pencil, TrendingUp, DollarSign, Target, Users, CalendarIcon, CheckCircle2, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, startOfQuarter, addQuarters, addMonths, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { format, addMonths, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 
 
@@ -43,9 +43,21 @@ function formatCurrency(val: number) {
   return val === 0 ? '$0' : `$${val.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-function getQuarterLabel(date: Date): string {
-  const q = Math.ceil((date.getMonth() + 1) / 3);
-  return `Q${q} ${date.getFullYear()}`;
+/** Australian Financial Year: Q1=Jul-Sep, Q2=Oct-Dec, Q3=Jan-Mar, Q4=Apr-Jun */
+function getFYQuarterStart(date: Date): Date {
+  const month = date.getMonth(); // 0-indexed
+  if (month >= 6 && month <= 8) return new Date(date.getFullYear(), 6, 1); // Jul
+  if (month >= 9 && month <= 11) return new Date(date.getFullYear(), 9, 1); // Oct
+  if (month >= 0 && month <= 2) return new Date(date.getFullYear(), 0, 1); // Jan
+  return new Date(date.getFullYear(), 3, 1); // Apr
+}
+
+function getFYQuarterLabel(qStart: Date): string {
+  const month = qStart.getMonth();
+  const fyStart = month >= 6 ? qStart.getFullYear() : qStart.getFullYear() - 1;
+  const fyEnd = fyStart + 1;
+  const qNum = month === 6 ? 1 : month === 9 ? 2 : month === 0 ? 3 : 4;
+  return `Q${qNum} FY${String(fyEnd).slice(-2)}`;
 }
 
 function getQuarterMonths(quarterStart: Date): Date[] {
@@ -106,8 +118,9 @@ export default function Sales() {
   // Quarterly pipeline data: current quarter + 3 more
   const quarterlyPipeline = useMemo(() => {
     const now = new Date();
-    const currentQStart = startOfQuarter(now);
-    const quarters = Array.from({ length: 4 }, (_, i) => addQuarters(currentQStart, i));
+    const currentFYQStart = getFYQuarterStart(now);
+    // All 4 FY quarters from current quarter
+    const quarters = Array.from({ length: 4 }, (_, i) => addMonths(currentFYQStart, i * 3));
 
     return quarters.map(qStart => {
       const qMonths = getQuarterMonths(qStart);
@@ -148,7 +161,7 @@ export default function Sales() {
 
       return {
         qStart,
-        label: getQuarterLabel(qStart),
+        label: getFYQuarterLabel(qStart),
         monthData,
         totalFilled,
         totalPending,
