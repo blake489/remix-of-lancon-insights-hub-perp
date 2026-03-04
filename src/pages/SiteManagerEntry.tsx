@@ -81,7 +81,7 @@ export default function SiteManagerEntry() {
   const getManagerStats = (managerProjects: typeof constructionProjects) => {
     const total = managerProjects.length;
     const msgs = managerProjects.filter(p => getActivity(p.id).clientMessage).length;
-    const photos = managerProjects.filter(p => getActivity(p.id).photos > 0).length;
+    const photos = managerProjects.filter(p => getActivity(p.id).photos >= 4).length;
     const hs = managerProjects.filter(p => getActivity(p.id).hsWalk).length;
     return { total, msgs, photos, hs };
   };
@@ -290,13 +290,21 @@ export default function SiteManagerEntry() {
                                   />
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    value={act.photos}
-                                    onChange={e => handleUpdate(p.id, 'photos', Math.max(0, parseInt(e.target.value) || 0))}
-                                    className="w-16 h-8 text-center text-sm tabular-nums mx-auto"
-                                  />
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      value={act.photos}
+                                      onChange={e => handleUpdate(p.id, 'photos', Math.max(0, parseInt(e.target.value) || 0))}
+                                      className={cn(
+                                        "w-16 h-8 text-center text-sm tabular-nums mx-auto",
+                                        act.photos > 0 && act.photos < 4 && "border-amber-400 text-amber-600"
+                                      )}
+                                    />
+                                    {act.photos > 0 && act.photos < 4 && (
+                                      <span className="text-[9px] text-amber-500 font-medium">min 4</span>
+                                    )}
+                                  </div>
                                 </TableCell>
                                 <TableCell className="text-center">
                                   <Checkbox

@@ -65,7 +65,7 @@ export function useSiteWeeklyActivities(weekStart: Date) {
   };
 
   const isComplete = (act: { clientMessage: boolean; photos: number; hsWalk: boolean }) =>
-    act.clientMessage && act.photos > 0 && act.hsWalk;
+    act.clientMessage && act.photos >= 4 && act.hsWalk;
 
   const isRedFlagged = (projectId: string): boolean => {
     const curr = getActivity(projectId);
