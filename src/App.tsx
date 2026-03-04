@@ -24,6 +24,7 @@ import DevelopmentImport from "./pages/DevelopmentImport";
 
 import ClaimsManager from "./pages/ClaimsManager";
 import ClaimsLedger from "./pages/ClaimsLedger";
+import ClaimsMetrics from "./pages/ClaimsMetrics";
 import Sales from "./pages/Sales";
 import SiteManagerEntry from "./pages/SiteManagerEntry";
 const queryClient = new QueryClient();
@@ -97,6 +98,7 @@ const App = () => (
             
             <Route path="/claims" element={<ProtectedRoute><ClaimsManager /></ProtectedRoute>} />
             <Route path="/claims/ledger" element={<ProtectedRoute><ClaimsLedger /></ProtectedRoute>} />
+            <Route path="/claims/metrics" element={<ProtectedRoute><ClaimsMetrics /></ProtectedRoute>} />
             <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
             <Route path="/site-entry" element={<ProtectedRoute><SiteManagerEntry /></ProtectedRoute>} />
             <Route path="/development" element={<ProtectedRoute><DevelopmentDashboard /></ProtectedRoute>} />

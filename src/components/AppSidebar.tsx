@@ -43,6 +43,7 @@ import {
   BookOpen,
   Handshake,
   ClipboardCheck,
+  BarChart3,
 
 } from 'lucide-react';
 import {
@@ -60,6 +61,7 @@ const topItems = [
 const buildingItems = [
   { title: 'Building Contracts', url: '/projects', icon: FileText },
   { title: 'Claims Papi', url: '/claims', icon: Receipt },
+  { title: 'Claims Metrics', url: '/claims/metrics', icon: BarChart3 },
   { title: 'Client Communication', url: '/site-entry', icon: ClipboardCheck },
   { title: 'Claims Ledger', url: '/claims/ledger', icon: BookOpen },
   { title: 'New Business', url: '/sales', icon: Handshake },
