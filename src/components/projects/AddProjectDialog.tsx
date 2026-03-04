@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
+import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { deriveCategory } from '@/lib/deriveCategory';
 

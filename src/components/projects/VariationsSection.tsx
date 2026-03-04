@@ -1,11 +1,16 @@
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2 } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Plus, Trash2, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface Variation {
   description: string;
   amount: number;
+  dueDate?: string; // yyyy-MM-dd
 }
 
 interface VariationsSectionProps {
@@ -32,21 +37,26 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
     onChange(updated);
   };
 
-  const addRow = () => onChange([...variations, { description: '', amount: 0 }]);
+  const addRow = () => onChange([...variations, { description: '', amount: 0, dueDate: '' }]);
 
   const removeRow = (index: number) => onChange(variations.filter((_, i) => i !== index));
 
   return (
     <div className="space-y-3">
+      <p className="text-[10px] text-muted-foreground leading-snug">
+        Variations are <span className="font-semibold">not</span> added to the schedule of payments — each generates its own tile in Claims Papi.
+      </p>
+
       {variations.length > 0 && (
         <div className="space-y-2">
-          <div className="grid grid-cols-[1fr_140px_36px] gap-2 text-xs font-medium text-muted-foreground px-1">
+          <div className="grid grid-cols-[1fr_120px_130px_36px] gap-2 text-xs font-medium text-muted-foreground px-1">
             <span>Description</span>
             <span className="text-right">Amount (ex GST)</span>
+            <span className="text-center">Due Date</span>
             <span />
           </div>
           {variations.map((v, i) => (
-            <div key={i} className="grid grid-cols-[1fr_140px_36px] gap-2 items-center animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 50}ms` }}>
+            <div key={i} className="grid grid-cols-[1fr_120px_130px_36px] gap-2 items-center animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 50}ms` }}>
               <Input
                 placeholder="e.g. Extra bathroom tiling"
                 value={v.description}
@@ -61,6 +71,33 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
                 className="text-sm text-right tabular-nums"
                 placeholder="0"
               />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "h-8 text-xs justify-start font-normal px-2 w-full",
+                      !v.dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-1 h-3 w-3" />
+                    {v.dueDate
+                      ? format(new Date(v.dueDate + 'T00:00:00'), 'dd MMM yyyy')
+                      : 'Pick date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={v.dueDate ? new Date(v.dueDate + 'T00:00:00') : undefined}
+                    onSelect={(d) => {
+                      if (d) updateRow(i, 'dueDate', format(d, 'yyyy-MM-dd'));
+                    }}
+                    className="p-3"
+                  />
+                </PopoverContent>
+              </Popover>
               <Button
                 type="button"
                 variant="ghost"
@@ -74,11 +111,12 @@ export function VariationsSection({ variations, onChange }: VariationsSectionPro
           ))}
 
           {variations.length > 0 && (
-            <div className="grid grid-cols-[1fr_140px_36px] gap-2 pt-1 border-t border-border">
+            <div className="grid grid-cols-[1fr_120px_130px_36px] gap-2 pt-1 border-t border-border">
               <span className="text-sm font-semibold text-right pr-2">Variations Total</span>
               <span className="text-sm font-bold text-right tabular-nums pr-3">
                 {total >= 0 ? '+' : ''}{fmt(total)}
               </span>
+              <span />
               <span />
             </div>
           )}
