@@ -29,6 +29,7 @@ interface MagicEquationHeaderProps {
   overheadOverride?: number;
   onOverheadChange?: (value: number) => void;
   activeGpPercent?: number;
+  activeGpContractCount?: number;
   claimsRevenue?: ClaimsRevenueSummary;
   adjacentMonthProfits?: { lastMonth: MonthProfitSummary; nextMonth: MonthProfitSummary };
   lastMonthOverhead?: number;
@@ -64,6 +65,7 @@ export function MagicEquationHeader({
   overheadOverride,
   onOverheadChange,
   activeGpPercent,
+  activeGpContractCount,
   claimsRevenue,
   adjacentMonthProfits,
   lastMonthOverhead,
@@ -127,7 +129,7 @@ export function MagicEquationHeader({
         <KPICard
           title="Monthly Gross Profit"
           value={activeGpPercent != null ? formatPercent(activeGpPercent) : formatPercent(monthlyKPI.gpPercent)}
-          subtitle="Target: 18%"
+          subtitle={activeGpContractCount != null ? `Target: 18% · ${activeGpContractCount} contracts` : "Target: 18%"}
           status={activeGpPercent != null ? (activeGpPercent >= 18 ? 'success' : 'danger') : monthlyKPI.gpStatus}
         />
 
