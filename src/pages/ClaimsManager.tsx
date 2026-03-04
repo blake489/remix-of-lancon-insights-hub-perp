@@ -935,6 +935,36 @@ export default function ClaimsManager() {
                                   <CheckCheck className="h-2 w-2 text-emerald-500" />
                                   <span className="text-emerald-600">{formatCurrency(st.claimed)}</span>
                                 </span>
+                                {(() => {
+                                  const monthClaims = claims.filter(c => c.month_key === mk);
+                                  const pendingCount = monthClaims.filter(c => c.status === 'planned' || c.status === 'confirmed').length;
+                                  // Also count projected claims not yet created
+                                  let projectedPending = 0;
+                                  (projects || []).forEach((p: ProjectRow) => {
+                                    if (!p.start_date || p.contract_value_ex_gst <= 0) return;
+                                    const projected = computeProjectedClaims(
+                                      p.id, p.start_date,
+                                      (p.schedule_type || 'standard') as ClaimScheduleType,
+                                      (p.custom_timeframes || {}) as Record<string, number>,
+                                      p.contract_value_ex_gst,
+                                      p.site_start_date,
+                                      (p.claim_stage_statuses || {}) as Record<string, string>,
+                                      Array.isArray(p.variations) ? p.variations : [],
+                                    );
+                                    projected.forEach(pc => {
+                                      if (pc.monthKey !== mk) return;
+                                      if (claims.some(c => c.project_id === pc.projectId && c.claim_type === pc.stage)) return;
+                                      projectedPending++;
+                                    });
+                                  });
+                                  const total = pendingCount + projectedPending;
+                                  if (total === 0) return null;
+                                  return (
+                                    <span className="text-[9px] font-medium text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/40 rounded-full px-1.5 py-px">
+                                      {total} pending
+                                    </span>
+                                  );
+                                })()}
                               </div>
                             </div>
                           );
