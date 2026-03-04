@@ -39,9 +39,12 @@ function formatDate(d: string) {
 }
 
 export default function ClaimsMetrics() {
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(now));
+
   const { projects } = useProjects();
 
-  const { data: moves = [] } = useQuery({
+  const { data: allMoves = [] } = useQuery({
     queryKey: ['claim-moves-all'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,6 +55,16 @@ export default function ClaimsMetrics() {
       return data as ClaimMove[];
     },
   });
+
+  // Filter moves to selected month
+  const moves = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return allMoves.filter(m => {
+      const d = new Date(m.moved_at);
+      return isWithinInterval(d, { start: monthStart, end: monthEnd });
+    });
+  }, [allMoves, selectedMonth]);
 
   const projectMap = useMemo(() => {
     const map = new Map<string, ProjectRow>();
