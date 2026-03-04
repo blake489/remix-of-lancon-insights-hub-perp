@@ -6,7 +6,14 @@ export type CalendarEventType =
   | 'revised-completion'
   | 'claim-deadline'
   | 'eot-deadline'
-  | 'project-start';
+  | 'project-start'
+  | 'claim-projected'
+  | 'claim-confirmed'
+  | 'claim-claimed'
+  | 'variation-due'
+  | 'rain-eot'
+  | 'public-holiday'
+  | 'new-business';
 
 export interface CalendarEvent {
   id: string;
