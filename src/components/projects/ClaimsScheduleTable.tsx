@@ -110,6 +110,20 @@ export function ClaimsScheduleTable({
   const totalPercent = rows.reduce((s, r) => s + r.percent, 0);
   const cumWeeks = cumulativeWeeks(rows);
 
+  const lockedTooltip = (children: React.ReactNode) =>
+    isLocked ? (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>{children}</TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[220px] text-xs">
+            <p>Schedule is locked because a site start date is set. Use <span className="font-semibold text-primary">Claims Papi</span> to move claims.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : (
+      <>{children}</>
+    );
+
   const renderDatePicker = (label: string, value?: string, onChange?: (date: string) => void) => (
     <Popover>
       <PopoverTrigger asChild>
