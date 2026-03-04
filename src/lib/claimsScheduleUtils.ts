@@ -1,5 +1,6 @@
 import { addDays, format } from 'date-fns';
 import { defaultSchedules, ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
+import { Variation } from '@/components/projects/VariationsSection';
 
 export interface ProjectedClaim {
   projectId: string;
