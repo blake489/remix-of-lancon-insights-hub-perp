@@ -18,7 +18,7 @@ import {
   endOfMonth, 
   addMonths, 
   subMonths, 
-  addDays,
+  
 } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { CalendarEvent } from '@/types/calendar';
