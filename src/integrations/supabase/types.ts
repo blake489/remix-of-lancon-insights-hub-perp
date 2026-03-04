@@ -655,6 +655,50 @@ export type Database = {
         }
         Relationships: []
       }
+      site_weekly_activities: {
+        Row: {
+          client_message: boolean
+          created_at: string
+          hs_walk: boolean
+          id: string
+          photos: number
+          project_id: string
+          updated_at: string
+          updated_by: string | null
+          week_start: string
+        }
+        Insert: {
+          client_message?: boolean
+          created_at?: string
+          hs_walk?: boolean
+          id?: string
+          photos?: number
+          project_id: string
+          updated_at?: string
+          updated_by?: string | null
+          week_start: string
+        }
+        Update: {
+          client_message?: boolean
+          created_at?: string
+          hs_walk?: boolean
+          id?: string
+          photos?: number
+          project_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_weekly_activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       source_form_fields: {
         Row: {
           created_at: string
