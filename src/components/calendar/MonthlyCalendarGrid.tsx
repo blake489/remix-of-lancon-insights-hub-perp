@@ -161,18 +161,23 @@ export function MonthlyCalendarGrid({
               <ScrollArea className="h-[60px]">
                 <div className="space-y-0.5">
                   {/* System events first */}
-                  {dayEvents.system.slice(0, 2).map((event) => (
-                    <div
-                      key={event.id}
-                      className={cn(
-                        'text-[10px] px-1.5 py-0.5 rounded truncate',
-                        systemEventColors[event.type] || 'bg-gray-500 text-white'
-                      )}
-                      title={event.title}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
+                  {dayEvents.system.slice(0, 2).map((event) => {
+                    const isClickable = claimEventTypes.has(event.type) && !!event.projectId;
+                    return (
+                      <div
+                        key={event.id}
+                        className={cn(
+                          'text-[10px] px-1.5 py-0.5 rounded truncate',
+                          systemEventColors[event.type] || 'bg-gray-500 text-white',
+                          isClickable && 'cursor-pointer hover:opacity-80 hover:ring-1 hover:ring-white/40'
+                        )}
+                        title={isClickable ? `${event.title} — Click to open in Claims Papi` : event.title}
+                        onClick={isClickable ? (e) => handleSystemEventClick(event, e) : undefined}
+                      >
+                        {event.title}
+                      </div>
+                    );
+                  })}
 
                   {/* DB events */}
                   {dayEvents.db.slice(0, 3 - Math.min(dayEvents.system.length, 2)).map((event) => (
