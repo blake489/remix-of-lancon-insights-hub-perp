@@ -207,9 +207,10 @@ export function ClaimsScheduleTable({
                         <Input
                           type="number"
                           min={0}
-                          className="w-16 h-7 text-xs text-right tabular-nums p-1"
+                          className={cn("w-16 h-7 text-xs text-right tabular-nums p-1", isLocked && "opacity-60")}
                           value={row.timeValue}
                           onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
+                          disabled={isLocked}
                         />
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {row.timeUnit}
