@@ -19,6 +19,7 @@ import { CalendarEventDB, CalendarEventCategory } from '@/hooks/useCalendarEvent
 import { CalendarEvent } from '@/types/calendar';
 import { cn } from '@/lib/utils';
 import { mockProjects } from '@/data/mockData';
+import { useNavigate } from 'react-router-dom';
 
 interface EventListProps {
   selectedDate: Date;
