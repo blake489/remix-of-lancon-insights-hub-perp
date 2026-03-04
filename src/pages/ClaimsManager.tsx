@@ -200,7 +200,7 @@ export default function ClaimsManager() {
         p.contract_value_ex_gst,
         p.site_start_date,
         (p.claim_stage_statuses || {}) as Record<string, string>,
-        (Array.isArray((p as any).variations) ? (p as any).variations : []),
+        Array.isArray(p.variations) ? p.variations : [],
       );
       projected.forEach(pc => {
         const half = getHalf(format(pc.projectedDate, 'yyyy-MM-dd'));
