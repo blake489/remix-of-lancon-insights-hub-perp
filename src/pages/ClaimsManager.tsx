@@ -276,6 +276,33 @@ export default function ClaimsManager() {
     return map;
   }, [claims, months, projects]);
 
+  // Pending claim counts per month (planned + confirmed actuals + projected without actuals)
+  const pendingCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    claims.forEach(c => {
+      if (c.status === 'planned' || c.status === 'confirmed') {
+        map.set(c.month_key, (map.get(c.month_key) || 0) + 1);
+      }
+    });
+    (projects || []).forEach((p: ProjectRow) => {
+      if (!p.start_date || p.contract_value_ex_gst <= 0) return;
+      const projected = computeProjectedClaims(
+        p.id, p.start_date,
+        (p.schedule_type || 'standard') as ClaimScheduleType,
+        (p.custom_timeframes || {}) as Record<string, number>,
+        p.contract_value_ex_gst,
+        p.site_start_date,
+        (p.claim_stage_statuses || {}) as Record<string, string>,
+        Array.isArray(p.variations) ? p.variations : [],
+      );
+      projected.forEach(pc => {
+        if (claims.some(c => c.project_id === pc.projectId && c.claim_type === pc.stage)) return;
+        map.set(pc.monthKey, (map.get(pc.monthKey) || 0) + 1);
+      });
+    });
+    return map;
+  }, [claims, projects]);
+
   // Full month totals for the header
   const monthTotals = useMemo(() => {
     const map = new Map<string, number>();
