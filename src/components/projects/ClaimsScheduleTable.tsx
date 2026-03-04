@@ -100,6 +100,7 @@ export function ClaimsScheduleTable({
   stageClaimedDates,
   onStageClaimedDateChange,
 }: ClaimsScheduleTableProps) {
+  const isLocked = !!siteStartDate;
   const baseRows = defaultSchedules[scheduleType];
   const rows = baseRows.map(r => ({
     ...r,
@@ -141,10 +142,17 @@ export function ClaimsScheduleTable({
     <fieldset className="space-y-3 border-2 border-amber-400/30 bg-amber-500/[0.03] rounded-lg px-3 py-3 ring-1 ring-amber-400/10 transition-all duration-300">
       <legend className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider px-1.5">📅 Claims Schedule</legend>
 
+      {isLocked && (
+        <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-md px-3 py-2 text-xs text-primary">
+          <span className="font-semibold">🔒 Schedule locked</span>
+          <span className="text-muted-foreground">— Site start date is set. Claim movements are tracked via Claims Papi.</span>
+        </div>
+      )}
+
       <div className="space-y-1">
         <Label className="text-[11px] font-medium text-muted-foreground">Schedule Type *</Label>
-        <Select value={scheduleType} onValueChange={(v) => onScheduleTypeChange(v as ClaimScheduleType)}>
-          <SelectTrigger className="h-9 text-sm font-medium">
+        <Select value={scheduleType} onValueChange={(v) => onScheduleTypeChange(v as ClaimScheduleType)} disabled={isLocked}>
+          <SelectTrigger className={cn("h-9 text-sm font-medium", isLocked && "opacity-60")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -199,9 +207,10 @@ export function ClaimsScheduleTable({
                         <Input
                           type="number"
                           min={0}
-                          className="w-16 h-7 text-xs text-right tabular-nums p-1"
+                          className={cn("w-16 h-7 text-xs text-right tabular-nums p-1", isLocked && "opacity-60")}
                           value={row.timeValue}
                           onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
+                          disabled={isLocked}
                         />
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {row.timeUnit}
@@ -223,6 +232,7 @@ export function ClaimsScheduleTable({
                       <Select
                         value={stageStatuses?.[row.stage] || 'planned'}
                         onValueChange={v => onStageStatusChange?.(row.stage, v)}
+                        disabled={isLocked}
                       >
                         <SelectTrigger className={cn(
                           "h-7 text-[10px] font-semibold w-[100px] mx-auto",
