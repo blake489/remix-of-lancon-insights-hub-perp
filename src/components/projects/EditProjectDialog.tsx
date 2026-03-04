@@ -255,6 +255,25 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, onDel
           </div>
         </fieldset>
 
+        {/* Documents */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documents</legend>
+          <div className="grid grid-cols-2 gap-2">
+            <PdfUploadField
+              label="Approved Plans"
+              value={getVal('plans_pdf_path') || null}
+              onChange={v => updateField('plans_pdf_path', v || '')}
+              projectId={currentProject.id}
+            />
+            <PdfUploadField
+              label="Approved Specs"
+              value={getVal('specs_pdf_path') || null}
+              onChange={v => updateField('specs_pdf_path', v || '')}
+              projectId={currentProject.id}
+            />
+          </div>
+        </fieldset>
+
         {/* Contract Value — highlighted as key tracking area */}
         <fieldset className="space-y-1.5 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-3 py-3 ring-1 ring-blue-400/10 transition-all duration-300">
           <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">💰 Contract Value</legend>
@@ -280,63 +299,6 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, onDel
             )}
           </div>
           <VariationsSection variations={currentVariations} onChange={handleVariationsChange} />
-        </fieldset>
-
-        {/* Forecast Financials — highlighted as primary tracking area */}
-        <fieldset className="space-y-1.5 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-3 py-3 ring-1 ring-primary/10">
-          <legend className="text-[10px] font-bold text-primary uppercase tracking-wider px-1.5">⚡ Forecast Financials</legend>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Forecast Cost</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} className="h-8 text-sm" />
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">Gross Profit</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="h-8 text-sm bg-muted" />
-            </div>
-            <div className="space-y-0.5">
-              <Label className="text-[11px]">GP%</Label>
-              <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="h-8 text-sm bg-muted" />
-            </div>
-          </div>
-          {currentProject && (
-            (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
-            (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
-          ) && (
-            <div className="space-y-1 border rounded p-2 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-              <Label htmlFor="forecast-reason" className="text-[11px] font-medium">
-                Reason for change <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="forecast-reason"
-                value={forecastReason}
-                onChange={e => setForecastReason(e.target.value)}
-                placeholder="e.g. Subcontractor requote, material price increase..."
-                className="min-h-[40px] text-xs"
-                required
-              />
-            </div>
-          )}
-          <ForecastAuditTrail projectId={currentProject.id} />
-        </fieldset>
-
-        {/* Documents */}
-        <fieldset className="space-y-1.5">
-          <legend className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Documents</legend>
-          <div className="grid grid-cols-2 gap-2">
-            <PdfUploadField
-              label="Approved Plans"
-              value={getVal('plans_pdf_path') || null}
-              onChange={v => updateField('plans_pdf_path', v || '')}
-              projectId={currentProject.id}
-            />
-            <PdfUploadField
-              label="Approved Specs"
-              value={getVal('specs_pdf_path') || null}
-              onChange={v => updateField('specs_pdf_path', v || '')}
-              projectId={currentProject.id}
-            />
-          </div>
         </fieldset>
 
         <ClaimsScheduleTable
@@ -375,6 +337,44 @@ export function EditProjectDialog({ project, open, onOpenChange, onSubmit, onDel
             updateField('claim_stage_claimed_dates', JSON.stringify(current));
           }}
         />
+
+        {/* Forecast Financials — highlighted as primary tracking area */}
+        <fieldset className="space-y-1.5 border-2 border-primary/30 bg-primary/[0.03] rounded-lg px-3 py-3 ring-1 ring-primary/10">
+          <legend className="text-[10px] font-bold text-primary uppercase tracking-wider px-1.5">⚡ Forecast Financials</legend>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Forecast Cost</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_cost')} onChange={e => handleForecastCostChange(e.target.value)} className="h-8 text-sm" />
+            </div>
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">Gross Profit</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gross_profit')} readOnly className="h-8 text-sm bg-muted" />
+            </div>
+            <div className="space-y-0.5">
+              <Label className="text-[11px]">GP%</Label>
+              <Input type="number" step="0.01" value={getVal('forecast_gp_percent')} readOnly className="h-8 text-sm bg-muted" />
+            </div>
+          </div>
+          {currentProject && (
+            (parseFloat(getVal('forecast_cost', '0')) || 0) !== currentProject.forecast_cost ||
+            (parseFloat(getVal('contract_value_ex_gst', '0')) || 0) !== currentProject.contract_value_ex_gst
+          ) && (
+            <div className="space-y-1 border rounded p-2 bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+              <Label htmlFor="forecast-reason" className="text-[11px] font-medium">
+                Reason for change <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="forecast-reason"
+                value={forecastReason}
+                onChange={e => setForecastReason(e.target.value)}
+                placeholder="e.g. Subcontractor requote, material price increase..."
+                className="min-h-[40px] text-xs"
+                required
+              />
+            </div>
+          )}
+          <ForecastAuditTrail projectId={currentProject.id} />
+        </fieldset>
 
         <div className="flex justify-between items-center pt-1">
           {onDelete ? (
