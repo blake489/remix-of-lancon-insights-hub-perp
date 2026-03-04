@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Search, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { FileText, Search, Archive, RotateCcw, Trash2, Home } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +59,9 @@ export default function Projects() {
   const [filterManager, setFilterManager] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
+  const [hideOwnJobs, setHideOwnJobs] = useState(false);
+
+  const OWN_JOBS = ['28 Durimbil St', '117A Tranters Ave'];
 
   const siteManagerList = useMemo(() => {
     const set = new Set(projects.map(p => p.site_manager).filter(Boolean) as string[]);
@@ -65,6 +70,7 @@ export default function Projects() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
+      if (hideOwnJobs && OWN_JOBS.some(name => p.job_name.includes(name))) return false;
       if (filterManager !== 'all' && p.site_manager !== filterManager) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -75,7 +81,7 @@ export default function Projects() {
       }
       return true;
     });
-  }, [projects, filterManager, searchQuery]);
+  }, [projects, filterManager, searchQuery, hideOwnJobs, OWN_JOBS]);
 
   const handleToggleEdit = (project: ProjectRow | null) => {
     if (!project) { setEditingProject(null); return; }
@@ -117,6 +123,11 @@ export default function Projects() {
                 {siteManagerList.map(sm => <SelectItem key={sm} value={sm}>{sm}</SelectItem>)}
               </SelectContent>
             </Select>
+            <div className="flex items-center gap-2 border rounded-md px-3 h-9 bg-background">
+              <Home className="h-3.5 w-3.5 text-amber-500" />
+              <Label htmlFor="hide-own" className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap">Hide Own</Label>
+              <Switch id="hide-own" checked={hideOwnJobs} onCheckedChange={setHideOwnJobs} className="scale-75" />
+            </div>
             <AddProjectDialog
               onSubmit={(data) => {
                 addProject.mutate(data);

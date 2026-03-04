@@ -148,8 +148,13 @@ export function ProjectCategorySection({ label, projects, onEdit, onSubmitEdit, 
                   <TableRow className={cn("group cursor-pointer hover:bg-accent/50", isExpanded && "bg-accent/30")} onClick={() => onEdit?.(project)}>
                     <TableCell>
                       <div className="space-y-0.5">
-                        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <p className="font-semibold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           {project.address || project.job_name}
+                          {OWN_JOBS.some(name => project.job_name.includes(name)) && (
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-semibold border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+                              Own
+                            </Badge>
+                          )}
                         </p>
                         {project.client_name && (
                           <p className="text-xs text-muted-foreground">{project.client_name}</p>
