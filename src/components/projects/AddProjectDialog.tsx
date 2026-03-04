@@ -26,6 +26,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
   const { siteManagers } = useSiteManagers();
   const [open, setOpen] = useState(defaultOpen);
   const [customTimeframes, setCustomTimeframes] = useState<Record<string, number>>({});
+  const [variations, setVariations] = useState<Variation[]>([]);
   const [form, setForm] = useState({
     job_name: prefillClientName || '',
     client_name: prefillClientName || '',
