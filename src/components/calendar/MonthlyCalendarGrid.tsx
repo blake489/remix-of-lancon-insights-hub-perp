@@ -60,6 +60,17 @@ export function MonthlyCalendarGrid({
   systemEvents,
   onEventClick,
 }: MonthlyCalendarGridProps) {
+  const navigate = useNavigate();
+
+  const claimEventTypes = new Set(['claim-projected', 'claim-confirmed', 'claim-claimed', 'variation-due']);
+
+  const handleSystemEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
+    if (claimEventTypes.has(event.type) && event.projectId) {
+      e.stopPropagation();
+      navigate(`/claims?project=${event.projectId}`);
+    }
+  };
+
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
