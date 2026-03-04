@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
@@ -164,15 +164,23 @@ const Dashboard = () => {
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
-  const sorted = useMemo(() => {
+  const groupedProjects = useMemo(() => {
     const active = projects.filter(p => p.status === 'Active');
-    return [...active].sort((a, b) => {
+    const sortFn = (a: typeof active[0], b: typeof active[0]) => {
       const aVal = a[sortField] as number | string;
       const bVal = b[sortField] as number | string;
       if (typeof aVal === 'string') return sortDir === 'asc' ? (aVal as string).localeCompare(bVal as string) : (bVal as string).localeCompare(aVal as string);
       return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-    });
+    };
+    const categories = ['pre_construction', 'construction'] as const;
+    return categories.map(cat => ({
+      category: cat,
+      label: cat === 'pre_construction' ? 'Pre Construction' : 'Construction',
+      projects: active.filter(p => p.category === cat).sort(sortFn),
+    }));
   }, [projects, sortField, sortDir]);
+
+  const sorted = useMemo(() => groupedProjects.flatMap(g => g.projects), [groupedProjects]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -321,44 +329,82 @@ const Dashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sorted.map(p => (
-                        <TableRow key={p.id} className="group">
-                          <TableCell>
-                            <p className="font-medium text-foreground text-sm">{p.job_name}</p>
-                            {p.client_name && <p className="text-[11px] text-muted-foreground">{p.client_name}</p>}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={cn(
-                              "text-[10px] capitalize",
-                              p.category === 'pre_construction' && 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
-                              p.category === 'construction' && 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-                              p.category === 'handover' && 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
-                            )}>{catLabel(p.category)}</Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground font-medium">{p.site_manager || '—'}</TableCell>
-                          <TableCell className="text-right font-semibold tabular-nums text-sm">
-                            {p.contract_value_ex_gst > 0 ? fmt(p.contract_value_ex_gst) : '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-muted-foreground tabular-nums text-sm">
-                            {p.forecast_cost > 0 ? fmt(p.forecast_cost) : '—'}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums text-sm font-medium">
-                            {p.forecast_gross_profit > 0 ? fmt(p.forecast_gross_profit) : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {p.forecast_gp_percent > 0 ? (
-                              <div className="flex items-center gap-2">
-                                <TrafficLight status={gpStatus(p.forecast_gp_percent, t)} size="sm" />
-                                <span className={cn('font-bold tabular-nums text-sm', gpTextColor(p.forecast_gp_percent, t))}>
-                                  {p.forecast_gp_percent.toFixed(1)}%
+                      {groupedProjects.map(group => {
+                        if (group.projects.length === 0) return null;
+                        const grpContract = group.projects.reduce((s, p) => s + p.contract_value_ex_gst, 0);
+                        const grpCost = group.projects.reduce((s, p) => s + p.forecast_cost, 0);
+                        const grpGP = group.projects.reduce((s, p) => s + p.forecast_gross_profit, 0);
+                        const grpWGp = grpContract > 0 ? (grpGP / grpContract) * 100 : 0;
+                        return (
+                          <React.Fragment key={group.category}>
+                            {/* Category Header */}
+                            <TableRow className="bg-muted/60 border-b-0">
+                              <TableCell colSpan={7} className="py-2">
+                                <span className={cn(
+                                  "text-xs font-bold uppercase tracking-wider",
+                                  group.category === 'pre_construction' ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
+                                )}>
+                                  {group.label} ({group.projects.length})
                                 </span>
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              </TableCell>
+                            </TableRow>
+                            {group.projects.map(p => (
+                              <TableRow key={p.id} className="group">
+                                <TableCell>
+                                  <p className="font-medium text-foreground text-sm">{p.job_name}</p>
+                                  {p.client_name && <p className="text-[11px] text-muted-foreground">{p.client_name}</p>}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={cn(
+                                    "text-[10px] capitalize",
+                                    p.category === 'pre_construction' && 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+                                    p.category === 'construction' && 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
+                                  )}>{catLabel(p.category)}</Badge>
+                                </TableCell>
+                                <TableCell className="text-xs text-muted-foreground font-medium">{p.site_manager || '—'}</TableCell>
+                                <TableCell className="text-right font-semibold tabular-nums text-sm">
+                                  {p.contract_value_ex_gst > 0 ? fmt(p.contract_value_ex_gst) : '—'}
+                                </TableCell>
+                                <TableCell className="text-right text-muted-foreground tabular-nums text-sm">
+                                  {p.forecast_cost > 0 ? fmt(p.forecast_cost) : '—'}
+                                </TableCell>
+                                <TableCell className="text-right tabular-nums text-sm font-medium">
+                                  {p.forecast_gross_profit > 0 ? fmt(p.forecast_gross_profit) : '—'}
+                                </TableCell>
+                                <TableCell>
+                                  {p.forecast_gp_percent > 0 ? (
+                                    <div className="flex items-center gap-2">
+                                      <TrafficLight status={gpStatus(p.forecast_gp_percent, t)} size="sm" />
+                                      <span className={cn('font-bold tabular-nums text-sm', gpTextColor(p.forecast_gp_percent, t))}>
+                                        {p.forecast_gp_percent.toFixed(1)}%
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {/* Category Subtotal */}
+                            <TableRow className="border-t border-border/50 bg-muted/30">
+                              <TableCell className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{group.label} Subtotal</TableCell>
+                              <TableCell />
+                              <TableCell />
+                              <TableCell className="text-right tabular-nums text-xs font-semibold">{fmt(grpContract)}</TableCell>
+                              <TableCell className="text-right tabular-nums text-xs text-muted-foreground font-semibold">{fmt(grpCost)}</TableCell>
+                              <TableCell className="text-right tabular-nums text-xs font-semibold">{fmt(grpGP)}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <TrafficLight status={gpStatus(grpWGp, t)} size="sm" />
+                                  <span className={cn('font-bold tabular-nums text-xs', gpTextColor(grpWGp, t))}>
+                                    {grpWGp.toFixed(1)}%
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </React.Fragment>
+                        );
+                      })}
                       {sorted.length > 0 && (() => {
                         const totContract = sorted.reduce((s, p) => s + p.contract_value_ex_gst, 0);
                         const totCost = sorted.reduce((s, p) => s + p.forecast_cost, 0);
@@ -366,7 +412,7 @@ const Dashboard = () => {
                         const wGp = totContract > 0 ? (totGP / totContract) * 100 : 0;
                         return (
                           <TableRow className="border-t-2 border-border bg-muted/40 font-semibold">
-                            <TableCell className="text-xs uppercase tracking-wide text-muted-foreground">Totals</TableCell>
+                            <TableCell className="text-xs uppercase tracking-wide text-muted-foreground">Grand Total</TableCell>
                             <TableCell />
                             <TableCell />
                             <TableCell className="text-right tabular-nums text-sm">{fmt(totContract)}</TableCell>
