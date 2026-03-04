@@ -144,7 +144,7 @@ const Dashboard = () => {
     const active = projects.filter(p => p.status === 'Active' && !OWN_JOBS.includes(p.job_name.toLowerCase()) && (p.category === 'pre_construction' || p.category === 'construction'));
     const totalContract = active.reduce((s, p) => s + (p.contract_value_ex_gst || 0), 0);
     const totalProfit = active.reduce((s, p) => s + (p.forecast_gross_profit || 0), 0);
-    return totalContract > 0 ? (totalProfit / totalContract) * 100 : 0;
+    return { percent: totalContract > 0 ? (totalProfit / totalContract) * 100 : 0, count: active.length };
   }, [projects]);
 
   // Adjacent month pure profit calculations
@@ -152,7 +152,7 @@ const Dashboard = () => {
     const now = new Date();
     const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
     const nextMonthKey = format(addMonths(now, 1), 'yyyy-MM');
-    const gpRate = (activeGpPercent ?? 0) / 100;
+    const gpRate = (activeGpPercent?.percent ?? 0) / 100;
     const getRevenue = (mk: string) => claims.filter(c => c.month_key === mk).reduce((s, c) => s + Math.abs(c.amount), 0);
     return {
       lastMonth: { label: format(subMonths(now, 1), 'MMM yyyy'), pureProfit: getRevenue(lastMonthKey) * gpRate - lastMonthOverhead },
@@ -270,7 +270,8 @@ const Dashboard = () => {
             selectedFortnight={selectedFortnight}
             overheadOverride={overheadOverride}
             onOverheadChange={setOverheadOverride}
-            activeGpPercent={activeGpPercent}
+            activeGpPercent={activeGpPercent?.percent}
+            activeGpContractCount={activeGpPercent?.count}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
             lastMonthOverhead={lastMonthOverhead}
