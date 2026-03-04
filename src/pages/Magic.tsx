@@ -206,13 +206,13 @@ const Magic = () => {
             previousFortnightKPI={previousFortnightKPI}
             selectedMonth={selectedMonth}
             selectedFortnight={selectedFortnight}
-            overheadOverride={overheadOverride}
+            overheadOverride={overheadOverride ?? undefined}
             onOverheadChange={setOverheadOverride}
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
-            lastMonthOverhead={lastMonthOverhead}
-            nextMonthOverhead={nextMonthOverhead}
+            lastMonthOverhead={lastMonthOverhead ?? undefined}
+            nextMonthOverhead={nextMonthOverhead ?? undefined}
             onLastMonthOverheadChange={setLastMonthOverhead}
             onNextMonthOverheadChange={setNextMonthOverhead}
             bhagTarget={bhagTarget}
