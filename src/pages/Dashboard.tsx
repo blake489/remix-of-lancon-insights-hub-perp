@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
@@ -21,6 +21,7 @@ import { useCalendarEvents } from '@/hooks/useCalendarEvents';
 
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { useClaims } from '@/hooks/useClaims';
+import { useToast } from '@/hooks/use-toast';
 import { gpStatus, gpTextColor, GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import {
   getCurrentKPIData,
@@ -28,6 +29,7 @@ import {
   getPreviousFortnightKPIData,
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { format, addDays, isAfter, parseISO, addMonths, subMonths } from 'date-fns';
 import {
@@ -90,9 +92,42 @@ const Dashboard = () => {
   const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
   const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
   const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  const [bhagTarget, setBhagTarget] = useState<number>(1_000_000);
+  const [bhagLoaded, setBhagLoaded] = useState(false);
+  const { toast } = useToast();
 
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
+
+  useEffect(() => {
+    if (!bhagLoaded && kpi?.bhag_target != null) {
+      setBhagTarget(kpi.bhag_target);
+      setBhagLoaded(true);
+    }
+  }, [kpi?.bhag_target, bhagLoaded]);
+
+  const handleBhagChange = (value: number) => {
+    setBhagTarget(value);
+  };
+
+  const handleBhagCommit = async (value: number) => {
+    setBhagTarget(value);
+    if (!kpi?.id) return;
+
+    const { error } = await supabase
+      .from('kpi_settings')
+      .update({ bhag_target: value })
+      .eq('id', kpi.id);
+
+    if (error) {
+      setBhagTarget(kpi.bhag_target);
+      toast({
+        title: 'Unable to save BHAG target',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Claims revenue for current month
   const currentMonthKey = format(new Date(), 'yyyy-MM');
@@ -242,6 +277,9 @@ const Dashboard = () => {
             nextMonthOverhead={nextMonthOverhead}
             onLastMonthOverheadChange={setLastMonthOverhead}
             onNextMonthOverheadChange={setNextMonthOverhead}
+            bhagTarget={bhagTarget}
+            onBhagChange={handleBhagChange}
+            onBhagCommit={handleBhagCommit}
           />
 
           {/* GP% Breakdown Table */}
