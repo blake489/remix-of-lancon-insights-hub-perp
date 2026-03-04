@@ -45,6 +45,9 @@ export function EventList({
   onCreateEvent,
   onEditEvent,
 }: EventListProps) {
+  const navigate = useNavigate();
+  const claimEventTypes = new Set(['claim-projected', 'claim-confirmed', 'claim-claimed', 'variation-due']);
+
   // Filter events for selected date
   const dayDbEvents = dbEvents.filter((e) =>
     isSameDay(new Date(e.start_time), selectedDate)
@@ -59,6 +62,12 @@ export function EventList({
     if (!projectId) return null;
     const project = mockProjects.find((p) => p.id === projectId);
     return project?.jobName || null;
+  };
+
+  const handleSystemEventClick = (event: CalendarEvent) => {
+    if (claimEventTypes.has(event.type) && event.projectId) {
+      navigate(`/claims?project=${event.projectId}`);
+    }
   };
 
   return (
