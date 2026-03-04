@@ -246,6 +246,7 @@ export default function ClaimsManager() {
         p.contract_value_ex_gst,
         p.site_start_date,
         (p.claim_stage_statuses || {}) as Record<string, string>,
+        (Array.isArray(p.variations) ? p.variations : []) as any[],
       );
       projected.forEach(pc => {
         if (!months.includes(pc.monthKey)) return;
