@@ -74,7 +74,7 @@ export default function ClaimsLedger() {
   // Filter claims for the selected month
   const monthClaims = useMemo(() => {
     return claims
-      .filter(c => c.month_key === currentMonth)
+      .filter(c => c.month_key === currentMonth && c.status === 'claimed')
       .filter(c => {
         if (searchQuery) {
           const project = projectMap.get(c.project_id);
