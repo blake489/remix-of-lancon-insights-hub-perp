@@ -36,7 +36,6 @@ export function KPISettingsForm({ settings, isAdmin }: KPISettingsFormProps) {
     defaultValues: {
       monthly_revenue_target: settings.monthly_revenue_target,
       gp_percent_target: settings.gp_percent_target,
-      overhead_percent: settings.overhead_percent,
       gp_threshold_green: settings.gp_threshold_green,
       gp_threshold_orange: settings.gp_threshold_orange,
       revenue_threshold_green: settings.revenue_threshold_green,
