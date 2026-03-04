@@ -42,6 +42,13 @@ const systemEventColors: Record<string, string> = {
   'revised-completion': 'bg-red-500/80 text-white',
   'claim-deadline': 'bg-accent text-accent-foreground',
   'eot-deadline': 'bg-orange-500/80 text-white',
+  'claim-projected': 'bg-amber-400/80 text-amber-950',
+  'claim-confirmed': 'bg-sky-500/80 text-white',
+  'claim-claimed': 'bg-emerald-500/80 text-white',
+  'variation-due': 'bg-rose-500/80 text-white',
+  'rain-eot': 'bg-cyan-500/80 text-white',
+  'public-holiday': 'bg-red-600/80 text-white',
+  'new-business': 'bg-violet-500/80 text-white',
 };
 
 export function MonthlyCalendarGrid({
