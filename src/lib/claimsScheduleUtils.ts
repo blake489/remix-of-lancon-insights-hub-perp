@@ -1,5 +1,6 @@
 import { addDays, format } from 'date-fns';
 import { defaultSchedules, ClaimScheduleType } from '@/components/projects/ClaimsScheduleTable';
+import { Variation } from '@/components/projects/VariationsSection';
 
 export interface ProjectedClaim {
   projectId: string;
@@ -27,6 +28,7 @@ export function computeProjectedClaims(
   contractValueExGst: number,
   siteStartDate?: string | null,
   stageStatuses?: Record<string, string>,
+  variations?: Variation[],
 ): ProjectedClaim[] {
   if (!startDate || contractValueExGst <= 0) return [];
 
@@ -84,6 +86,27 @@ export function computeProjectedClaims(
       projectedDate,
       status: stageStatuses?.[row.stage] || 'planned',
     });
+  }
+
+  // Add variation claims — each generates its own tile
+  if (variations && variations.length > 0) {
+    for (const v of variations) {
+      if (!v.amount || v.amount <= 0) continue;
+      const dueDate = v.dueDate
+        ? new Date(v.dueDate + 'T00:00:00')
+        : (siteBase || contractBase); // fallback to a known date
+
+      results.push({
+        projectId,
+        stage: `Variation: ${v.description || 'Untitled'}`,
+        percent: 0, // not part of schedule %
+        amountExGst: v.amount,
+        amountIncGst: v.amount * 1.1,
+        monthKey: format(dueDate, 'yyyy-MM'),
+        projectedDate: dueDate,
+        status: stageStatuses?.[`var_${v.description}`] || 'planned',
+      });
+    }
   }
 
   return results;

@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { ProjectCategory, ProjectInsert } from '@/hooks/useProjects';
 import { useSiteManagers } from '@/hooks/useSiteManagers';
 import { ClaimsScheduleTable, ClaimScheduleType } from './ClaimsScheduleTable';
+import { VariationsSection, Variation } from './VariationsSection';
 import { PdfUploadField } from './PdfUploadField';
 import { deriveCategory } from '@/lib/deriveCategory';
 
@@ -25,6 +26,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
   const { siteManagers } = useSiteManagers();
   const [open, setOpen] = useState(defaultOpen);
   const [customTimeframes, setCustomTimeframes] = useState<Record<string, number>>({});
+  const [variations, setVariations] = useState<Variation[]>([]);
   const [form, setForm] = useState({
     job_name: prefillClientName || '',
     client_name: prefillClientName || '',
@@ -56,6 +58,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
       forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
     });
     setCustomTimeframes({});
+    setVariations([]);
     setPlansPdf(null);
     setSpecsPdf(null);
   };
@@ -83,6 +86,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
       forecast_gp_percent: parseFloat(form.forecast_gp_percent) || 0,
       schedule_type: form.schedule_type,
       custom_timeframes: customTimeframes,
+      variations: variations,
       created_by: null,
       plans_pdf_path: plansPdf,
       specs_pdf_path: specsPdf,
@@ -190,19 +194,25 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
             onTimeframeChange={(stage, value) => setCustomTimeframes(prev => ({ ...prev, [stage]: value }))}
           />
 
-          {/* Contract Value */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Value</legend>
+          {/* Contract Value — highlighted as key tracking area */}
+          <fieldset className="space-y-4 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-4 py-4 ring-1 ring-blue-400/10 transition-all duration-300">
+            <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">💰 Contract Value</legend>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contract_ex">Contract Value (ex GST)</Label>
                 <Input id="contract_ex" type="number" step="0.01" value={form.contract_value_ex_gst} onChange={e => handleExGstChangeWithForecast(e.target.value)} placeholder="0.00" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contract_inc">Contract Value (inc GST)</Label>
-                <Input id="contract_inc" type="number" step="0.01" value={form.contract_value_inc_gst} onChange={e => updateField('contract_value_inc_gst', e.target.value)} placeholder="Auto-calculated" />
+                <Label htmlFor="contract_inc">Contract Value (inc GST) <span className="text-muted-foreground">(auto)</span></Label>
+                <Input id="contract_inc" type="number" step="0.01" value={form.contract_value_inc_gst} readOnly className="bg-muted/50 tabular-nums" placeholder="Auto-calculated" />
               </div>
             </div>
+          </fieldset>
+
+          {/* Variations — separate from schedule of payments */}
+          <fieldset className="space-y-4 border-2 border-blue-400/30 bg-blue-500/[0.03] rounded-lg px-4 py-4 ring-1 ring-blue-400/10 transition-all duration-300">
+            <legend className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1.5">📋 Variations</legend>
+            <VariationsSection variations={variations} onChange={setVariations} />
           </fieldset>
 
           {/* Financials — highlighted as primary tracking area */}
