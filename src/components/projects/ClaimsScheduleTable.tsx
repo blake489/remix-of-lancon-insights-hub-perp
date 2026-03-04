@@ -164,18 +164,20 @@ export function ClaimsScheduleTable({
         </div>
       )}
 
-      <div className="space-y-1">
-        <Label className="text-[11px] font-medium text-muted-foreground">Schedule Type *</Label>
-        <Select value={scheduleType} onValueChange={(v) => onScheduleTypeChange(v as ClaimScheduleType)} disabled={isLocked}>
-          <SelectTrigger className={cn("h-9 text-sm font-medium", isLocked && "opacity-60")}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="standard">Standard (No Retaining Wall)</SelectItem>
-            <SelectItem value="retaining_wall">With Retaining Wall</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {lockedTooltip(
+        <div className="space-y-1">
+          <Label className="text-[11px] font-medium text-muted-foreground">Schedule Type *</Label>
+          <Select value={scheduleType} onValueChange={(v) => onScheduleTypeChange(v as ClaimScheduleType)} disabled={isLocked}>
+            <SelectTrigger className={cn("h-9 text-sm font-medium", isLocked && "opacity-60 cursor-not-allowed")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="standard">Standard (No Retaining Wall)</SelectItem>
+              <SelectItem value="retaining_wall">With Retaining Wall</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="rounded-md border border-border/60 overflow-hidden bg-card/60">
         <Table>
