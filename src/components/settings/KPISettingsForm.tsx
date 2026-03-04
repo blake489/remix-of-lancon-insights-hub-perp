@@ -64,8 +64,6 @@ export function KPISettingsForm({ settings, isAdmin }: KPISettingsFormProps) {
     });
   };
 
-  const calculatedOverhead = (form.watch('monthly_revenue_target') * form.watch('overhead_percent')) / 100;
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -77,7 +75,7 @@ export function KPISettingsForm({ settings, isAdmin }: KPISettingsFormProps) {
               Magic Equation Targets
             </CardTitle>
             <CardDescription>
-              Core business performance targets used for KPI calculations
+              Core business performance targets used for KPI calculations. Overheads are managed on the Magic Equation dashboard.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
@@ -125,31 +123,6 @@ export function KPISettingsForm({ settings, isAdmin }: KPISettingsFormProps) {
                   </FormControl>
                   <FormDescription>
                     Target gross profit percentage
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="overhead_percent"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Overhead Percentage
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      {...field}
-                      disabled={!isAdmin}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Monthly overheads: {formatCurrency(calculatedOverhead)}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
