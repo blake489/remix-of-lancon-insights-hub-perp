@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import {
   Table,
   TableBody,
@@ -33,15 +33,12 @@ const fmt = (v: number) => {
 };
 
 const pct = (v: number) => `${v.toFixed(1)}%`;
-function BhagInput({
-  value,
-  onChange,
-  onCommit,
-}: {
+
+const BhagInput = forwardRef<HTMLInputElement, {
   value: number;
   onChange?: (v: number) => void;
   onCommit?: (v: number) => void;
-}) {
+}>(({ value, onChange, onCommit }, ref) => {
   const [localValue, setLocalValue] = useState(String(value));
   const [isEditing, setIsEditing] = useState(false);
 
@@ -61,20 +58,21 @@ function BhagInput({
     <div className="flex items-center justify-end gap-1.5">
       <span className="text-xs text-muted-foreground font-medium">$</span>
       <Input
+        ref={ref}
         type="text"
         inputMode="numeric"
         value={localValue}
         onFocus={() => setIsEditing(true)}
+        onClick={e => e.currentTarget.select()}
         onChange={e => {
           const raw = e.target.value.replace(/[^0-9]/g, '');
           setLocalValue(raw);
-          const liveValue = Math.max(0, parseInt(raw || '0', 10) || 0);
-          onChange?.(liveValue);
         }}
         onBlur={commit}
         onKeyDown={e => {
           if (e.key === 'Enter') {
             e.preventDefault();
+            commit();
             (e.currentTarget as HTMLInputElement).blur();
           }
         }}
@@ -82,7 +80,9 @@ function BhagInput({
       />
     </div>
   );
-}
+});
+
+BhagInput.displayName = 'BhagInput';
 
 export function ProfitMetricsTable({
   currentFortnightKPI,
