@@ -58,6 +58,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
       forecast_cost: '', forecast_gross_profit: '', forecast_gp_percent: '',
     });
     setCustomTimeframes({});
+    setVariations([]);
     setPlansPdf(null);
     setSpecsPdf(null);
   };
