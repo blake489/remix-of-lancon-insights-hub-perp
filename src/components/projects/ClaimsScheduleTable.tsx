@@ -232,6 +232,7 @@ export function ClaimsScheduleTable({
                       <Select
                         value={stageStatuses?.[row.stage] || 'planned'}
                         onValueChange={v => onStageStatusChange?.(row.stage, v)}
+                        disabled={isLocked}
                       >
                         <SelectTrigger className={cn(
                           "h-7 text-[10px] font-semibold w-[100px] mx-auto",
