@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { useClaims } from '@/hooks/useClaims';
+import { useSiteWeeklyActivities } from '@/hooks/useSiteWeeklyActivities';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +15,8 @@ import { TrafficLight } from '@/components/dashboard/TrafficLight';
 import { gpStatus, gpTextColor, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { cn } from '@/lib/utils';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
-import { ClipboardCheck, Camera, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isThisWeek } from 'date-fns';
+import { ClipboardCheck, Camera, Shield, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
 const fmt = (v: number) => {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -22,23 +24,19 @@ const fmt = (v: number) => {
   return `$${v.toFixed(0)}`;
 };
 
-interface ActivityRow {
-  projectId: string;
-  clientMessage: boolean;
-  photos: number;
-  hsWalk: boolean;
-}
-
 export default function SiteManagerEntry() {
   const { projects, isLoading: projLoading } = useProjects();
   const { claims } = useClaims();
   const { data: kpi } = useKPISettings();
   const t = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
 
-  const now = new Date();
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-  const currentMonthKey = format(now, 'yyyy-MM');
+  // Week navigation
+  const [selectedWeekStart, setSelectedWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const weekEnd = endOfWeek(selectedWeekStart, { weekStartsOn: 1 });
+  const isCurrentWeek = isThisWeek(selectedWeekStart, { weekStartsOn: 1 });
+  const currentMonthKey = format(new Date(), 'yyyy-MM');
+
+  const { getActivity, isRedFlagged, upsert, isComplete } = useSiteWeeklyActivities(selectedWeekStart);
 
   // Only construction projects
   const constructionProjects = useMemo(
@@ -57,29 +55,25 @@ export default function SiteManagerEntry() {
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [constructionProjects]);
 
-  // Local activity state keyed by projectId
-  const [activities, setActivities] = useState<Record<string, ActivityRow>>({});
-
-  const getActivity = (projectId: string): ActivityRow =>
-    activities[projectId] || { projectId, clientMessage: false, photos: 0, hsWalk: false };
-
-  const updateActivity = (projectId: string, field: keyof ActivityRow, value: boolean | number) => {
-    setActivities(prev => ({
-      ...prev,
-      [projectId]: { ...getActivity(projectId), [field]: value },
-    }));
-  };
+  const handleUpdate = useCallback((projectId: string, field: 'clientMessage' | 'photos' | 'hsWalk', value: boolean | number) => {
+    const current = getActivity(projectId);
+    const updated = { ...current, [field]: value };
+    upsert.mutate({
+      project_id: projectId,
+      client_message: updated.clientMessage,
+      photos: updated.photos,
+      hs_walk: updated.hsWalk,
+    });
+  }, [getActivity, upsert]);
 
   // Get current & next claim for a project
   const getProjectClaims = (projectId: string) => {
     const projectClaims = claims
       .filter(c => c.project_id === projectId)
       .sort((a, b) => a.claim_date.localeCompare(b.claim_date));
-
     const currentClaim = projectClaims.find(c => c.month_key === currentMonthKey);
     const futureClaims = projectClaims.filter(c => c.month_key > currentMonthKey);
     const nextClaim = futureClaims[0] || null;
-
     return { currentClaim, nextClaim };
   };
 
@@ -99,24 +93,54 @@ export default function SiteManagerEntry() {
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Site Manager — Weekly Entry</h1>
+                <h1 className="text-xl font-semibold text-foreground">Client Communication — Weekly Entry</h1>
                 <p className="text-sm text-muted-foreground">
-                  Week of {format(weekStart, 'dd MMM')} – {format(weekEnd, 'dd MMM yyyy')}
+                  Week of {format(selectedWeekStart, 'dd MMM')} – {format(weekEnd, 'dd MMM yyyy')}
                 </p>
               </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <ClipboardCheck className="h-4 w-4 text-blue-500" />
-                  Client Message
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Camera className="h-4 w-4 text-violet-500" />
-                  Photos
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-emerald-500" />
-                  H&S Walk
-                </span>
+              <div className="flex items-center gap-6">
+                {/* Week navigator */}
+                <div className="flex items-center gap-1 border rounded-lg bg-muted/30 p-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSelectedWeekStart(prev => subWeeks(prev, 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={isCurrentWeek ? 'default' : 'ghost'}
+                    size="sm"
+                    className="text-xs h-8 px-3"
+                    onClick={() => setSelectedWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+                  >
+                    This Week
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={isCurrentWeek}
+                    onClick={() => setSelectedWeekStart(prev => addWeeks(prev, 1))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <ClipboardCheck className="h-4 w-4 text-blue-500" />
+                    Client Message
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Camera className="h-4 w-4 text-violet-500" />
+                    Photos
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Shield className="h-4 w-4 text-emerald-500" />
+                    H&S Walk
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -200,13 +224,27 @@ export default function SiteManagerEntry() {
                           {managerProjects.map(p => {
                             const { currentClaim, nextClaim } = getProjectClaims(p.id);
                             const act = getActivity(p.id);
-                            const rowComplete = act.clientMessage && act.photos > 0 && act.hsWalk;
+                            const rowComplete = isComplete(act);
+                            const redFlag = isRedFlagged(p.id);
 
                             return (
-                              <TableRow key={p.id} className={cn(rowComplete && 'bg-emerald-50/30 dark:bg-emerald-950/10')}>
+                              <TableRow
+                                key={p.id}
+                                className={cn(
+                                  rowComplete && 'bg-emerald-50/30 dark:bg-emerald-950/10',
+                                  redFlag && !rowComplete && 'bg-destructive/5 dark:bg-destructive/10 border-l-2 border-l-destructive'
+                                )}
+                              >
                                 <TableCell>
-                                  <p className="font-medium text-sm text-foreground">{p.job_name}</p>
-                                  {p.address && <p className="text-[11px] text-muted-foreground">{p.address}</p>}
+                                  <div className="flex items-center gap-2">
+                                    {redFlag && !rowComplete && (
+                                      <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                                    )}
+                                    <div>
+                                      <p className={cn("font-medium text-sm", redFlag && !rowComplete ? "text-destructive" : "text-foreground")}>{p.job_name}</p>
+                                      {p.address && <p className="text-[11px] text-muted-foreground">{p.address}</p>}
+                                    </div>
+                                  </div>
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground">{p.client_name || '—'}</TableCell>
                                 <TableCell>
@@ -247,7 +285,7 @@ export default function SiteManagerEntry() {
                                 <TableCell className="text-center">
                                   <Checkbox
                                     checked={act.clientMessage}
-                                    onCheckedChange={v => updateActivity(p.id, 'clientMessage', !!v)}
+                                    onCheckedChange={v => handleUpdate(p.id, 'clientMessage', !!v)}
                                     className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                                   />
                                 </TableCell>
@@ -256,24 +294,28 @@ export default function SiteManagerEntry() {
                                     type="number"
                                     min={0}
                                     value={act.photos}
-                                    onChange={e => updateActivity(p.id, 'photos', Math.max(0, parseInt(e.target.value) || 0))}
+                                    onChange={e => handleUpdate(p.id, 'photos', Math.max(0, parseInt(e.target.value) || 0))}
                                     className="w-16 h-8 text-center text-sm tabular-nums mx-auto"
                                   />
                                 </TableCell>
                                 <TableCell className="text-center">
                                   <Checkbox
                                     checked={act.hsWalk}
-                                    onCheckedChange={v => updateActivity(p.id, 'hsWalk', !!v)}
+                                    onCheckedChange={v => handleUpdate(p.id, 'hsWalk', !!v)}
                                     className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                                   />
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  {rowComplete ? (
+                                  {redFlag && !rowComplete ? (
+                                    <Badge className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] gap-1">
+                                      <AlertTriangle className="h-3 w-3" /> 2 Weeks
+                                    </Badge>
+                                  ) : rowComplete ? (
                                     <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300 text-[10px]">
                                       <CheckCircle2 className="h-3 w-3 mr-1" /> Complete
                                     </Badge>
                                   ) : (
-                                    <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">
+                                    <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300 bg-amber-50">
                                       <AlertCircle className="h-3 w-3 mr-1" /> Incomplete
                                     </Badge>
                                   )}
