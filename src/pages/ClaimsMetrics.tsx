@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
-import { format } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle, TrendingDown, Clock, ArrowDownRight, ArrowUpRight,
   CheckCircle2, BarChart3, Activity, CalendarClock, Hammer,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell, PieChart, Pie,
@@ -37,9 +39,12 @@ function formatDate(d: string) {
 }
 
 export default function ClaimsMetrics() {
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(now));
+
   const { projects } = useProjects();
 
-  const { data: moves = [] } = useQuery({
+  const { data: allMoves = [] } = useQuery({
     queryKey: ['claim-moves-all'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,6 +55,16 @@ export default function ClaimsMetrics() {
       return data as ClaimMove[];
     },
   });
+
+  // Filter moves to selected month
+  const moves = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return allMoves.filter(m => {
+      const d = new Date(m.moved_at);
+      return isWithinInterval(d, { start: monthStart, end: monthEnd });
+    });
+  }, [allMoves, selectedMonth]);
 
   const projectMap = useMemo(() => {
     const map = new Map<string, ProjectRow>();
@@ -156,10 +171,33 @@ export default function ClaimsMetrics() {
   return (
     <DashboardLayout>
       <div className="flex flex-col h-[calc(100vh-2rem)] p-4 gap-5 overflow-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Claims Metrics</h1>
-          <p className="text-sm text-muted-foreground">Schedule performance & claim movement analysis</p>
+        {/* Header with Month Navigation */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Claims Metrics</h1>
+            <p className="text-sm text-muted-foreground">Schedule performance & claim movement analysis</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedMonth(prev => addMonths(prev, -1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 px-3 text-sm font-semibold min-w-[120px] justify-center"
+              onClick={() => setSelectedMonth(startOfMonth(new Date()))}
+            >
+              {format(selectedMonth, 'MMMM yyyy')}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+              disabled={format(selectedMonth, 'yyyy-MM') >= format(new Date(), 'yyyy-MM')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Summary KPI Cards */}
