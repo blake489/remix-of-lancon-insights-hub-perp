@@ -53,9 +53,9 @@ const Magic = () => {
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
-  const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
-  const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
-  const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  const [overheadOverride, setOverheadOverride] = useState<number | null>(null);
+  const [lastMonthOverhead, setLastMonthOverhead] = useState<number | null>(null);
+  const [nextMonthOverhead, setNextMonthOverhead] = useState<number | null>(null);
   const [bhagTarget, setBhagTarget] = useState<number>(1_000_000);
   const [bhagLoaded, setBhagLoaded] = useState(false);
 
@@ -65,6 +65,16 @@ const Magic = () => {
   const t: GpThresholds = kpi ? { green: kpi.gp_threshold_green, orange: kpi.gp_threshold_orange } : DEFAULT_GP_THRESHOLDS;
   const revenueTarget = kpi?.monthly_revenue_target ?? 1650000;
   const { toast } = useToast();
+
+  // Sync overhead from KPI settings on initial load
+  useEffect(() => {
+    if (kpi && overheadOverride === null) {
+      const derived = (kpi.overhead_percent * kpi.monthly_revenue_target) / 100;
+      setOverheadOverride(derived);
+      setLastMonthOverhead(derived);
+      setNextMonthOverhead(derived);
+    }
+  }, [kpi, overheadOverride]);
 
   // Sync BHAG from DB only on initial load
   useEffect(() => {
@@ -196,13 +206,13 @@ const Magic = () => {
             previousFortnightKPI={previousFortnightKPI}
             selectedMonth={selectedMonth}
             selectedFortnight={selectedFortnight}
-            overheadOverride={overheadOverride}
+            overheadOverride={overheadOverride ?? undefined}
             onOverheadChange={setOverheadOverride}
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
-            lastMonthOverhead={lastMonthOverhead}
-            nextMonthOverhead={nextMonthOverhead}
+            lastMonthOverhead={lastMonthOverhead ?? undefined}
+            nextMonthOverhead={nextMonthOverhead ?? undefined}
             onLastMonthOverheadChange={setLastMonthOverhead}
             onNextMonthOverheadChange={setNextMonthOverhead}
             bhagTarget={bhagTarget}
