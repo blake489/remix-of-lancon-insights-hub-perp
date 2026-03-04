@@ -217,10 +217,15 @@ export default function CalendarPage() {
       }
     });
 
-    // ── Rain EOT days ──
+    // ── Rain EOT days (deduplicated by date) ──
+    const seenRainDates = new Set<string>();
     (weatherLogs || []).forEach((log: any) => {
       // Show rain EOT when rain chance > 25% (matches alert threshold)
       if (log.rain_chance > 25 || log.severity === 'warning' || log.severity === 'danger') {
+        // Deduplicate: only show one rain event per date
+        if (seenRainDates.has(log.log_date)) return;
+        seenRainDates.add(log.log_date);
+
         const severityLabel = log.rain_amount >= 10 ? 'danger' : log.rain_chance >= 45 ? 'warning' : 'info';
         all.push({
           id: `rain-${log.id}`,
