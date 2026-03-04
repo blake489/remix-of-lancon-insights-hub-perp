@@ -86,6 +86,7 @@ export const AddProjectDialog = React.forwardRef<HTMLDivElement, AddProjectDialo
       forecast_gp_percent: parseFloat(form.forecast_gp_percent) || 0,
       schedule_type: form.schedule_type,
       custom_timeframes: customTimeframes,
+      variations: variations,
       created_by: null,
       plans_pdf_path: plansPdf,
       specs_pdf_path: specsPdf,
