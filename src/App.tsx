@@ -24,6 +24,7 @@ import DevelopmentImport from "./pages/DevelopmentImport";
 
 import ClaimsManager from "./pages/ClaimsManager";
 import ClaimsLedger from "./pages/ClaimsLedger";
+import ClaimsMetrics from "./pages/ClaimsMetrics";
 import Sales from "./pages/Sales";
 import SiteManagerEntry from "./pages/SiteManagerEntry";
 const queryClient = new QueryClient();
