@@ -225,6 +225,16 @@ export function MagicEquationHeader({
               </div>
             </div>
           )}
+          {/* Super Profit */}
+          {grossRevenue > 1_650_000 && (
+            <div className="mt-3 rounded-md border border-emerald-300 bg-emerald-50/50 dark:border-emerald-700 dark:bg-emerald-950/30 px-3 py-2">
+              <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">⚡ Super Profit</p>
+              <p className="text-sm font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                {formatCurrency((grossRevenue - 1_650_000) * gpRate, true)}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Revenue above $1.65M × {(gpRate * 100).toFixed(1)}%</p>
+            </div>
+          )}
         </div>
       </div>
 
