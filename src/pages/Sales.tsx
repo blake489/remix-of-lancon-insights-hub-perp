@@ -500,9 +500,21 @@ export default function Sales() {
             <DialogTitle>{editing ? 'Edit Opportunity' : 'Add Opportunity'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <Label className="text-sm">Client Name *</Label>
-              <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="e.g. Smith Family" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">First Name *</Label>
+                <Input value={form.client_name.split(' ').slice(0, 1).join(' ')} onChange={e => {
+                  const last = form.client_name.split(' ').slice(1).join(' ');
+                  setForm(f => ({ ...f, client_name: last ? `${e.target.value} ${last}` : e.target.value }));
+                }} placeholder="e.g. John" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Last Name *</Label>
+                <Input value={form.client_name.split(' ').slice(1).join(' ')} onChange={e => {
+                  const first = form.client_name.split(' ')[0] || '';
+                  setForm(f => ({ ...f, client_name: e.target.value ? `${first} ${e.target.value}` : first }));
+                }} placeholder="e.g. Smith" />
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm">Address</Label>
