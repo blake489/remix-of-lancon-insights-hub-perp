@@ -43,6 +43,7 @@ import {
   BookOpen,
   Handshake,
   ClipboardCheck,
+  BarChart3,
 
 } from 'lucide-react';
 import {
