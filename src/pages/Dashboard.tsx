@@ -141,7 +141,7 @@ const Dashboard = () => {
 
   // Weighted average GP% of active projects (excluding own jobs)
   const activeGpPercent = useMemo(() => {
-    const active = projects.filter(p => p.status === 'Active' && !OWN_JOBS.includes(p.job_name.toLowerCase()));
+    const active = projects.filter(p => p.status === 'Active' && !OWN_JOBS.includes(p.job_name.toLowerCase()) && (p.category === 'pre_construction' || p.category === 'construction'));
     const totalContract = active.reduce((s, p) => s + (p.contract_value_ex_gst || 0), 0);
     const totalProfit = active.reduce((s, p) => s + (p.forecast_gross_profit || 0), 0);
     return totalContract > 0 ? (totalProfit / totalContract) * 100 : 0;
