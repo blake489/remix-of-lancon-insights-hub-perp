@@ -53,9 +53,21 @@ const Magic = () => {
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
   const previousFortnightKPI = getPreviousFortnightKPIData();
-  const [overheadOverride, setOverheadOverride] = useState<number>(monthlyKPI.overheads);
-  const [lastMonthOverhead, setLastMonthOverhead] = useState<number>(monthlyKPI.overheads);
-  const [nextMonthOverhead, setNextMonthOverhead] = useState<number>(monthlyKPI.overheads);
+  // Derive overhead from KPI settings: overhead_percent × revenue_target / 100
+  const kpiOverhead = kpi ? (kpi.overhead_percent * kpi.monthly_revenue_target) / 100 : monthlyKPI.overheads;
+  const [overheadOverride, setOverheadOverride] = useState<number | null>(null);
+  const [lastMonthOverhead, setLastMonthOverhead] = useState<number | null>(null);
+  const [nextMonthOverhead, setNextMonthOverhead] = useState<number | null>(null);
+
+  // Sync from KPI when loaded
+  useEffect(() => {
+    if (kpi && overheadOverride === null) {
+      const derived = (kpi.overhead_percent * kpi.monthly_revenue_target) / 100;
+      setOverheadOverride(derived);
+      setLastMonthOverhead(derived);
+      setNextMonthOverhead(derived);
+    }
+  }, [kpi, overheadOverride]);
   const [bhagTarget, setBhagTarget] = useState<number>(1_000_000);
   const [bhagLoaded, setBhagLoaded] = useState(false);
 

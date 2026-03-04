@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { KPISettings, useUpdateKPISettings } from '@/hooks/useKPISettings';
 import { formatCurrency } from '@/lib/formatters';
-import { Settings, DollarSign, Percent, Target, AlertTriangle } from 'lucide-react';
+import { DollarSign, Percent, Target, AlertTriangle } from 'lucide-react';
 
 const kpiSettingsSchema = z.object({
   monthly_revenue_target: z.coerce.number().min(0, 'Must be positive'),
