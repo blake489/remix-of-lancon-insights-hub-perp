@@ -107,10 +107,17 @@ export function EventList({
           ) : (
             <div className="space-y-3">
               {/* System events (fortnights, milestones) */}
-              {daySystemEvents.map((event) => (
+              {daySystemEvents.map((event) => {
+                const isClickable = claimEventTypes.has(event.type) && !!event.projectId;
+                return (
                 <div
                   key={event.id}
-                  className="p-3 rounded-lg border border-primary/30 bg-primary/5"
+                  className={cn(
+                    'p-3 rounded-lg border border-primary/30 bg-primary/5',
+                    isClickable && 'cursor-pointer hover:shadow-md hover:border-primary/50 transition-all'
+                  )}
+                  onClick={isClickable ? () => handleSystemEventClick(event) : undefined}
+                  title={isClickable ? `${event.title} — Click to open in Claims Papi` : undefined}
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
@@ -135,7 +142,8 @@ export function EventList({
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {/* User events */}
               {dayDbEvents.map((event) => {
