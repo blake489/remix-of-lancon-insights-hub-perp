@@ -77,7 +77,9 @@ export function MagicEquationHeader({
   onBhagCommit,
 }: MagicEquationHeaderProps) {
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
-  const pureProfit = monthlyKPI.grossProfit - overheadValue;
+  const gpRate = (activeGpPercent ?? 0) / 100;
+  const grossRevenue = claimsRevenue?.total ?? 0;
+  const pureProfit = (gpRate * grossRevenue) - overheadValue;
   const pureProfitStatus: 'success' | 'warning' | 'danger' = pureProfit >= 100000 ? 'success' : 'danger';
   
 
