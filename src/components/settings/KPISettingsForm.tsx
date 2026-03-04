@@ -14,7 +14,6 @@ import { Settings, DollarSign, Percent, Target, AlertTriangle } from 'lucide-rea
 const kpiSettingsSchema = z.object({
   monthly_revenue_target: z.coerce.number().min(0, 'Must be positive'),
   gp_percent_target: z.coerce.number().min(0).max(100, 'Must be 0-100'),
-  overhead_percent: z.coerce.number().min(0).max(100, 'Must be 0-100'),
   gp_threshold_green: z.coerce.number().min(0).max(100, 'Must be 0-100'),
   gp_threshold_orange: z.coerce.number().min(0).max(100, 'Must be 0-100'),
   revenue_threshold_green: z.coerce.number().min(0, 'Must be positive'),
