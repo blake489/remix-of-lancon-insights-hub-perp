@@ -171,10 +171,33 @@ export default function ClaimsMetrics() {
   return (
     <DashboardLayout>
       <div className="flex flex-col h-[calc(100vh-2rem)] p-4 gap-5 overflow-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Claims Metrics</h1>
-          <p className="text-sm text-muted-foreground">Schedule performance & claim movement analysis</p>
+        {/* Header with Month Navigation */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Claims Metrics</h1>
+            <p className="text-sm text-muted-foreground">Schedule performance & claim movement analysis</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSelectedMonth(prev => addMonths(prev, -1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="h-8 px-3 text-sm font-semibold min-w-[120px] justify-center"
+              onClick={() => setSelectedMonth(startOfMonth(new Date()))}
+            >
+              {format(selectedMonth, 'MMMM yyyy')}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+              disabled={format(selectedMonth, 'yyyy-MM') >= format(new Date(), 'yyyy-MM')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Summary KPI Cards */}
