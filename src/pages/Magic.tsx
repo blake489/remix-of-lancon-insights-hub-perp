@@ -76,6 +76,26 @@ const Magic = () => {
     }
   }, [kpi, overheadOverride]);
 
+  // Persist overhead changes to DB (derives overhead_percent from dollar value)
+  const handleOverheadChange = async (value: number) => {
+    setOverheadOverride(value);
+    if (!kpi?.id || !kpi.monthly_revenue_target) return;
+
+    const newPercent = (value / kpi.monthly_revenue_target) * 100;
+    const { error } = await supabase
+      .from('kpi_settings')
+      .update({ overhead_percent: parseFloat(newPercent.toFixed(2)) })
+      .eq('id', kpi.id);
+
+    if (error) {
+      toast({
+        title: 'Unable to save overhead',
+        description: 'You may not have permission to update KPI settings.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Sync BHAG from DB only on initial load
   useEffect(() => {
     if (!bhagLoaded && kpi?.bhag_target != null) {
