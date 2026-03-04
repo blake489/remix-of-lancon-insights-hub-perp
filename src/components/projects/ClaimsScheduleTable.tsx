@@ -247,26 +247,29 @@ export function ClaimsScheduleTable({
                   <TableCell className="text-right tabular-nums text-sm">{row.percent > 0 ? formatCurrency(exGst) : '—'}</TableCell>
                   <TableCell className="text-right tabular-nums text-sm">{row.percent > 0 ? formatCurrency(incGst) : '—'}</TableCell>
                   <TableCell className="text-center">
-                    {row.percent > 0 ? (
-                      <Select
-                        value={stageStatuses?.[row.stage] || 'planned'}
-                        onValueChange={v => onStageStatusChange?.(row.stage, v)}
-                        disabled={isLocked}
-                      >
-                        <SelectTrigger className={cn(
-                          "h-7 text-[10px] font-semibold w-[100px] mx-auto",
-                          (stageStatuses?.[row.stage] || 'planned') === 'claimed' && 'bg-emerald-50 text-emerald-700 border-emerald-300',
-                          (stageStatuses?.[row.stage] || 'planned') === 'confirmed' && 'bg-amber-50 text-amber-700 border-amber-300',
-                          (stageStatuses?.[row.stage] || 'planned') === 'planned' && 'bg-muted text-muted-foreground',
-                        )}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="planned">Planned</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="claimed">Claimed</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    {row.percent > 0 ? lockedTooltip(
+                      <div>
+                        <Select
+                          value={stageStatuses?.[row.stage] || 'planned'}
+                          onValueChange={v => onStageStatusChange?.(row.stage, v)}
+                          disabled={isLocked}
+                        >
+                          <SelectTrigger className={cn(
+                            "h-7 text-[10px] font-semibold w-[100px] mx-auto",
+                            isLocked && "cursor-not-allowed",
+                            (stageStatuses?.[row.stage] || 'planned') === 'claimed' && 'bg-emerald-50 text-emerald-700 border-emerald-300',
+                            (stageStatuses?.[row.stage] || 'planned') === 'confirmed' && 'bg-amber-50 text-amber-700 border-amber-300',
+                            (stageStatuses?.[row.stage] || 'planned') === 'planned' && 'bg-muted text-muted-foreground',
+                          )}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planned">Planned</SelectItem>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
+                            <SelectItem value="claimed">Claimed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     ) : '—'}
                   </TableCell>
                   <TableCell className="text-center">
