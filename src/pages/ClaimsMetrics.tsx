@@ -13,7 +13,9 @@ import { cn } from '@/lib/utils';
 import {
   AlertTriangle, TrendingDown, Clock, ArrowDownRight, ArrowUpRight,
   CheckCircle2, BarChart3, Activity, CalendarClock, Hammer,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell, PieChart, Pie,
