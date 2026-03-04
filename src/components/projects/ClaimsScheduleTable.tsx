@@ -100,6 +100,7 @@ export function ClaimsScheduleTable({
   stageClaimedDates,
   onStageClaimedDateChange,
 }: ClaimsScheduleTableProps) {
+  const isLocked = !!siteStartDate;
   const baseRows = defaultSchedules[scheduleType];
   const rows = baseRows.map(r => ({
     ...r,
