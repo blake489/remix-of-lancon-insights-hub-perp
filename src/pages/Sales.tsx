@@ -77,6 +77,7 @@ export default function Sales() {
     status: 'new',
     notes: '',
     target_start_date: '' as string,
+    address: '',
   });
 
   const filtered = useMemo(() => {
@@ -161,7 +162,7 @@ export default function Sales() {
   }, [leads]);
 
   const resetForm = () => {
-    setForm({ client_name: '', estimated_value: '', revenue_type: 'prospective', status: 'new', notes: '', target_start_date: '' });
+    setForm({ client_name: '', estimated_value: '', revenue_type: 'prospective', status: 'new', notes: '', target_start_date: '', address: '' });
     setEditing(null);
   };
 
@@ -181,6 +182,7 @@ export default function Sales() {
       status: lead.status,
       notes: lead.notes || '',
       target_start_date: lead.target_start_date || '',
+      address: (lead as any).address || '',
     });
     setDialogOpen(true);
   };
@@ -194,6 +196,7 @@ export default function Sales() {
       status: form.status,
       notes: form.notes || null,
       target_start_date: form.target_start_date || null,
+      address: form.address || null,
     };
 
     const isNewlyWon = form.status === 'won' && editing && editing.status !== 'won';
@@ -500,6 +503,10 @@ export default function Sales() {
             <div className="space-y-1.5">
               <Label className="text-sm">Client Name *</Label>
               <Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="e.g. Smith Family" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Address</Label>
+              <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="e.g. 28 Durimbil St" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm">Estimated Contract Value</Label>
