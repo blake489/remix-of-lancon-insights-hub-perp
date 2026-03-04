@@ -227,7 +227,7 @@ const Magic = () => {
             selectedMonth={selectedMonth}
             selectedFortnight={selectedFortnight}
             overheadOverride={overheadOverride ?? undefined}
-            onOverheadChange={setOverheadOverride}
+            onOverheadChange={handleOverheadChange}
             activeGpPercent={activeGpPercent}
             claimsRevenue={claimsRevenue}
             adjacentMonthProfits={adjacentMonthProfits}
