@@ -52,6 +52,7 @@ const Magic = () => {
   const [selectedFortnight, setSelectedFortnight] = useState<1 | 2>(getCurrentFortnight());
   const monthlyKPI = getCurrentKPIData();
   const currentFortnightKPI = getFortnight1KPIData();
+  const previousFortnightKPI = getPreviousFortnightKPIData();
   const [overheadOverride, setOverheadOverride] = useState<number | null>(null);
   const [lastMonthOverhead, setLastMonthOverhead] = useState<number | null>(null);
   const [nextMonthOverhead, setNextMonthOverhead] = useState<number | null>(null);
