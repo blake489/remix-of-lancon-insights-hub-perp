@@ -364,7 +364,7 @@ export default function Sales() {
                                   }
                                 }}
                                 className={cn(
-                                  "h-7 rounded-sm border flex items-center justify-center transition-all text-[8px] font-semibold truncate px-0.5 cursor-pointer",
+                                  "h-12 rounded-sm border flex flex-col items-center justify-center transition-all text-[9px] font-semibold px-1 cursor-pointer gap-0.5",
                                   isFilled
                                     ? "bg-emerald-100 border-emerald-300 text-emerald-700 dark:bg-emerald-900/40 dark:border-emerald-700 dark:text-emerald-300 hover:bg-emerald-200"
                                     : isPending
@@ -374,9 +374,12 @@ export default function Sales() {
                                 title={opp ? `${opp.client_name} — ${formatCurrency(opp.estimated_value)}` : 'Click to add opportunity'}
                               >
                                 {isFilled ? (
-                                  <CheckCircle2 className="h-3 w-3 shrink-0" />
+                                  <>
+                                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                                    <span className="truncate w-full text-center leading-tight">{opp?.client_name?.split(' ')[0]}</span>
+                                  </>
                                 ) : isPending ? (
-                                  <span className="truncate">{opp?.client_name?.split(' ')[0]}</span>
+                                  <span className="truncate w-full text-center">{opp?.client_name?.split(' ')[0]}</span>
                                 ) : (
                                   <Plus className="h-3 w-3 opacity-0 group-hover/slot:opacity-100 transition-opacity" />
                                 )}
