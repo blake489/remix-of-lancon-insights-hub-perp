@@ -25,6 +25,7 @@ export interface ProjectRow {
   forecast_gp_percent: number;
   schedule_type: string;
   custom_timeframes: Record<string, number>;
+  variations: any[];
   claim_stage_statuses: Record<string, string>;
   created_by: string | null;
   created_at: string;
