@@ -615,6 +615,7 @@ export type Database = {
       }
       sales_leads: {
         Row: {
+          address: string | null
           client_name: string
           created_at: string
           created_by: string | null
@@ -627,6 +628,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
           client_name: string
           created_at?: string
           created_by?: string | null
@@ -639,6 +641,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
           client_name?: string
           created_at?: string
           created_by?: string | null

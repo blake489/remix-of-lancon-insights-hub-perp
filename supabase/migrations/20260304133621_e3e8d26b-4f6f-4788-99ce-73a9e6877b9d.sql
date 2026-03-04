@@ -1,0 +1,1 @@
+ALTER TABLE public.sales_leads ADD COLUMN address text DEFAULT NULL;
