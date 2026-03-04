@@ -220,22 +220,24 @@ export function ClaimsScheduleTable({
                     ) : isSiteStart ? (
                       renderDatePicker('site start', siteStartDate, onSiteStartDateChange)
                     ) : (
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Input
-                          type="number"
-                          min={0}
-                          className={cn("w-16 h-7 text-xs text-right tabular-nums p-1", isLocked && "opacity-60")}
-                          value={row.timeValue}
-                          onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
-                          disabled={isLocked}
-                        />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {row.timeUnit}
-                        </span>
-                        <span className="text-xs text-muted-foreground/60 whitespace-nowrap">
-                          ({row.timeUnit === 'days' ? row.timeValue : row.timeValue * 7}d)
-                        </span>
-                      </div>
+                      lockedTooltip(
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Input
+                            type="number"
+                            min={0}
+                            className={cn("w-16 h-7 text-xs text-right tabular-nums p-1", isLocked && "opacity-60 cursor-not-allowed")}
+                            value={row.timeValue}
+                            onChange={e => onTimeframeChange?.(row.stage, parseFloat(e.target.value) || 0)}
+                            disabled={isLocked}
+                          />
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {row.timeUnit}
+                          </span>
+                          <span className="text-xs text-muted-foreground/60 whitespace-nowrap">
+                            ({row.timeUnit === 'days' ? row.timeValue : row.timeValue * 7}d)
+                          </span>
+                        </div>
+                      )
                     )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground text-xs">
