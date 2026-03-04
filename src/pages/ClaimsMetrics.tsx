@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useProjects, ProjectRow } from '@/hooks/useProjects';
-import { format } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle, TrendingDown, Clock, ArrowDownRight, ArrowUpRight,
