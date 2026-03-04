@@ -219,14 +219,16 @@ export default function CalendarPage() {
 
     // ── Rain EOT days ──
     (weatherLogs || []).forEach((log: any) => {
-      if (log.severity === 'warning' || log.severity === 'danger' || log.rain_amount >= 10) {
+      // Show rain EOT when rain chance > 25% (matches alert threshold)
+      if (log.rain_chance > 25 || log.severity === 'warning' || log.severity === 'danger') {
+        const severityLabel = log.rain_amount >= 10 ? 'danger' : log.rain_chance >= 45 ? 'warning' : 'info';
         all.push({
           id: `rain-${log.id}`,
           date: new Date(log.log_date + 'T00:00:00'),
           title: `🌧️ Rain EOT ${log.rain_amount}mm`,
           type: 'rain-eot',
-          description: `${log.rain_chance}% chance · ${log.rain_amount}mm · ${log.severity}`,
-          priority: log.severity === 'danger' ? 'high' : 'medium',
+          description: `${log.rain_chance}% chance · ${log.rain_amount}mm · ${severityLabel}`,
+          priority: severityLabel === 'danger' ? 'high' : 'medium',
         });
       }
     });
