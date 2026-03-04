@@ -28,6 +28,7 @@ export function computeProjectedClaims(
   contractValueExGst: number,
   siteStartDate?: string | null,
   stageStatuses?: Record<string, string>,
+  variations?: Variation[],
 ): ProjectedClaim[] {
   if (!startDate || contractValueExGst <= 0) return [];
 
