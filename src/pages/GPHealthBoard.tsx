@@ -34,6 +34,7 @@ const borderColor: Record<'success' | 'warning' | 'danger', string> = {
 const GPHealthBoard = () => {
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
+  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
   const [filter, setFilter] = useState<Filter>('active');
 
   const t: GpThresholds = kpi
