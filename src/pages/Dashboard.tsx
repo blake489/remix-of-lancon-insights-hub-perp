@@ -208,7 +208,12 @@ const Dashboard = () => {
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-6">
-                <h1 className="text-xl font-semibold text-foreground">{headerTitle}</h1>
+                <div>
+                  <h1 className="text-xl font-semibold text-foreground">{headerTitle}</h1>
+                  {roleInfo.isSalesManager && (
+                    <p className="text-xs text-muted-foreground mt-0.5">Bob Lay, Sales Manager</p>
+                  )}
+                </div>
                 <TodayWidget variant="inline" />
               </div>
               <div className="flex items-center gap-3">
