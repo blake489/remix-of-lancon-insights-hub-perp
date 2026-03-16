@@ -160,9 +160,9 @@ const Dashboard = () => {
 
   // Role-specific header title
   const headerTitle = roleInfo.isConstructionManager
-    ? 'Construction Health'
+    ? 'Construction Dashboard'
     : roleInfo.isSalesManager
-      ? 'Sales Dashboard'
+      ? 'New Business Dashboard'
       : 'Dashboard';
 
   const shared = {
@@ -210,6 +210,9 @@ const Dashboard = () => {
               <div className="flex items-center gap-6">
                 <div>
                   <h1 className="text-xl font-semibold text-foreground">{headerTitle}</h1>
+                  {roleInfo.isConstructionManager && (
+                    <p className="text-xs text-muted-foreground mt-0.5">David Flynn, Construction Manager</p>
+                  )}
                   {roleInfo.isSalesManager && (
                     <p className="text-xs text-muted-foreground mt-0.5">Bob Lay, Sales Manager</p>
                   )}
