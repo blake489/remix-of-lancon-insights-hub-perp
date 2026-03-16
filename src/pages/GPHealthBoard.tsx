@@ -166,8 +166,9 @@ const GPHealthBoard = () => {
                       return (
                         <TableRow
                           key={p.id}
+                          onClick={() => setSelectedProject(p)}
                           className={cn(
-                            'border-l-4',
+                            'border-l-4 cursor-pointer hover:bg-muted/50 transition-colors',
                             borderColor[status],
                           )}
                         >
