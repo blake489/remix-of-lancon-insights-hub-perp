@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { useKPISettings } from '@/hooks/useKPISettings';
@@ -211,6 +213,62 @@ const GPHealthBoard = () => {
               </div>
             )}
           </div>
+
+          {/* Development Projects Section */}
+          {(() => {
+            const devProjects = projects.filter(p =>
+              OWN_JOBS.includes(p.job_name.toLowerCase()),
+            );
+            if (devProjects.length === 0) return null;
+            const DEV_TARGET = 10;
+            return (
+              <Collapsible defaultOpen={false}>
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border border-border/50 bg-muted/30 px-5 py-3 text-left hover:bg-muted/50 transition-colors group">
+                  <span className="text-sm font-semibold text-foreground">
+                    LanCon Development Projects — Overhead Coverage Tracking
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3 space-y-4">
+                  <p className="text-xs text-muted-foreground px-1">
+                    These projects are LanCon-owned developments. GP target = overhead coverage only (not subject to the 18% Magic Equation standard).
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {devProjects.map(p => (
+                      <div key={p.id} className="glass-card p-5 space-y-3">
+                        <h3 className="text-sm font-semibold text-foreground">{p.job_name}</h3>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <p>Contract: <span className="font-medium text-foreground">{formatCurrency(p.contract_value_ex_gst, true)}</span></p>
+                          <p>Forecast GP: <span className="font-medium text-foreground">{formatPercent(p.forecast_gp_percent)}</span></p>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="space-y-1">
+                          <div className="relative h-3 w-full rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={cn(
+                                'h-full rounded-full transition-all',
+                                p.forecast_gp_percent >= DEV_TARGET ? 'bg-emerald-500' : 'bg-amber-500',
+                              )}
+                              style={{ width: `${Math.min(100, Math.max(0, (p.forecast_gp_percent / 25) * 100))}%` }}
+                            />
+                            {/* Target line at 10% */}
+                            <div
+                              className="absolute top-0 h-full w-0.5 bg-foreground/60"
+                              style={{ left: `${(DEV_TARGET / 25) * 100}%` }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Target: {DEV_TARGET}% overhead coverage</p>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/70 italic">
+                          Development project — overhead coverage target only
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })()}
         </main>
       </div>
     </DashboardLayout>
