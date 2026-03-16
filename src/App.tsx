@@ -27,6 +27,7 @@ import ClaimsLedger from "./pages/ClaimsLedger";
 import ClaimsMetrics from "./pages/ClaimsMetrics";
 import Sales from "./pages/Sales";
 import SiteManagerEntry from "./pages/SiteManagerEntry";
+import GPHealthBoard from "./pages/GPHealthBoard";
 const queryClient = new QueryClient();
 
 const App = () => (

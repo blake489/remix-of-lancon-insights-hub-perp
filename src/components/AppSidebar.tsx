@@ -44,7 +44,7 @@ import {
   Handshake,
   ClipboardCheck,
   BarChart3,
-
+  Activity,
 } from 'lucide-react';
 import {
   DropdownMenu,
