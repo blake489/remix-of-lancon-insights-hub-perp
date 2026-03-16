@@ -160,9 +160,9 @@ const Dashboard = () => {
 
   // Role-specific header title
   const headerTitle = roleInfo.isConstructionManager
-    ? 'Construction Health'
+    ? 'Construction Dashboard'
     : roleInfo.isSalesManager
-      ? 'Sales Dashboard'
+      ? 'New Business Dashboard'
       : 'Dashboard';
 
   const shared = {
