@@ -2,29 +2,15 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
-import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
-import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart';
-import { MagicEquationScorecard } from '@/components/dashboard/MagicEquationScorecard';
-import { TrafficLight } from '@/components/dashboard/TrafficLight';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { useProjects } from '@/hooks/useProjects';
 import { useMessages } from '@/hooks/useMessages';
 import { useCalendarEvents } from '@/hooks/useCalendarEvents';
-
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { useClaims } from '@/hooks/useClaims';
 import { useToast } from '@/hooks/use-toast';
-import { gpStatus, gpTextColor, GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
+import { useUserRole, getRoleLabel } from '@/hooks/useUserRole';
+import { GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import {
   getCurrentKPIData,
   getFortnight1KPIData,
@@ -32,45 +18,9 @@ import {
 } from '@/data/mockData';
 import { getCurrentMonth, getCurrentFortnight } from '@/lib/formatters';
 import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 import { format, addDays, isAfter, parseISO, addMonths, subMonths } from 'date-fns';
-import {
-  FileText,
-  Receipt,
-  Landmark,
-  Users,
-  Calendar,
-  CloudSun,
-  ArrowRight,
-  Activity,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Sparkles,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-  Mail,
-} from 'lucide-react';
-
-const quickLinks = [
-  { title: 'Projects', description: 'Contracts & portfolio', icon: FileText, url: '/projects', color: 'text-blue-500' },
-  { title: 'Claims Papi', description: 'Claim schedules', icon: Receipt, url: '/claims', color: 'text-emerald-500' },
-  { title: 'Development', description: 'Property tracking', icon: Landmark, url: '/development', color: 'text-violet-500' },
-  { title: 'Team', description: 'Staff & org chart', icon: Users, url: '/team', color: 'text-rose-500' },
-  { title: 'Calendar', description: 'Events & deadlines', icon: Calendar, url: '/calendar', color: 'text-cyan-500' },
-  { title: 'Weather', description: 'Site forecasts', icon: CloudSun, url: '/weather', color: 'text-orange-500' },
-];
-
-const fmt = (v: number) => {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
-  return `$${v.toFixed(0)}`;
-};
-
-type SortField = 'job_name' | 'contract_value_ex_gst' | 'forecast_cost' | 'forecast_gross_profit' | 'forecast_gp_percent';
-type SortDir = 'asc' | 'desc';
+import { Mail } from 'lucide-react';
+import { RoleDashboard } from '@/components/dashboard/RoleDashboard';
 
 const OWN_JOBS = ['28 durimbil st', '117a tranters ave'];
 
@@ -80,12 +30,12 @@ const Dashboard = () => {
   const { data: kpi } = useKPISettings();
   const { claims } = useClaims();
   const { unreadCount } = useMessages();
+  const roleInfo = useUserRole();
 
   const now = new Date();
   const nextMonth = addDays(now, 30);
   const { events, isLoading: eventsLoading } = useCalendarEvents(now, nextMonth);
 
-  // Magic Equation state
   const [selectedMonth] = useState(getCurrentMonth());
   const [selectedFortnight] = useState<1 | 2>(getCurrentFortnight());
   const monthlyKPI = getCurrentKPIData();
@@ -108,30 +58,21 @@ const Dashboard = () => {
     }
   }, [kpi?.bhag_target, bhagLoaded]);
 
-  const handleBhagChange = (value: number) => {
-    setBhagTarget(value);
-  };
+  const handleBhagChange = (value: number) => setBhagTarget(value);
 
   const handleBhagCommit = async (value: number) => {
     setBhagTarget(value);
     if (!kpi?.id) return;
-
     const { error } = await supabase
       .from('kpi_settings')
       .update({ bhag_target: value })
       .eq('id', kpi.id);
-
     if (error) {
       setBhagTarget(kpi.bhag_target);
-      toast({
-        title: 'Unable to save BHAG target',
-        description: 'Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Unable to save BHAG target', description: 'Please try again.', variant: 'destructive' });
     }
   };
 
-  // Claims revenue for current month
   const currentMonthKey = format(new Date(), 'yyyy-MM');
   const claimsRevenue = useMemo(() => {
     const monthClaims = claims.filter(c => c.month_key === currentMonthKey);
@@ -141,7 +82,6 @@ const Dashboard = () => {
     return { total: planned + confirmed + claimed, planned, confirmed, claimed, target: revenueTarget };
   }, [claims, currentMonthKey, revenueTarget]);
 
-  // Weighted average GP% of active projects (excluding own jobs)
   const activeGpPercent = useMemo(() => {
     const active = projects.filter(p => p.status === 'Active' && !OWN_JOBS.includes(p.job_name.toLowerCase()) && (p.category === 'pre_construction' || p.category === 'construction'));
     const totalContract = active.reduce((s, p) => s + (p.contract_value_ex_gst || 0), 0);
@@ -149,7 +89,6 @@ const Dashboard = () => {
     return { percent: totalContract > 0 ? (totalProfit / totalContract) * 100 : 0, count: active.length };
   }, [projects]);
 
-  // Adjacent month pure profit calculations
   const adjacentMonthProfits = useMemo(() => {
     const now = new Date();
     const lastMonthKey = format(subMonths(now, 1), 'yyyy-MM');
@@ -162,7 +101,8 @@ const Dashboard = () => {
     };
   }, [claims, activeGpPercent, lastMonthOverhead, nextMonthOverhead]);
 
-  // Sort state for GP breakdown table
+  type SortField = 'job_name' | 'contract_value_ex_gst' | 'forecast_cost' | 'forecast_gross_profit' | 'forecast_gp_percent';
+  type SortDir = 'asc' | 'desc';
   const [sortField, setSortField] = useState<SortField>('forecast_gp_percent');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -193,41 +133,22 @@ const Dashboard = () => {
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />;
-    return sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />;
-  };
-
-  const catLabel = (c: string) => {
-    switch (c) {
-      case 'pre_construction': return 'Pre Con';
-      case 'construction': return 'Construction';
-      case 'handover': return 'Handover';
-      default: return c;
-    }
-  };
-
-  // Dashboard widgets data
   const projectHealth = useMemo(() => {
     if (!projects.length) return null;
     const active = projects.filter(p => p.status === 'Active');
     const greenThreshold = kpi?.gp_threshold_green ?? 17;
     const orangeThreshold = kpi?.gp_threshold_orange ?? 12;
-
     const healthy = active.filter(p => p.forecast_gp_percent >= greenThreshold).length;
     const atRisk = active.filter(p => p.forecast_gp_percent >= orangeThreshold && p.forecast_gp_percent < greenThreshold).length;
     const critical = active.filter(p => p.forecast_gp_percent > 0 && p.forecast_gp_percent < orangeThreshold).length;
-
     const totalContract = projects.reduce((s, p) => s + p.contract_value_ex_gst, 0);
     const totalGP = projects.reduce((s, p) => s + p.forecast_gross_profit, 0);
     const weightedGp = totalContract > 0 ? (totalGP / totalContract) * 100 : 0;
-
     const byCat = {
       pre_construction: projects.filter(p => p.category === 'pre_construction').length,
       construction: projects.filter(p => p.category === 'construction').length,
       handover: projects.filter(p => p.category === 'handover').length,
     };
-
     return { total: projects.length, active: active.length, healthy, atRisk, critical, totalContract, totalGP, weightedGp, byCat };
   }, [projects, kpi]);
 
@@ -237,14 +158,47 @@ const Dashboard = () => {
       .slice(0, 5);
   }, [events]);
 
-  const categoryIcon = (cat: string) => {
-    switch (cat) {
-      case 'deadline': return <AlertTriangle className="h-3.5 w-3.5 text-red-500" />;
-      case 'milestone': return <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />;
-      case 'meeting': return <Users className="h-3.5 w-3.5 text-blue-500" />;
-      case 'task': return <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" />;
-      default: return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
-    }
+  // Role-specific header title
+  const headerTitle = roleInfo.isConstructionManager
+    ? 'Construction Health'
+    : roleInfo.isSalesManager
+      ? 'Sales Dashboard'
+      : 'Dashboard';
+
+  const shared = {
+    projects,
+    projLoading,
+    kpi,
+    claims,
+    events,
+    eventsLoading,
+    unreadCount,
+    claimsRevenue,
+    activeGpPercent,
+    projectHealth,
+    upcomingEvents,
+    monthlyKPI,
+    currentFortnightKPI,
+    previousFortnightKPI,
+    selectedMonth,
+    selectedFortnight,
+    overheadOverride,
+    onOverheadChange: setOverheadOverride,
+    adjacentMonthProfits,
+    lastMonthOverhead,
+    nextMonthOverhead,
+    onLastMonthOverheadChange: setLastMonthOverhead,
+    onNextMonthOverheadChange: setNextMonthOverhead,
+    bhagTarget,
+    onBhagChange: handleBhagChange,
+    onBhagCommit: handleBhagCommit,
+    groupedProjects,
+    sorted,
+    handleSort,
+    sortField,
+    sortDir,
+    t,
+    navigate,
   };
 
   return (
@@ -254,345 +208,29 @@ const Dashboard = () => {
           <div className="mx-auto max-w-7xl px-6 py-5">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-6">
-                <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
+                <h1 className="text-xl font-semibold text-foreground">{headerTitle}</h1>
                 <TodayWidget variant="inline" />
               </div>
-              {unreadCount > 0 && (
-                <button
-                  onClick={() => navigate('/inbox')}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
-                >
-                  <Mail className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-semibold text-primary">{unreadCount} unread</span>
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
+                  Viewing as: {getRoleLabel(roleInfo.role)}
+                </Badge>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => navigate('/inbox')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    <Mail className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-semibold text-primary">{unreadCount} unread</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         <main className="mx-auto max-w-7xl px-6 py-8 space-y-8">
-          {/* Magic Equation KPIs */}
-          <MagicEquationHeader
-            monthlyKPI={monthlyKPI}
-            currentFortnightKPI={currentFortnightKPI}
-            previousFortnightKPI={previousFortnightKPI}
-            selectedMonth={selectedMonth}
-            selectedFortnight={selectedFortnight}
-            overheadOverride={overheadOverride}
-            onOverheadChange={setOverheadOverride}
-            activeGpPercent={activeGpPercent?.percent}
-            activeGpContractCount={activeGpPercent?.count}
-            claimsRevenue={claimsRevenue}
-            adjacentMonthProfits={adjacentMonthProfits}
-            lastMonthOverhead={lastMonthOverhead}
-            nextMonthOverhead={nextMonthOverhead}
-            onLastMonthOverheadChange={setLastMonthOverhead}
-            onNextMonthOverheadChange={setNextMonthOverhead}
-            bhagTarget={bhagTarget}
-            onBhagChange={handleBhagChange}
-            onBhagCommit={handleBhagCommit}
-          />
-
-          {/* Magic Equation Scorecard */}
-          <MagicEquationScorecard />
-
-          {/* Monthly Revenue Chart */}
-          <MonthlyRevenueChart />
-
-          {/* GP% Breakdown Table */}
-          <Card className="border-border/50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-muted-foreground">
-                  Active Projects — GP% Breakdown
-                </CardTitle>
-                <Badge variant="secondary" className="text-xs">{sorted.length} projects</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {projLoading ? (
-                <div className="p-6 text-sm text-muted-foreground text-center">Loading projects...</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-b border-border/50">
-                        <TableHead className="cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => handleSort('job_name')}>
-                          <span className="flex items-center gap-1.5">Project <SortIcon field="job_name" /></span>
-                        </TableHead>
-                        <TableHead>Stage</TableHead>
-                        <TableHead>Manager</TableHead>
-                        <TableHead className="text-right cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => handleSort('contract_value_ex_gst')}>
-                          <span className="flex items-center justify-end gap-1.5">Contract <SortIcon field="contract_value_ex_gst" /></span>
-                        </TableHead>
-                        <TableHead className="text-right cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => handleSort('forecast_cost')}>
-                          <span className="flex items-center justify-end gap-1.5">Cost <SortIcon field="forecast_cost" /></span>
-                        </TableHead>
-                        <TableHead className="text-right cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => handleSort('forecast_gross_profit')}>
-                          <span className="flex items-center justify-end gap-1.5">GP <SortIcon field="forecast_gross_profit" /></span>
-                        </TableHead>
-                        <TableHead className="cursor-pointer select-none hover:text-foreground transition-colors" onClick={() => handleSort('forecast_gp_percent')}>
-                          <span className="flex items-center gap-1.5">GP% <SortIcon field="forecast_gp_percent" /></span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {groupedProjects.map(group => {
-                        if (group.projects.length === 0) return null;
-                        const grpContract = group.projects.reduce((s, p) => s + p.contract_value_ex_gst, 0);
-                        const grpCost = group.projects.reduce((s, p) => s + p.forecast_cost, 0);
-                        const grpGP = group.projects.reduce((s, p) => s + p.forecast_gross_profit, 0);
-                        const grpWGp = grpContract > 0 ? (grpGP / grpContract) * 100 : 0;
-                        return (
-                          <React.Fragment key={group.category}>
-                            {/* Category Header */}
-                            <TableRow className="bg-muted/60 border-b-0">
-                              <TableCell colSpan={7} className="py-2">
-                                <span className={cn(
-                                  "text-xs font-bold uppercase tracking-wider",
-                                  group.category === 'pre_construction' ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
-                                )}>
-                                  {group.label} ({group.projects.length})
-                                </span>
-                              </TableCell>
-                            </TableRow>
-                            {group.projects.map(p => (
-                              <TableRow key={p.id} className="group">
-                                <TableCell>
-                                  <p className="font-medium text-foreground text-sm">{p.job_name}</p>
-                                  {p.client_name && <p className="text-[11px] text-muted-foreground">{p.client_name}</p>}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className={cn(
-                                    "text-[10px] capitalize",
-                                    p.category === 'pre_construction' && 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
-                                    p.category === 'construction' && 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-                                  )}>{catLabel(p.category)}</Badge>
-                                </TableCell>
-                                <TableCell className="text-xs text-muted-foreground font-medium">{p.site_manager || '—'}</TableCell>
-                                <TableCell className="text-right font-semibold tabular-nums text-sm">
-                                  {p.contract_value_ex_gst > 0 ? fmt(p.contract_value_ex_gst) : '—'}
-                                </TableCell>
-                                <TableCell className="text-right text-muted-foreground tabular-nums text-sm">
-                                  {p.forecast_cost > 0 ? fmt(p.forecast_cost) : '—'}
-                                </TableCell>
-                                <TableCell className="text-right tabular-nums text-sm font-medium">
-                                  {p.forecast_gross_profit > 0 ? fmt(p.forecast_gross_profit) : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {p.forecast_gp_percent > 0 ? (
-                                    <div className="flex items-center gap-2">
-                                      <TrafficLight status={gpStatus(p.forecast_gp_percent, t)} size="sm" />
-                                      <span className={cn('font-bold tabular-nums text-sm', gpTextColor(p.forecast_gp_percent, t))}>
-                                        {p.forecast_gp_percent.toFixed(1)}%
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <span className="text-muted-foreground">—</span>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                            {/* Category Subtotal */}
-                            <TableRow className="border-t border-border/50 bg-muted/30">
-                              <TableCell className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{group.label} Subtotal</TableCell>
-                              <TableCell />
-                              <TableCell />
-                              <TableCell className="text-right tabular-nums text-xs font-semibold">{fmt(grpContract)}</TableCell>
-                              <TableCell className="text-right tabular-nums text-xs text-muted-foreground font-semibold">{fmt(grpCost)}</TableCell>
-                              <TableCell className="text-right tabular-nums text-xs font-semibold">{fmt(grpGP)}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <TrafficLight status={gpStatus(grpWGp, t)} size="sm" />
-                                  <span className={cn('font-bold tabular-nums text-xs', gpTextColor(grpWGp, t))}>
-                                    {grpWGp.toFixed(1)}%
-                                  </span>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          </React.Fragment>
-                        );
-                      })}
-                      {sorted.length > 0 && (() => {
-                        const totContract = sorted.reduce((s, p) => s + p.contract_value_ex_gst, 0);
-                        const totCost = sorted.reduce((s, p) => s + p.forecast_cost, 0);
-                        const totGP = sorted.reduce((s, p) => s + p.forecast_gross_profit, 0);
-                        const wGp = totContract > 0 ? (totGP / totContract) * 100 : 0;
-                        return (
-                          <TableRow className="border-t-2 border-border bg-muted/40 font-semibold">
-                            <TableCell className="text-xs uppercase tracking-wide text-muted-foreground">Grand Total</TableCell>
-                            <TableCell />
-                            <TableCell />
-                            <TableCell className="text-right tabular-nums text-sm">{fmt(totContract)}</TableCell>
-                            <TableCell className="text-right tabular-nums text-sm text-muted-foreground">{fmt(totCost)}</TableCell>
-                            <TableCell className="text-right tabular-nums text-sm">{fmt(totGP)}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <TrafficLight status={gpStatus(wGp, t)} size="sm" />
-                                <span className={cn('font-bold tabular-nums text-sm', gpTextColor(wGp, t))}>
-                                  {wGp.toFixed(1)}%
-                                </span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })()}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Dashboard Widgets: Health + Events + Quick Links */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Project Health */}
-            <Card className="border-border/50 lg:col-span-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />
-                  Project Health
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {projLoading ? (
-                  <p className="text-xs text-muted-foreground">Loading...</p>
-                ) : projectHealth ? (
-                  <>
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                          <span className="text-xs font-medium">Healthy (≥{kpi?.gp_threshold_green ?? 17}%)</span>
-                        </div>
-                        <span className="text-xs font-bold tabular-nums">{projectHealth.healthy}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${projectHealth.active > 0 ? (projectHealth.healthy / projectHealth.active) * 100 : 0}%` }} />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                          <span className="text-xs font-medium">At Risk ({kpi?.gp_threshold_orange ?? 12}–{(kpi?.gp_threshold_green ?? 17) - 1}%)</span>
-                        </div>
-                        <span className="text-xs font-bold tabular-nums">{projectHealth.atRisk}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${projectHealth.active > 0 ? (projectHealth.atRisk / projectHealth.active) * 100 : 0}%` }} />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                          <span className="text-xs font-medium">Critical (&lt;{kpi?.gp_threshold_orange ?? 12}%)</span>
-                        </div>
-                        <span className="text-xs font-bold tabular-nums">{projectHealth.critical}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${projectHealth.active > 0 ? (projectHealth.critical / projectHealth.active) * 100 : 0}%` }} />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-1.5">
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">By Stage</p>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Pre Construction</span>
-                        <Badge variant="secondary" className="text-[10px] h-5">{projectHealth.byCat.pre_construction}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Construction</span>
-                        <Badge variant="secondary" className="text-[10px] h-5">{projectHealth.byCat.construction}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Handover</span>
-                        <Badge variant="secondary" className="text-[10px] h-5">{projectHealth.byCat.handover}</Badge>
-                      </div>
-                    </div>
-
-                    <button onClick={() => navigate('/projects')} className="text-xs text-primary hover:underline w-full text-left">
-                      View all projects →
-                    </button>
-                  </>
-                ) : (
-                  <p className="text-xs text-muted-foreground">No projects yet</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Events */}
-            <Card className="border-border/50 lg:col-span-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  Upcoming Events
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {eventsLoading ? (
-                  <p className="text-xs text-muted-foreground">Loading...</p>
-                ) : upcomingEvents.length > 0 ? (
-                  <div className="space-y-3">
-                    {upcomingEvents.map(event => (
-                      <div key={event.id} className="flex items-start gap-3 group">
-                        <div className="mt-0.5">{categoryIcon(event.category)}</div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{event.title}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {format(parseISO(event.start_time), event.all_day ? 'EEE, d MMM' : 'EEE, d MMM · h:mm a')}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-[9px] h-4 shrink-0 capitalize">
-                          {event.category}
-                        </Badge>
-                      </div>
-                    ))}
-                    <button onClick={() => navigate('/calendar')} className="text-xs text-primary hover:underline w-full text-left">
-                      View calendar →
-                    </button>
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Calendar className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-xs text-muted-foreground">No upcoming events</p>
-                    <button onClick={() => navigate('/calendar')} className="text-xs text-primary hover:underline mt-1">
-                      Add an event →
-                    </button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Links */}
-            <Card className="border-border/50 lg:col-span-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  Quick Access
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  {quickLinks.map((link) => (
-                    <button
-                      key={link.url}
-                      onClick={() => navigate(link.url)}
-                      className="flex items-center gap-3 w-full px-2.5 py-2 rounded-lg hover:bg-muted/60 transition-colors text-left group"
-                    >
-                      <link.icon className={cn('h-4 w-4 shrink-0', link.color)} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium">{link.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{link.description}</p>
-                      </div>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <RoleDashboard roleInfo={roleInfo} shared={shared} />
         </main>
       </div>
     </DashboardLayout>
