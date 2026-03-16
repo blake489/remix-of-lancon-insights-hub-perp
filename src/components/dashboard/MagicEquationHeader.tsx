@@ -78,15 +78,91 @@ export function MagicEquationHeader({
   onBhagChange,
   onBhagCommit,
 }: MagicEquationHeaderProps) {
+  const { data: sheetsData, isLoading: sheetsLoading } = useGoogleSheetsRevenue();
+
   const overheadValue = overheadOverride ?? monthlyKPI.overheads;
   const gpRate = (activeGpPercent ?? 0) / 100;
   const grossRevenue = claimsRevenue?.total ?? 0;
   const pureProfit = (gpRate * grossRevenue) - overheadValue;
   const pureProfitStatus: 'success' | 'warning' | 'danger' = pureProfit >= 100000 ? 'success' : 'danger';
-  
+
+  // Sheets-derived values
+  const sheetsRevenue = sheetsData?.currentMonthRevenue ?? 0;
+  const sheetsTarget = sheetsData?.magicEquationTarget ?? 1_650_000;
+  const variance = sheetsRevenue - sheetsTarget;
+  const isMock = sheetsData?.isMockData ?? true;
+
+  const fmtCompact = (v: number) => {
+    if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
+    if (Math.abs(v) >= 1_000) return `$${(Math.abs(v) / 1_000).toFixed(0)}K`;
+    return `$${v.toFixed(0)}`;
+  };
 
   return (
     <div className="space-y-6">
+      {/* Live / Demo badge */}
+      <div className="flex items-center justify-between">
+        <div />
+        <div className="flex items-center gap-2">
+          {sheetsLoading ? (
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse" />
+              Loading…
+            </Badge>
+          ) : (
+            <Badge variant="outline" className={cn(
+              "text-[10px] gap-1",
+              isMock ? "border-muted-foreground/40" : "border-emerald-500/40"
+            )}>
+              <span className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                isMock ? "bg-muted-foreground" : "bg-emerald-500"
+              )} />
+              {isMock ? 'Demo' : 'Live'}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Sheets Revenue Summary */}
+      {sheetsData && (
+        <div className="grid gap-3 sm:grid-cols-4">
+          <div className="glass-card p-4">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Current Month</p>
+            <p className="text-lg font-bold text-foreground">{fmtCompact(sheetsRevenue)}</p>
+            <p className="text-[10px] text-muted-foreground">{sheetsData.currentMonthLabel}</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Variance</p>
+            <p className={cn("text-lg font-bold tabular-nums", variance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
+              {variance >= 0 ? '+' : '-'}{fmtCompact(Math.abs(variance))}
+            </p>
+            <p className="text-[10px] text-muted-foreground">vs {fmtCompact(sheetsTarget)} target</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Full Year Avg</p>
+            <p className="text-lg font-bold text-foreground">{fmtCompact(sheetsData.fullYearAverage)}</p>
+            <p className="text-[10px] text-muted-foreground">{sheetsData.totalMonthsWithData} months</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Months Above Target</p>
+            <p className="text-lg font-bold text-foreground">{sheetsData.monthsAboveTarget}/{sheetsData.totalMonthsWithData}</p>
+            <p className="text-[10px] text-muted-foreground">≥ {fmtCompact(sheetsTarget)}</p>
+          </div>
+        </div>
+      )}
+      {sheetsLoading && (
+        <div className="grid gap-3 sm:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass-card p-4 space-y-2">
+              <div className="h-3 w-20 rounded bg-muted shimmer" />
+              <div className="h-6 w-24 rounded bg-muted shimmer" />
+              <div className="h-3 w-16 rounded bg-muted shimmer" />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Primary KPI Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Revenue from Claims */}
