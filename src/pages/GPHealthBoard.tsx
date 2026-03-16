@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useProjects } from '@/hooks/useProjects';
 import { useKPISettings } from '@/hooks/useKPISettings';
