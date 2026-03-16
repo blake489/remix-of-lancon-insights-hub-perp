@@ -293,6 +293,9 @@ const Dashboard = () => {
             onBhagCommit={handleBhagCommit}
           />
 
+          {/* Magic Equation Scorecard */}
+          <MagicEquationScorecard />
+
           {/* Monthly Revenue Chart */}
           <MonthlyRevenueChart />
 
