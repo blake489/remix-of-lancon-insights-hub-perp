@@ -6,6 +6,9 @@ import { useProjects } from '@/hooks/useProjects';
 import { useKPISettings } from '@/hooks/useKPISettings';
 import { TrafficLight } from '@/components/dashboard/TrafficLight';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import { ForecastAuditTrail } from '@/components/projects/ForecastAuditTrail';
 import { formatCurrency, formatPercent } from '@/lib/formatters';
 import { gpStatus, type GpThresholds, DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { cn } from '@/lib/utils';
@@ -31,6 +34,7 @@ const borderColor: Record<'success' | 'warning' | 'danger', string> = {
 const GPHealthBoard = () => {
   const { projects, isLoading } = useProjects();
   const { data: kpi } = useKPISettings();
+  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
   const [filter, setFilter] = useState<Filter>('active');
 
   const t: GpThresholds = kpi
@@ -162,8 +166,9 @@ const GPHealthBoard = () => {
                       return (
                         <TableRow
                           key={p.id}
+                          onClick={() => setSelectedProject(p)}
                           className={cn(
-                            'border-l-4',
+                            'border-l-4 cursor-pointer hover:bg-muted/50 transition-colors',
                             borderColor[status],
                           )}
                         >
@@ -271,6 +276,111 @@ const GPHealthBoard = () => {
           })()}
         </main>
       </div>
+
+      {/* GP Detail Side Panel */}
+      <Sheet open={!!selectedProject} onOpenChange={(open) => !open && setSelectedProject(null)}>
+        <SheetContent className="w-[480px] sm:max-w-[480px] overflow-y-auto">
+          {selectedProject && (() => {
+            const sp = selectedProject;
+            const status = gpStatus(sp.forecast_gp_percent, t);
+            const statusLabel = status === 'success' ? 'Green' : status === 'warning' ? 'Watch' : 'Critical';
+            const originalGp = sp.forecast_gp_percent; // placeholder until original_gp_percent column exists
+            const change = sp.forecast_gp_percent - originalGp;
+            const variations = Array.isArray(sp.variations) ? (sp.variations as Array<{ description?: string; amount?: number }>) : [];
+            const variationsTotal = variations.reduce((s, v) => s + (v.amount || 0), 0);
+
+            return (
+              <>
+                <SheetHeader>
+                  <SheetTitle className="text-lg">{sp.job_name}</SheetTitle>
+                  {sp.client_name && (
+                    <p className="text-sm text-muted-foreground">{sp.client_name}</p>
+                  )}
+                </SheetHeader>
+
+                <div className="mt-6 space-y-6">
+                  {/* Traffic light */}
+                  <div className="flex items-center gap-3">
+                    <TrafficLight status={status} size="md" />
+                    <span className={cn(
+                      'text-sm font-bold',
+                      status === 'success' ? 'text-emerald-600 dark:text-emerald-400'
+                        : status === 'warning' ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-destructive',
+                    )}>
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  <Separator />
+
+                  {/* GP Summary */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">GP Summary</h3>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="text-muted-foreground text-xs">Original Quoted GP%</p>
+                        <p className="font-semibold">{formatPercent(originalGp)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Current Forecast GP%</p>
+                        <p className="font-semibold">{formatPercent(sp.forecast_gp_percent)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Change from Original</p>
+                        <p className={cn(
+                          'font-semibold',
+                          change > 0 ? 'text-emerald-600 dark:text-emerald-400'
+                            : change < 0 ? 'text-destructive'
+                            : 'text-muted-foreground',
+                        )}>
+                          {change > 0 ? '+' : ''}{change.toFixed(1)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Contract Value ex GST</p>
+                        <p className="font-semibold">{formatCurrency(sp.contract_value_ex_gst, true)}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-muted-foreground text-xs">Forecast Gross Profit</p>
+                        <p className="font-semibold">{formatCurrency(sp.forecast_gross_profit, true)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Variations */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Variations</h3>
+                    {variations.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No variations recorded.</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {variations.map((v, i) => (
+                          <div key={i} className="flex items-center justify-between text-sm border rounded-md px-3 py-2 bg-muted/20">
+                            <span className="text-foreground">{v.description || `Variation ${i + 1}`}</span>
+                            <span className="font-medium tabular-nums">{formatCurrency(v.amount || 0, true)}</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between text-sm font-semibold pt-1">
+                          <span>Total Variations</span>
+                          <span className="tabular-nums">{formatCurrency(variationsTotal, true)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Forecast Audit Trail */}
+                  <ForecastAuditTrail projectId={sp.id} />
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   );
 };
