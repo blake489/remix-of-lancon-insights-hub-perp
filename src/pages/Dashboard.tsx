@@ -292,6 +292,9 @@ const Dashboard = () => {
             onBhagCommit={handleBhagCommit}
           />
 
+          {/* Monthly Revenue Chart */}
+          <MonthlyRevenueChart />
+
           {/* GP% Breakdown Table */}
           <Card className="border-border/50">
             <CardHeader className="pb-3">
