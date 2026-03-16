@@ -7,6 +7,7 @@ export type UserRole =
   | 'construction_manager'
   | 'sales_manager'
   | 'design_manager'
+  | 'production_manager'
   | 'admin';
 
 export interface UserRoleInfo {
@@ -15,6 +16,7 @@ export interface UserRoleInfo {
   isConstructionManager: boolean;
   isSalesManager: boolean;
   isDesignManager: boolean;
+  isProductionManager: boolean;
   isAdmin: boolean;
   canViewFinancials: boolean;
   canViewGP: boolean;
@@ -23,6 +25,19 @@ export interface UserRoleInfo {
 }
 
 const DEFAULT_ROLE: UserRole = 'director';
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  director: 'Director',
+  construction_manager: 'Construction Manager',
+  sales_manager: 'Sales Manager',
+  design_manager: 'Design Manager',
+  production_manager: 'Production Manager',
+  admin: 'Admin',
+};
+
+export function getRoleLabel(role: UserRole): string {
+  return ROLE_LABELS[role] ?? role;
+}
 
 export function useUserRole(): UserRoleInfo & { isLoading: boolean } {
   const { user } = useAuth();
@@ -47,6 +62,7 @@ export function useUserRole(): UserRoleInfo & { isLoading: boolean } {
   const isConstructionManager = role === 'construction_manager';
   const isSalesManager = role === 'sales_manager';
   const isDesignManager = role === 'design_manager';
+  const isProductionManager = role === 'production_manager';
   const isAdmin = role === 'admin';
 
   return {
@@ -55,10 +71,11 @@ export function useUserRole(): UserRoleInfo & { isLoading: boolean } {
     isConstructionManager,
     isSalesManager,
     isDesignManager,
+    isProductionManager,
     isAdmin,
     isLoading,
-    canViewFinancials: isDirector,
-    canViewGP: isDirector || isConstructionManager,
+    canViewFinancials: isDirector || isProductionManager,
+    canViewGP: isDirector || isConstructionManager || isProductionManager,
     canViewSales: isDirector || isSalesManager,
     canManageSettings: isDirector || isAdmin,
   };
