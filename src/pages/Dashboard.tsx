@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
 import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
 import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart';
+import { MagicEquationScorecard } from '@/components/dashboard/MagicEquationScorecard';
 import { TrafficLight } from '@/components/dashboard/TrafficLight';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -291,6 +292,9 @@ const Dashboard = () => {
             onBhagChange={handleBhagChange}
             onBhagCommit={handleBhagCommit}
           />
+
+          {/* Magic Equation Scorecard */}
+          <MagicEquationScorecard />
 
           {/* Monthly Revenue Chart */}
           <MonthlyRevenueChart />
