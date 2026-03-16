@@ -108,6 +108,7 @@ const App = () => (
             <Route path="/source-data/manage" element={<ProtectedRoute><ManageForms /></ProtectedRoute>} />
             <Route path="/source-data/manage/:formId" element={<ProtectedRoute><FormBuilder /></ProtectedRoute>} />
             <Route path="/source-data/form/:slug" element={<ProtectedRoute><FormEntry /></ProtectedRoute>} />
+            <Route path="/gp-health" element={<ProtectedRoute><GPHealthBoard /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
