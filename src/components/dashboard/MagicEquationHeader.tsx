@@ -6,6 +6,8 @@ import { formatCurrency, formatPercent } from '@/lib/formatters';
 import { DEFAULT_GP_THRESHOLDS } from '@/lib/gpThresholds';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGoogleSheetsRevenue } from '@/hooks/useGoogleSheetsRevenue';
+import { Badge } from '@/components/ui/badge';
 
 export interface ClaimsRevenueSummary {
   total: number;
