@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { TodayWidget } from '@/components/dashboard/TodayWidget';
 import { MagicEquationHeader } from '@/components/dashboard/MagicEquationHeader';
+import { MonthlyRevenueChart } from '@/components/dashboard/MonthlyRevenueChart';
 import { TrafficLight } from '@/components/dashboard/TrafficLight';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -290,6 +291,9 @@ const Dashboard = () => {
             onBhagChange={handleBhagChange}
             onBhagCommit={handleBhagCommit}
           />
+
+          {/* Monthly Revenue Chart */}
+          <MonthlyRevenueChart />
 
           {/* GP% Breakdown Table */}
           <Card className="border-border/50">
